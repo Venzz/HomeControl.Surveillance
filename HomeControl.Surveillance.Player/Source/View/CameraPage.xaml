@@ -1,0 +1,17 @@
+﻿<Page
+    x:Class="HomeControl.Surveillance.Player.View.CameraPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Background="Transparent">
+        <MediaElement x:Name="VideoPlayer" AutoPlay="True"/>
+        <CommandBar VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
+            <AppBarButton Foreground="White" Tapped="OnCompactViewTapped">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="ms-appx:/Resources/Fonts/SegMVR2.ttf#Segoe MVR MDL2 Assets" Glyph="&#xF15E;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton Foreground="White" Icon="FullScreen"/>
+        </CommandBar>
+    </Grid>
+</Page>
