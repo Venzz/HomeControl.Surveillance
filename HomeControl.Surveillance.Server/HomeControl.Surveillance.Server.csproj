@@ -89,7 +89,8 @@
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol.Messages\UnauthorizedResponse.cs" />
     <Compile Include="Source\Model\Storage\Storage.cs" />
     <Compile Include="Source\Model\Camera\Camera.cs" />
-    <Compile Include="Source\Windows.Foundation\TypedEventHandler.cs" />
+    <Compile Include="Source\Extensions\ByteArray.cs" />
+    <Compile Include="Source\Extensions\TypedEventHandler.cs" />
     <None Include="packages.config" />
     <Page Include="Source\View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

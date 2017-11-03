@@ -129,7 +129,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             DataReceived(this, videoDataResponse.Data);
                             break;
                         case UnknownResponseMessage unknownResponse:
-                            App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}", "UnknownResponse");
+                            App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}", $"UnknownResponse\n{unknownResponse.Data}");
                             break;
                     }
                 }
