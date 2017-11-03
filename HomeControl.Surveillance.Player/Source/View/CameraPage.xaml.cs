@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using HomeControl.Surveillance.Player.ViewModel;
 using System;
+using Windows.Foundation;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -30,7 +31,16 @@ namespace HomeControl.Surveillance.Player.View
         private async void OnCompactViewTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
         {
             ViewMode = (ApplicationView.ViewMode == ApplicationViewMode.CompactOverlay) ? ApplicationViewMode.Default : ApplicationViewMode.CompactOverlay;
-            await ApplicationView.TryEnterViewModeAsync(ViewMode);
+            if (ViewMode == ApplicationViewMode.CompactOverlay)
+            {
+                var compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
+                compactOptions.CustomSize = new Size(500, 281);
+                await ApplicationView.TryEnterViewModeAsync(ViewMode, compactOptions);
+            }
+            else
+            {
+                await ApplicationView.TryEnterViewModeAsync(ViewMode);
+            }
         }
 
         private void OnApplicationViewConsolidated(ApplicationView sender, ApplicationViewConsolidatedEventArgs args)
