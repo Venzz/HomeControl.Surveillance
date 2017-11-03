@@ -19,10 +19,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 stream.Write((Byte)0x00);
                 stream.Write((Byte)0x00);
                 stream.Write((Byte)0x00);
-                stream.Write((Byte)SessionId);
-                stream.Write((Byte)0x00);
-                stream.Write((Byte)0x00);
-                stream.Write((Byte)0x00);
+                stream.Write(SessionId);
                 stream.Write((Byte)0x00);
                 stream.Write((Byte)0x00);
                 stream.Write((Byte)0x00);

@@ -34,7 +34,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     case 0x0586:
                         return new OpMonitorClaimResponseMessage(sessionId, messageData);
                     default:
-                        return new UnknownResponseMessage(sessionId, messageData);
+                        return new UnknownResponseMessage(sessionId, data);
                 }
             }
         }
