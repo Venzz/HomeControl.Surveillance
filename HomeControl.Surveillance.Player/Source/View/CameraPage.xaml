@@ -5,8 +5,8 @@
 
     <Grid Background="Transparent">
         <MediaElement x:Name="VideoPlayer" AutoPlay="True"/>
-        <CommandBar VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
-            <AppBarButton Foreground="White" Tapped="OnCompactViewTapped">
+        <CommandBar RequestedTheme="Dark" VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
+            <AppBarButton Tapped="OnCompactViewTapped">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="ms-appx:/Resources/Fonts/SegMVR2.ttf#Segoe MVR MDL2 Assets" Glyph="&#xF15E;"/>
                 </AppBarButton.Icon>
