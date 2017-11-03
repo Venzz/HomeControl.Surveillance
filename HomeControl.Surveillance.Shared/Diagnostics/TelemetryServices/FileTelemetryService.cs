@@ -5,41 +5,42 @@ namespace Venz.Telemetry
 {
     public sealed class FileTelemetryService: ITelemetryService
     {
-        private StreamWriter Writer;
+        private FileStream File;
 
-        public FileTelemetryService()
-        {
-            Writer = new StreamWriter(new FileStream($"{DateTime.Now.ToString("yyyy-MM-dd_HH-mm")}.log", FileMode.Create));
-        }
+        public FileTelemetryService() { }
 
-        public void Start()
-        {
-            Writer.WriteLine($"{GetTimestamp()} >> Application Launched");
-        }
+        public void Start() => Write($"{GetTimestamp()} >> Application Launched");
 
-        public void Finish()
-        {
-            Writer.WriteLine($"{GetTimestamp()} >> Application Exit");
-        }
+        public void Finish() => Write($"{GetTimestamp()} >> Application Exit");
 
-        public void LogEvent(String title)
-        {
-            Writer.WriteLine($"{GetTimestamp()} >> {title}");
-            Writer.Flush();
-        }
+        public void LogEvent(String title) => Write($"{GetTimestamp()} >> {title}");
 
-        public void LogEvent(String title, String parameter, String value)
-        {
-            Writer.WriteLine($"{GetTimestamp()} >> {title} || {parameter}: {value}");
-            Writer.Flush();
-        }
+        public void LogEvent(String title, String parameter, String value) => Write($"{GetTimestamp()} >> {title} || {parameter}: {value}");
 
-        public void LogException(String comment, Exception exception)
-        {
-            Writer.WriteLine($"{GetTimestamp()} >> {comment} || {exception.GetType().FullName}: {exception.Message}");
-            Writer.Flush();
-        }
+        public void LogException(String comment, Exception exception) => Write($"{GetTimestamp()} >> {comment} || {exception.GetType().FullName}: {exception.Message}");
 
         private String GetTimestamp() => DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+        private void Write(String value)
+        {
+            try
+            {
+                var now = DateTime.Now;
+                var fileName = $"{now.ToString("yyyy-MM-dd")}.log";
+                if (Path.GetFileName(File?.Name) != fileName)
+                {
+                    File?.Flush();
+                    File?.Dispose();
+                    File = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+                }
+
+                var writer = new StreamWriter(File);
+                writer.WriteLine(value);
+                writer.Flush();
+            }
+            catch (Exception)
+            {
+            }
+        }
     }
 }
