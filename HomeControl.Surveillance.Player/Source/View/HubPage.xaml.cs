@@ -21,9 +21,8 @@ namespace HomeControl.Surveillance.Player.View
 
         protected override void OnNavigatedTo(NavigationEventArgs args)
         {
-            Context.Initialize();
-            OutdoorCameraPreview.SetMediaStreamSource(Context.OutdoorCameraMediaSource);
-            IndoorCameraPreview.SetMediaStreamSource(Context.IndoorCameraMediaSource);
+            OutdoorCameraPreview.SetMediaStreamSource(Context.OutdoorCameraStream.MediaStream);
+            IndoorCameraPreview.SetMediaStreamSource(Context.IndoorCameraStream.MediaStream);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs args)
@@ -33,7 +32,6 @@ namespace HomeControl.Surveillance.Player.View
 
         private async void OnCameraTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
         {
-            Context.Dispose();
             var applicationViewId = 0;
             var coreApplicationView = CoreApplication.CreateNewView();
             await coreApplicationView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>

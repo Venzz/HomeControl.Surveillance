@@ -25,7 +25,7 @@ namespace HomeControl.Surveillance.Player.View
         {
             ApplicationView.Consolidated += OnApplicationViewConsolidated;
             Context.Initialize((CameraController)args.Parameter);
-            VideoPlayer.SetMediaStreamSource(Context.MediaSource);
+            VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
         }
 
         private async void OnCompactViewTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
