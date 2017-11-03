@@ -69,6 +69,7 @@
     <Compile Include="Source\Data\CameraConnection\OrientProtocol\Messages\Message.cs" />
     <Compile Include="Source\Data\CameraConnection\OrientProtocol\Messages\UnknownResponseMessage.cs" />
     <Compile Include="Source\Data\CameraConnection\OrientProtocol\OrientProtocolCameraConnection.cs" />
+    <Compile Include="Source\Data\CameraConnection\ReconnectionController.cs" />
     <Compile Include="Source\Data\Storage\Empty\EmptyStorageService.cs" />
     <Compile Include="Source\Data\Storage\File\FileStorageService.cs" />
     <Compile Include="Source\Data\Storage\Interface\IStorageService.cs" />

@@ -21,7 +21,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
         private String ActiveSession;
         private DateTime StartedDate = DateTime.Now;
         private UInt64 TotalBytesReceived;
-        private DateTime LastDataTransmissionDate;
+        private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public Double TransmissionRate => ((Double)TotalBytesReceived * 8 / 1024 / 1024) / (DateTime.Now - StartedDate).TotalSeconds;
 
@@ -31,7 +31,6 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
 
         public RtspCameraConnection(String ipAddress, UInt16 port, String url)
         {
-            LastDataTransmissionDate = DateTime.Now.AddSeconds(10);
             IpAddress = ipAddress;
             Port = port;
             Url = url;
@@ -86,9 +85,9 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
 
                 try
                 {
-                    if ((DateTime.Now - LastDataTransmissionDate) > TimeSpan.FromSeconds(10))
+                    if (ReconnectionController.IsAllowed())
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", "No data captured within 10 second, reconnecting...");
+                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", "No data captured, reconnecting...");
                         lock (ConnectionSync)
                         {
                             Client = null;
@@ -185,7 +184,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
 
         private void OnDataReceived(RtspClient sender, List<Byte[]> args)
         {
-            LastDataTransmissionDate = DateTime.Now;
+            ReconnectionController.Reset();
             //System.Diagnostics.Debug.WriteLine("RTP Data comprised of " + args.Count + " rtp packets");
             var stream = new MemoryStream();
             for (int payload_index = 0; payload_index < args.Count; payload_index++)

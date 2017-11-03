@@ -12,8 +12,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         private UInt16 Port;
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
-        private DateTime LastDataTransmissionDate;
         private DataQueue DataQueue = new DataQueue();
+        private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
 
@@ -21,7 +21,6 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
         public OrientProtocolCameraConnection(String ipAddress, UInt16 port)
         {
-            LastDataTransmissionDate = DateTime.Now.AddSeconds(10);
             IpAddress = ipAddress;
             Port = port;
             StartConnectionRestorating();
@@ -68,13 +67,12 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         Monitor.Wait(ConnectionSync);
                 }
 
-                await Task.Delay(2000).ConfigureAwait(false);
-
                 try
                 {
-                    if ((DateTime.Now - LastDataTransmissionDate) > TimeSpan.FromSeconds(10))
+                    await Task.Delay(2000).ConfigureAwait(false);
+                    if (ReconnectionController.IsAllowed())
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}", "No data captured within 10 second, reconnecting...");
+                        App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}", "No data captured, reconnecting...");
                         lock (ConnectionSync)
                         {
                             Connection = null;
@@ -125,7 +123,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             await connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case VideoDataResponseMessage videoDataResponse:
-                            LastDataTransmissionDate = DateTime.Now;
+                            ReconnectionController.Reset();
                             DataReceived(this, videoDataResponse.Data);
                             break;
                         case UnknownResponseMessage unknownResponse:
