@@ -6,7 +6,16 @@
     Height="350"
     Width="525">
     
-    <Grid>
-
-    </Grid>
+    <StackPanel>
+        <CheckBox
+            Margin="12,12,0,0"
+            Content="Send outdoor camera data"
+            IsChecked="{Binding SendOutdoorCameraData, Mode=TwoWay}">
+        </CheckBox>
+        <CheckBox
+            Margin="12,12,0,0"
+            Content="Send indoor camera data"
+            IsChecked="{Binding SendIndoorCameraData, Mode=TwoWay}">
+        </CheckBox>
+    </StackPanel>
 </Window>

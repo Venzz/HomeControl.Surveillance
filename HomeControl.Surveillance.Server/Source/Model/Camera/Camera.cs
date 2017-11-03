@@ -14,6 +14,8 @@ namespace HomeControl.Surveillance.Server.Model
         private Queue<Byte[]> Data = new Queue<Byte[]>(PendingDataSize);
         private Object Sync = new Object();
 
+        public Boolean IsProviderCommunicationEnabled { get; set; } = true;
+
 
 
         public Camera(IProviderCameraService providerService)
@@ -50,7 +52,8 @@ namespace HomeControl.Surveillance.Server.Model
                     data = Data.Dequeue();
                 }
                 
-                await ProviderService.SendAsync(data).ConfigureAwait(false);
+                if (IsProviderCommunicationEnabled)
+                    await ProviderService.SendAsync(data).ConfigureAwait(false);
             }
         });
     }

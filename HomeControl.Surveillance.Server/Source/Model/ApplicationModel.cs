@@ -12,9 +12,12 @@ namespace HomeControl.Surveillance.Server.Model
     {
         private ICameraConnection IndoorCameraConnection;
         private ICameraConnection OutdoorCameraConnection;
-        private Camera IndoorCamera;
-        private Camera OutdoorCamera;
         private Storage Storage;
+
+        public Camera IndoorCamera { get; }
+        public Camera OutdoorCamera { get; }
+
+
 
         public ApplicationModel()
         {
