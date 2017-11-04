@@ -9,6 +9,16 @@ namespace HomeControl.Surveillance.Server.Model
 
         public Storage(IStorageService storageService) { Service = storageService; }
 
-        public void Store(Byte[] data) => Service.Store(data);
+        public void Store(Byte[] data)
+        {
+            try
+            {
+                Service.Store(data);
+            }
+            catch (Exception exception)
+            {
+                App.Diagnostics.Debug.Log($"{nameof(Storage)}.{nameof(Store)}", exception);
+            }
+        }
     }
 }

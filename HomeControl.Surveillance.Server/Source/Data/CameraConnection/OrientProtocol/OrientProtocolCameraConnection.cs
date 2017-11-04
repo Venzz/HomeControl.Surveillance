@@ -132,8 +132,9 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: {data.ToHexView()}", exception);
                 lock (ConnectionSync)
                 {
                     Connection = null;

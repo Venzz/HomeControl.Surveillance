@@ -26,16 +26,23 @@ namespace HomeControl.Surveillance.Server.Model
 
         public void Send(Byte[] data)
         {
-            if ((DateTime.Now.Hour >= 22) || (DateTime.Now.Hour < 6))
-                return;
-
-            lock (Sync)
+            try
             {
-                if (Data.Count == PendingDataSize)
-                    Data.Dequeue();
+                if ((DateTime.Now.Hour >= 22) || (DateTime.Now.Hour < 6))
+                    return;
 
-                Data.Enqueue(data);
-                Monitor.PulseAll(Sync);
+                lock (Sync)
+                {
+                    if (Data.Count == PendingDataSize)
+                        Data.Dequeue();
+
+                    Data.Enqueue(data);
+                    Monitor.PulseAll(Sync);
+                }
+            }
+            catch (Exception exception)
+            {
+                App.Diagnostics.Debug.Log($"{nameof(Camera)}.{nameof(Send)}", exception);
             }
         }
 
