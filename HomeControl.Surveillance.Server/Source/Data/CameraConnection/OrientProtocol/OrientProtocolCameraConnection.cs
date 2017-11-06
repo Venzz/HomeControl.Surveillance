@@ -12,7 +12,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         private UInt16 Port;
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
-        private DataQueue DataQueue = new DataQueue();
+        private DataQueue DataQueue;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
@@ -47,6 +47,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     lock (ConnectionSync)
                     {
                         Connection = connection;
+                        DataQueue = new DataQueue();
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
@@ -95,32 +96,37 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
         private async void OnDataReceived(TcpConnection sender, Byte[] data)
         {
-            var connection = (TcpConnection)null;
-            lock (ConnectionSync)
+            (TcpConnection Connection, DataQueue DataQueue) GetVariables()
             {
-                if (Connection == null)
-                    Monitor.Wait(ConnectionSync);
-                connection = Connection;
+                lock (ConnectionSync)
+                {
+                    if (Connection == null)
+                        Monitor.Wait(ConnectionSync);
+                    return (Connection, DataQueue);
+                }
             }
 
+            var variables = GetVariables();
             try
             {
-                DataQueue.Enqueue(data);
-                while (DataQueue.Length >= 20)
+                variables.DataQueue.Enqueue(data);
+                while (variables.DataQueue.Length >= 20)
                 {
-                    var peekedData = DataQueue.Peek(20);
+                    var peekedData = variables.DataQueue.Peek(20);
                     var dataSize = peekedData[16] + peekedData[17] * 256;
-                    if (DataQueue.Length < dataSize + 20)
+                    if (variables.DataQueue.Length < dataSize + 20)
                         return;
 
-                    var message = Message.Create(DataQueue.Dequeue(dataSize + 20));
+                    var message = Message.Create(variables.DataQueue.Dequeue(dataSize + 20));
                     switch (message)
                     {
                         case AuthorizationResponseMessage authorizationResponse:
-                            await connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
+                            App.Diagnostics.Debug.Log($"{nameof(AuthorizationResponseMessage)}: SessionId = {authorizationResponse.SessionId:x}");
+                            await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
-                            await connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
+                            App.Diagnostics.Debug.Log($"{nameof(OpMonitorClaimResponseMessage)}: SessionId = {claimResponse.SessionId:x}");
+                            await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case VideoDataResponseMessage videoDataResponse:
                             ReconnectionController.Reset();
@@ -137,8 +143,11 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: {data.ToHexView()}", exception);
                 lock (ConnectionSync)
                 {
-                    Connection = null;
-                    Monitor.PulseAll(ConnectionSync);
+                    if (Connection == variables.Connection)
+                    {
+                        Connection = null;
+                        Monitor.PulseAll(ConnectionSync);
+                    }
                 }
             }
         }
