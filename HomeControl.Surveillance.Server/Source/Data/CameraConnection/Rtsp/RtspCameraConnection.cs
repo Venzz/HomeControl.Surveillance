@@ -19,11 +19,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
         private RtspClient Client;
         private DateTime ClientCreatedDate;
         private String ActiveSession;
-        private DateTime StartedDate = DateTime.Now;
-        private UInt64 TotalBytesReceived;
         private ReconnectionController ReconnectionController = new ReconnectionController();
-
-        public Double TransmissionRate => ((Double)TotalBytesReceived * 8 / 1024 / 1024) / (DateTime.Now - StartedDate).TotalSeconds;
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
 
@@ -105,7 +101,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                     }
                     if (sendMessageTask != null)
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", $"Sending ping message... {TransmissionRate:F3} Mbps");
+                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", $"Sending ping message...");
                         await sendMessageTask.ConfigureAwait(false);
                         lastSendMessageDate = DateTime.Now;
                     }
@@ -282,8 +278,6 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
             stream.Position = 0;
             stream.Read(completeData, 0, completeData.Length);
             stream.Dispose();
-
-            TotalBytesReceived += (UInt32)completeData.Length;
             DataReceived(this, completeData);
         }
     }
