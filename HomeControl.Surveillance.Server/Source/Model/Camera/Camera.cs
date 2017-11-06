@@ -15,6 +15,9 @@ namespace HomeControl.Surveillance.Server.Model
         private Object Sync = new Object();
 
         public Boolean IsProviderCommunicationEnabled { get; set; } = true;
+        public DateTime SendingStartedDate { get; } = DateTime.Now;
+        public UInt32 LastSentDataLength { get; private set; }
+        public UInt32 TotalSentDataLength { get; private set; }
 
 
 
@@ -28,6 +31,9 @@ namespace HomeControl.Surveillance.Server.Model
         {
             try
             {
+                LastSentDataLength = (UInt32)data.Length;
+                TotalSentDataLength += (UInt32)data.Length;
+
                 if ((DateTime.Now.Hour >= 22) || (DateTime.Now.Hour < 6))
                     return;
 

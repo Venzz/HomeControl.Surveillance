@@ -17,5 +17,21 @@
             Content="Send indoor camera data"
             IsChecked="{Binding SendIndoorCameraData, Mode=TwoWay}">
         </CheckBox>
+        <TextBlock
+            Margin="12,12,0,0"
+            Text="{Binding OutdoorCameraLastSentDataLength, FallbackValue=23 KB}">
+        </TextBlock>
+        <TextBlock
+            Margin="12,0,0,0"
+            Text="{Binding OutdoorCameraTransferRate, FallbackValue=1234 Kb/s}">
+        </TextBlock>
+        <TextBlock
+            Margin="12,12,0,0"
+            Text="{Binding IndoorCameraLastSentDataLength, FallbackValue=5 KB}">
+        </TextBlock>
+        <TextBlock
+            Margin="12,0,0,0"
+            Text="{Binding IndoorCameraTransferRate, FallbackValue=534 Kb/s}">
+        </TextBlock>
     </StackPanel>
 </Window>
