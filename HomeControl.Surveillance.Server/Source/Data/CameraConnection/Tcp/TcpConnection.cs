@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
+namespace HomeControl.Surveillance.Server.Data.Tcp
 {
     internal class TcpConnection: IDisposable
     {

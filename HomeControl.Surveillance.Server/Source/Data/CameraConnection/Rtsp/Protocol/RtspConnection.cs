@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Server.Data.Tcp;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;

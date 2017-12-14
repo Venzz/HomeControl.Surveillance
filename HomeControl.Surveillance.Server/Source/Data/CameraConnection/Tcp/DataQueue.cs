@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
+namespace HomeControl.Surveillance.Server.Data.Tcp
 {
     internal class DataQueue: IDisposable
     {

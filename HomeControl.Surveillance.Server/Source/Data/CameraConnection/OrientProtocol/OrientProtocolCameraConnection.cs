@@ -1,4 +1,4 @@
-﻿using HomeControl.Surveillance.Server.Data.Rtsp.Protocol;
+﻿using HomeControl.Surveillance.Server.Data.Tcp;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +48,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     {
                         Connection = connection;
                         DataQueue = new DataQueue();
+                        ReconnectionController.ResetPermissionGrantedDate();
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
@@ -76,6 +77,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}", "No data captured, reconnecting...");
                         lock (ConnectionSync)
                         {
+                            Connection.DataReceived -= OnDataReceived;
+                            Connection.Dispose();
                             Connection = null;
                             Monitor.PulseAll(ConnectionSync);
                             continue;
@@ -87,6 +90,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception);
                     lock (ConnectionSync)
                     {
+                        Connection.DataReceived -= OnDataReceived;
+                        Connection.Dispose();
                         Connection = null;
                         Monitor.PulseAll(ConnectionSync);
                     }
@@ -145,6 +150,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 {
                     if (Connection == variables.Connection)
                     {
+                        Connection.DataReceived -= OnDataReceived;
+                        Connection.Dispose();
                         Connection = null;
                         Monitor.PulseAll(ConnectionSync);
                     }

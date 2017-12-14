@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
+namespace HomeControl.Surveillance.Server.Data.Tcp
 {
     internal class TcpClient: IDisposable
     {

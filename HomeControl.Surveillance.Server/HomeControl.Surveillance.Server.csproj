@@ -76,13 +76,13 @@
     <Compile Include="Source\Data\WebSocket.cs" />
     <Compile Include="Source\Model\ApplicationModel.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\RtspCameraConnection.cs" />
-    <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\DataQueue.cs" />
+    <Compile Include="Source\Data\CameraConnection\Tcp\DataQueue.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\ResponseStatus.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\RtspClient.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\RtspConnection.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\RtspHeaders.cs" />
-    <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\TcpClient.cs" />
-    <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol\TcpConnection.cs" />
+    <Compile Include="Source\Data\CameraConnection\Tcp\TcpClient.cs" />
+    <Compile Include="Source\Data\CameraConnection\Tcp\TcpConnection.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol.Messages\DescribeResponse.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol.Messages\IResponse.cs" />
     <Compile Include="Source\Data\CameraConnection\Rtsp\Protocol.Messages\OptionsResponse.cs" />

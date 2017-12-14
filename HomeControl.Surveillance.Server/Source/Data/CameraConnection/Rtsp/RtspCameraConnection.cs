@@ -56,6 +56,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                     {
                         Client = client;
                         ClientCreatedDate = DateTime.Now;
+                        ReconnectionController.ResetPermissionGrantedDate();
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
@@ -167,8 +168,9 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                         break;
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}.{nameof(OnResponseReceived)}", exception);
                 lock (ConnectionSync)
                 {
                     Client = null;

@@ -12,7 +12,7 @@ namespace HomeControl.Surveillance.Server.Data
             var isAllowed = false;
             if (Attempts < 5)
             {
-                isAllowed = (DateTime.Now - LastPermissionGrantedDate) > TimeSpan.FromSeconds(10);
+                isAllowed = (DateTime.Now - LastPermissionGrantedDate) > TimeSpan.FromSeconds(30);
             }
             else if (Attempts < 10)
             {
@@ -29,6 +29,11 @@ namespace HomeControl.Surveillance.Server.Data
                 LastPermissionGrantedDate = DateTime.Now;
             }
             return isAllowed;
+        }
+
+        public void ResetPermissionGrantedDate()
+        {
+            LastPermissionGrantedDate = DateTime.Now;
         }
 
         public void Reset()
