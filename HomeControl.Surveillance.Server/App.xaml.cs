@@ -1,11 +1,10 @@
 ﻿using HomeControl.Surveillance.Server.Model;
 using System.Threading.Tasks;
-using System.Windows;
 using Venz.Telemetry;
 
 namespace HomeControl.Surveillance.Server
 {
-    public partial class App: Application
+    public class App
     {
         public static Diagnostics Diagnostics { get; } = new Diagnostics("App");
         public static ApplicationModel Model { get; } = new ApplicationModel();
@@ -16,7 +15,7 @@ namespace HomeControl.Surveillance.Server
             Diagnostics.Debug.Add(new FileTelemetryService());
         }
 
-        protected override async void OnStartup(StartupEventArgs args) => await Task.Run(() =>
+        public async void Start() => await Task.Run(() =>
         {
             Model.Initialize();
         });

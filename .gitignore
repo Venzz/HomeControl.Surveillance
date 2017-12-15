@@ -3,6 +3,7 @@ bin/
 obj/
 packages/
 BundleArtifacts/
+PublishProfiles/
 PrivateData.cs
 _pkginfo.txt
 
@@ -10,4 +11,5 @@ _pkginfo.txt
 *.pfx
 *.nuget.props
 *.nuget.targets
+*.user
 project.lock.json
