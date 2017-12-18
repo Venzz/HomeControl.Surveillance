@@ -1,5 +1,6 @@
 ﻿using HomeControl.Surveillance.Server.Data;
 using System;
+using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Model
 {
@@ -7,7 +8,15 @@ namespace HomeControl.Surveillance.Server.Model
     {
         private IStorageService Service;
 
-        public Storage(IStorageService storageService) { Service = storageService; }
+        public event TypedEventHandler<Storage, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+
+
+
+        public Storage(IStorageService storageService)
+        {
+            Service = storageService;
+            Service.ExceptionReceived += (sender, args) => ExceptionReceived(this, args);
+        }
 
         public void Store(Byte[] data)
         {
@@ -17,7 +26,7 @@ namespace HomeControl.Surveillance.Server.Model
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(Storage)}.{nameof(Store)}", exception);
+                ExceptionReceived(this, ($"{nameof(Storage)}.{nameof(Store)}", exception));
             }
         }
     }

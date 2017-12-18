@@ -1,5 +1,4 @@
-﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Data.Camera.Heroku;
+﻿using HomeControl.Surveillance.Data.Camera.Heroku;
 using HomeControl.Surveillance.Server.Data;
 using HomeControl.Surveillance.Server.Data.Empty;
 using HomeControl.Surveillance.Server.Data.OrientProtocol;
@@ -22,16 +21,19 @@ namespace HomeControl.Surveillance.Server.Model
         public ApplicationModel()
         {
             var indoorProviderCameraService = new HerokuProviderCameraService("indoor-service");
-            indoorProviderCameraService.LogReceived += OnProviderCameraServiceLogReceived;
-            indoorProviderCameraService.ExceptionReceived += OnProviderCameraServiceExceptionReceived;
+            indoorProviderCameraService.LogReceived += OnLogReceived;
+            indoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             IndoorCamera = new Camera(indoorProviderCameraService);
+            IndoorCamera.ExceptionReceived += OnExceptionReceived;
 
             var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service");
-            outdoorProviderCameraService.LogReceived += OnProviderCameraServiceLogReceived;
-            outdoorProviderCameraService.ExceptionReceived += OnProviderCameraServiceExceptionReceived;
+            outdoorProviderCameraService.LogReceived += OnLogReceived;
+            outdoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             OutdoorCamera = new Camera(outdoorProviderCameraService);
+            OutdoorCamera.ExceptionReceived += OnExceptionReceived;
 
             Storage = new Storage(new EmptyStorageService());
+            Storage.ExceptionReceived += OnExceptionReceived;
         }
 
         public void Initialize()
@@ -39,16 +41,20 @@ namespace HomeControl.Surveillance.Server.Model
             IndoorCameraConnection = new RtspCameraConnection("192.168.1.168", 554, PrivateData.IndoorCameraRtspUrl);
             IndoorCameraConnection.DataReceived += (sender, data) => IndoorCamera.Send(data);
             IndoorCameraConnection.DataReceived += (sender, data) => Storage.Store(data);
+            IndoorCameraConnection.LogReceived += OnLogReceived;
+            IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
             OutdoorCameraConnection.DataReceived += (sender, data) => OutdoorCamera.Send(data);
+            OutdoorCameraConnection.LogReceived += OnLogReceived;
+            OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
         }
 
-        private void OnProviderCameraServiceLogReceived(IProviderCameraService sender, (String Message, String Parameter) args)
+        private void OnLogReceived(Object sender, (String Message, String Parameter) args)
         {
             App.Diagnostics.Debug.Log(args.Message, args.Parameter);
         }
 
-        private void OnProviderCameraServiceExceptionReceived(IProviderCameraService sender, (String Message, Exception Exception) args)
+        private void OnExceptionReceived(Object sender, (String Message, Exception Exception) args)
         {
             App.Diagnostics.Debug.Log(args.Message, args.Exception);
         }

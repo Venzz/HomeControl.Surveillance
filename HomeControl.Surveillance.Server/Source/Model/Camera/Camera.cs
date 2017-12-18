@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Model
 {
@@ -18,6 +19,8 @@ namespace HomeControl.Surveillance.Server.Model
         public DateTime SendingStartedDate { get; } = DateTime.Now;
         public UInt32 LastSentDataLength { get; private set; }
         public UInt32 TotalSentDataLength { get; private set; }
+
+        public event TypedEventHandler<Camera, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
 
 
 
@@ -48,7 +51,7 @@ namespace HomeControl.Surveillance.Server.Model
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(Camera)}.{nameof(Send)}", exception);
+                ExceptionReceived(this, ($"{nameof(Camera)}.{nameof(Send)}", exception));
             }
         }
 

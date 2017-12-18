@@ -16,6 +16,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
 
 
 
@@ -42,7 +44,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     var connection = new TcpConnection(IpAddress, Port);
                     connection.DataReceived += OnDataReceived;
                     await connection.SendAsync(new AuthorizationRequestMessage().Serialize()).ConfigureAwait(false);
-                    App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}", "Connected.");
+                    LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Connected."));
 
                     lock (ConnectionSync)
                     {
@@ -54,7 +56,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 }
                 catch (Exception exception)
                 {
-                    App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionRestorating)}", exception);
+                    ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionRestorating)}", exception));
                 }
             }
         });
@@ -74,7 +76,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     await Task.Delay(2000).ConfigureAwait(false);
                     if (ReconnectionController.IsAllowed())
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}", "No data captured, reconnecting...");
+                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", $"No data captured, reconnecting... SessionId = {SessionId:x}"));
                         lock (ConnectionSync)
                         {
                             Connection.DataReceived -= OnDataReceived;
@@ -87,7 +89,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 }
                 catch (Exception exception)
                 {
-                    App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception);
+                    ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception));
                     lock (ConnectionSync)
                     {
                         Connection.DataReceived -= OnDataReceived;
@@ -126,11 +128,11 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     switch (message)
                     {
                         case AuthorizationResponseMessage authorizationResponse:
-                            App.Diagnostics.Debug.Log($"{nameof(AuthorizationResponseMessage)}: SessionId = {authorizationResponse.SessionId:x}");
+                            LogReceived(this, ($"{nameof(AuthorizationResponseMessage)}: Connection = {sender.Id}, SessionId = {authorizationResponse.SessionId:x}", null));
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
-                            App.Diagnostics.Debug.Log($"{nameof(OpMonitorClaimResponseMessage)}: SessionId = {claimResponse.SessionId:x}");
+                            LogReceived(this, ($"{nameof(OpMonitorClaimResponseMessage)}: Connection = {sender.Id}, SessionId = {claimResponse.SessionId:x}", null));
                             await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case VideoDataResponseMessage videoDataResponse:
@@ -138,14 +140,14 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             DataReceived(this, videoDataResponse.Data);
                             break;
                         case UnknownResponseMessage unknownResponse:
-                            App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}", $"UnknownResponse\n{unknownResponse.Data}");
+                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
                             break;
                     }
                 }
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: {data.ToHexView()}", exception);
+                ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: Connection = {sender.Id}\n{data.ToHexView()}", exception));
                 lock (ConnectionSync)
                 {
                     if (Connection == variables.Connection)

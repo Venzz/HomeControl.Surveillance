@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data.File
 {
@@ -9,6 +10,10 @@ namespace HomeControl.Surveillance.Server.Data.File
         private Stream ActiveFileStream;
         private String ActiveFileName;
         private Task DataSendingSequence = Task.CompletedTask;
+
+        public event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+
+
 
         public void Store(Byte[] data) => DataSendingSequence = DataSendingSequence.ContinueWith(task => StoreInternal(data));
 
@@ -33,7 +38,7 @@ namespace HomeControl.Surveillance.Server.Data.File
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(FileStorageService)}.{nameof(StoreInternal)}", exception);
+                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(StoreInternal)}", exception));
             }
         }
     }

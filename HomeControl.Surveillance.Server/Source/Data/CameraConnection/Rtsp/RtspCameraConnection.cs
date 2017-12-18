@@ -22,6 +22,8 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
 
 
 
@@ -50,7 +52,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                     client.ResponseReceived += OnResponseReceived;
                     client.DataReceived += OnDataReceived;
                     await client.SendMessageAsync(RtspClient.Message.Options).ConfigureAwait(false);
-                    App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", "Connected.");
+                    LogReceived(this, ($"{nameof(RtspCameraConnection)}", "Connected."));
 
                     lock (ConnectionSync)
                     {
@@ -62,7 +64,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                 }
                 catch (Exception exception)
                 {
-                    App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}.{nameof(StartConnectionRestorating)}", exception);
+                    ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(StartConnectionRestorating)}", exception));
                 }
             }
         });
@@ -84,7 +86,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                 {
                     if (ReconnectionController.IsAllowed())
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", "No data captured, reconnecting...");
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", "No data captured, reconnecting..."));
                         lock (ConnectionSync)
                         {
                             Client = null;
@@ -102,14 +104,14 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                     }
                     if (sendMessageTask != null)
                     {
-                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", $"Sending ping message...");
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", $"Sending ping message..."));
                         await sendMessageTask.ConfigureAwait(false);
                         lastSendMessageDate = DateTime.Now;
                     }
                 }
                 catch (Exception exception)
                 {
-                    App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception);
+                    ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception));
                     lock (ConnectionSync)
                     {
                         Client = null;
@@ -127,9 +129,11 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                 switch (response)
                 {
                     case OptionsResponse optionsResponse:
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", "OptionsResponse"));
                         await sender.SendMessageAsync(RtspClient.Message.Describe);
                         break;
                     case UnauthorizedResponse unauthorizedResponse:
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", "UnauthorizedResponse"));
                         var username = PrivateData.CameraUsername;
                         var password = PrivateData.CameraPassword;
                         var hashAlgorithm = MD5.Create();
@@ -156,11 +160,12 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                         //setup_message.RtspUri = new Uri(url + "/" + control);
 
 
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", "DescribeResponse"));
                         await sender.SendMessageAsync(RtspClient.Message.Setup, new Dictionary<String, String> { ["Transport"] = "RTP/AVP/TCP;interleaved=0" }, "rtsp://admin:admin@192.168.1.168:554/trackID=0");
                         //await sender.SendMessageAsync(RtspClient.Message.Setup, new Dictionary<String, String> { ["Transport"] = "RTP/AVP/TCP;interleaved=0" });
                         break;
                     case SetupResponse setupResponse:
-                        App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}", "Sending play message...");
+                        LogReceived(this, ($"{nameof(RtspCameraConnection)}", "Sending play message..."));
                         await sender.SendMessageAsync(RtspClient.Message.Play, new Dictionary<String, String> { ["Session"] = setupResponse.Session });
                         ActiveSession = setupResponse.Session;
                         break;
@@ -170,7 +175,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(RtspCameraConnection)}.{nameof(OnResponseReceived)}", exception);
+                ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(OnResponseReceived)}", exception));
                 lock (ConnectionSync)
                 {
                     Client = null;
