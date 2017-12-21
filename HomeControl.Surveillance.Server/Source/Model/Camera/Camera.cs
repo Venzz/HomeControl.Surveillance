@@ -21,6 +21,7 @@ namespace HomeControl.Surveillance.Server.Model
         public UInt32 TotalSentDataLength { get; private set; }
 
         public event TypedEventHandler<Camera, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<Camera, Command> CommandReceived = delegate { };
 
 
 
@@ -28,6 +29,7 @@ namespace HomeControl.Surveillance.Server.Model
         {
             ProviderService = providerService;
             StartSendingCycle();
+            ProviderService.CommandReceived += (sender, command) => CommandReceived(this, command);
         }
 
         public void Send(Byte[] data)

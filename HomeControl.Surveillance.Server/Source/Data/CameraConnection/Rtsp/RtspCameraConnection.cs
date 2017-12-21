@@ -21,6 +21,8 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
         private String ActiveSession;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
+        public Boolean IsZoomingSupported => false;
+
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
@@ -35,6 +37,12 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
             StartConnectionRestorating();
             StartConnectionMaintaining();
         }
+
+        public Task StartZoomingInAsync() => throw new NotSupportedException();
+
+        public Task StartZoomingOutAsync() => throw new NotSupportedException();
+
+        public Task StopZoomingAsync() => throw new NotSupportedException();
 
         private async void StartConnectionRestorating() => await Task.Run(async () =>
         {
@@ -80,10 +88,9 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                         Monitor.Wait(ConnectionSync);
                 }
 
-                await Task.Delay(2000).ConfigureAwait(false);
-
                 try
                 {
+                    await Task.Delay(2000).ConfigureAwait(false);
                     if (ReconnectionController.IsAllowed())
                     {
                         LogReceived(this, ($"{nameof(RtspCameraConnection)}", "No data captured, reconnecting..."));

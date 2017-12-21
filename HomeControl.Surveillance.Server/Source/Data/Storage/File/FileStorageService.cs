@@ -30,7 +30,7 @@ namespace HomeControl.Surveillance.Server.Data.File
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(FileStorageService)}.{nameof(Store)}", exception);
+                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", exception));
             }
         }
 

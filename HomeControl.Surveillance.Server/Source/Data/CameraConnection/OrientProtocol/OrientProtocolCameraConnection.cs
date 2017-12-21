@@ -17,6 +17,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         private UInt32 SessionId;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
+        public Boolean IsZoomingSupported => true;
+
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
@@ -29,6 +31,54 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
             Port = port;
             StartConnectionRestorating();
             StartConnectionMaintaining();
+        }
+
+        public async Task StartZoomingInAsync()
+        {
+            var connection = TryGetConnection();
+            if (connection.Value == null)
+                return;
+
+            try
+            {
+                await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+            }
+        }
+
+        public async Task StartZoomingOutAsync()
+        {
+            var connection = TryGetConnection();
+            if (connection.Value == null)
+                return;
+
+            try
+            {
+                await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomWide).Serialize()).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+            }
+        }
+
+        public async Task StopZoomingAsync()
+        {
+            var connection = TryGetConnection();
+            if (connection.Value == null)
+                return;
+
+            try
+            {
+                await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, -1, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+            }
         }
 
         private async void StartConnectionRestorating() => await Task.Run(async () =>
@@ -162,6 +212,16 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
+            }
+        }
+
+        private (TcpConnection Value, UInt32 SessionId) TryGetConnection()
+        {
+            lock (ConnectionSync)
+            {
+                if ((Connection == null) || (SessionId == 0))
+                    return (null, 0);
+                return (Connection, SessionId);
             }
         }
     }

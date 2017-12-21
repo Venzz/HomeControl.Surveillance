@@ -13,6 +13,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
         public event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
 
 
 

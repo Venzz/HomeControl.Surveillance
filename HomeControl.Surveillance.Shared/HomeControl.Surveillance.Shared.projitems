@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Empty\EmptyConsumerCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\HerokuConsumerCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\HerokuProviderCameraService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\Command.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\IWebSocket.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IProviderCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IConsumerCameraService.cs" />

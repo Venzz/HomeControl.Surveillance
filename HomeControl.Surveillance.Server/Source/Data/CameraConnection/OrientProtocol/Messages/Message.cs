@@ -49,6 +49,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
             VideoDataResponse = 0x0584,
             OpMonitorClaimRequest = 0x0585,
             OpMonitorClaimResponse = 0x0586,
+            OpPtzControl = 0x0578,
+        }
+
+        public enum ZoomType
+        {
+            ZoomTile,
+            ZoomWide
         }
     }
 }

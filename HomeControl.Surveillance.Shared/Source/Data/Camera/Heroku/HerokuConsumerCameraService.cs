@@ -24,6 +24,22 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             StartReceiving();
         }
 
+        public async Task PerformAsync(Command command)
+        {
+            try
+            {
+                var webSocket = WebSocket;
+                if (webSocket == null)
+                    return;
+
+                await webSocket.SendAsync(new Byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00, (Byte)command }).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                ExceptionReceived(this, ($"{nameof(HerokuConsumerCameraService)}.{nameof(PerformAsync)}", exception));
+            }
+        }
+
         private async void StartConnectionMaintaining() => await Task.Run(async () =>
         {
             while (true)

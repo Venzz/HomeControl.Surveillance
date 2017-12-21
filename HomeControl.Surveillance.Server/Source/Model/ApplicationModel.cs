@@ -1,6 +1,7 @@
-﻿using HomeControl.Surveillance.Data.Camera.Heroku;
+﻿using HomeControl.Surveillance.Data.Camera;
+using HomeControl.Surveillance.Data.Camera.Heroku;
 using HomeControl.Surveillance.Server.Data;
-using HomeControl.Surveillance.Server.Data.Empty;
+using HomeControl.Surveillance.Server.Data.File;
 using HomeControl.Surveillance.Server.Data.OrientProtocol;
 using HomeControl.Surveillance.Server.Data.Rtsp;
 using System;
@@ -32,7 +33,7 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCamera = new Camera(outdoorProviderCameraService);
             OutdoorCamera.ExceptionReceived += OnExceptionReceived;
 
-            Storage = new Storage(new EmptyStorageService());
+            Storage = new Storage(new FileStorageService());
             Storage.ExceptionReceived += OnExceptionReceived;
         }
 
@@ -40,13 +41,30 @@ namespace HomeControl.Surveillance.Server.Model
         {
             IndoorCameraConnection = new RtspCameraConnection("192.168.1.168", 554, PrivateData.IndoorCameraRtspUrl);
             IndoorCameraConnection.DataReceived += (sender, data) => IndoorCamera.Send(data);
-            IndoorCameraConnection.DataReceived += (sender, data) => Storage.Store(data);
             IndoorCameraConnection.LogReceived += OnLogReceived;
             IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
             OutdoorCameraConnection.DataReceived += (sender, data) => OutdoorCamera.Send(data);
+            OutdoorCameraConnection.DataReceived += (sender, data) => Storage.Store(data);
+            OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
+        }
+
+        private async void OnOutdoorCameraCommandReceived(Camera sender, Command command)
+        {
+            switch (command)
+            {
+                case Command.StartZoomingIn:
+                    await OutdoorCameraConnection.StartZoomingInAsync().ConfigureAwait(false);
+                    break;
+                case Command.StartZoomingOut:
+                    await OutdoorCameraConnection.StartZoomingOutAsync().ConfigureAwait(false);
+                    break;
+                case Command.StopZooming:
+                    await OutdoorCameraConnection.StopZoomingAsync().ConfigureAwait(false);
+                    break;
+            }
         }
 
         private void OnLogReceived(Object sender, (String Message, String Parameter) args)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Data.Camera.Empty
@@ -9,8 +10,8 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 
-        public EmptyConsumerCameraService()
-        {
-        }
+        public EmptyConsumerCameraService() { }
+
+        public Task PerformAsync(Command command) => Task.CompletedTask;
     }
 }
