@@ -8,11 +8,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 {
     public class OrientProtocolCameraConnection: ICameraConnection
     {
+        private UInt32 ConnectionId;
         private String IpAddress;
         private UInt16 Port;
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
         private DataQueue DataQueue;
+        private UInt32 SessionId;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
@@ -41,7 +43,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
                 try
                 {
-                    var connection = new TcpConnection(IpAddress, Port);
+                    var connection = new TcpConnection(++ConnectionId, IpAddress, Port);
                     connection.DataReceived += OnDataReceived;
                     await connection.SendAsync(new AuthorizationRequestMessage().Serialize()).ConfigureAwait(false);
                     LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Connected."));
@@ -51,6 +53,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         Connection = connection;
                         DataQueue = new DataQueue();
                         ReconnectionController.ResetPermissionGrantedDate();
+                        SessionId = 0;
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
@@ -129,6 +132,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     {
                         case AuthorizationResponseMessage authorizationResponse:
                             LogReceived(this, ($"{nameof(AuthorizationResponseMessage)}: Connection = {sender.Id}, SessionId = {authorizationResponse.SessionId:x}", null));
+                            SessionId = authorizationResponse.SessionId;
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:

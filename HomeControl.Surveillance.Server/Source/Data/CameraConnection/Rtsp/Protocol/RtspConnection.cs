@@ -20,7 +20,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
         public RtspConnection(String ipAddress, UInt16 port)
         {
             DataQueue = new DataQueue();
-            Connection = new TcpConnection(ipAddress, port);
+            Connection = new TcpConnection(0, ipAddress, port);
             Connection.Connected += (sender, args) => Connected(this, args);
             Connection.DataReceived += OnDataReceived;
         }
