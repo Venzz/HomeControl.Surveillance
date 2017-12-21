@@ -12,6 +12,7 @@ namespace HomeControl.Surveillance.Server.Data.Tcp
         private Task ConnectOperationTask;
 
         public Byte[] OnConnectedData { get; set; }
+        public UInt32 Id { get; private set; }
 
         public event TypedEventHandler<TcpConnection, Object> Connected = delegate { };
         public event TypedEventHandler<TcpConnection, Byte[]> DataReceived = delegate { };
@@ -19,9 +20,10 @@ namespace HomeControl.Surveillance.Server.Data.Tcp
 
 
 
-        public TcpConnection(String ipAddress, UInt16 port)
+        public TcpConnection(UInt32 id, String ipAddress, UInt16 port)
         {
             TcpClient = new TcpClient(ipAddress, port);
+            Id = id;
         }
 
         private Task ConnectAsync(TcpClient tcpClient, TimeSpan? delay) => Task.Run(async () =>
@@ -99,11 +101,12 @@ namespace HomeControl.Surveillance.Server.Data.Tcp
         {
             ReceiveAsync(tcpClient).ContinueWith(task =>
             {
+                var continueReceivingSequence = false;
                 lock (Sync)
-                {
-                    if (task.Result && (TcpClient.Id == tcpClient.Id) && !IsDisposed)
-                        ContinueReceivingSequence(tcpClient);
-                }
+                    continueReceivingSequence = task.Result && (TcpClient.Id == tcpClient.Id) && !IsDisposed;
+
+                if (continueReceivingSequence)
+                    ContinueReceivingSequence(tcpClient);
             });
         }
 
