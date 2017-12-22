@@ -1,8 +1,9 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using HomeControl.Surveillance.Player.View;
+using System;
+using System.Threading.Tasks;
 using Venz.Telemetry;
-using Windows.ApplicationModel.Activation;
-using Windows.UI.Xaml;
+using Venz.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace HomeControl.Surveillance.Player
@@ -17,22 +18,13 @@ namespace HomeControl.Surveillance.Player
             InitializeComponent();
             Diagnostics.Debug.Add(new DebugTelemetryService());
         }
-        
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
-        {
-            Frame rootFrame = Window.Current.Content as Frame;
-            if (rootFrame == null)
-            {
-                rootFrame = new Frame();
-                Window.Current.Content = rootFrame;
-            }
 
-            if (args.PrelaunchActivated == false)
-            {
-                if (rootFrame.Content == null)
-                    rootFrame.Navigate(typeof(HubPage), args.Arguments);
-                Window.Current.Activate();
-            }
+        protected override Task OnManuallyActivatedAsync(Frame frame, Boolean newInstance, String args)
+        {
+            if (frame.Content == null)
+                frame.Navigate(typeof(HubPage), args);
+
+            return Task.CompletedTask;
         }
     }
 }

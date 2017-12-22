@@ -14,12 +14,12 @@ namespace HomeControl.Surveillance.Player.Model
             var indoorConsumerCameraService = new HerokuConsumerCameraService("indoor-client");
             indoorConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
             indoorConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
-            IndoorCameraController = new CameraController(indoorConsumerCameraService, sampleDuration: TimeSpan.FromMilliseconds(39));
+            IndoorCameraController = new CameraController(indoorConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(120));
 
             var outdoorConsumerCameraService = new HerokuConsumerCameraService("outdoor-client");
             outdoorConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
             outdoorConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
-            OutdoorCameraController = new CameraController(outdoorConsumerCameraService, sampleDuration: TimeSpan.FromMilliseconds(13));
+            OutdoorCameraController = new CameraController(outdoorConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13));
         }
 
         private void OnCameraServiceLogReceived(IConsumerCameraService sender, (String Message, String Parameter) args)

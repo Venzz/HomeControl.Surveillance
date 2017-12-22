@@ -28,6 +28,12 @@ namespace HomeControl.Surveillance.Player.View
             VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
         }
 
+        private void OnStartZoomingInClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingIn();
+
+        private void OnStartZoomingOutClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingOut();
+
+        private void OnStopZoomingClicked(Object sender, RoutedEventArgs args) => Context.StopZooming();
+
         private async void OnCompactViewTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
         {
             ViewMode = (ApplicationView.ViewMode == ApplicationViewMode.CompactOverlay) ? ApplicationViewMode.Default : ApplicationViewMode.CompactOverlay;
