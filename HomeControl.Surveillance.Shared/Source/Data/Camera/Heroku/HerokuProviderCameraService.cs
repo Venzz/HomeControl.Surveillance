@@ -22,6 +22,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             ServiceName = serviceName;
             StartConnectionMaintaining();
             StartReconnectionMaintaining();
+            StartReceiving();
         }
 
         private async void StartConnectionMaintaining() => await Task.Run(async () =>
@@ -105,6 +106,44 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 catch (Exception exception)
                 {
                     ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartReconnectionMaintaining)}", exception));
+                }
+            }
+        });
+
+        private async void StartReceiving() => await Task.Run(async () =>
+        {
+            var buffer = new ArraySegment<Byte>(new Byte[1024 * 1024]);
+            while (true)
+            {
+                var socket = (IWebSocket)null;
+                lock (ConnectionSync)
+                {
+                    if (WebSocket == null)
+                        Monitor.Wait(ConnectionSync);
+                    socket = WebSocket;
+                }
+
+                try
+                {
+                    var result = await socket.ReceiveAsync(buffer).ConfigureAwait(false);
+                    var data = new Byte[result.Count];
+                    Array.Copy(buffer.Array, data, result.Count);
+                    if ((data.Length == 9) && (data[0] == 0xFF) && (data[1] == 0xFF) && (data[2] == 0xFF) && (data[3] == 0xFF))
+                        CommandReceived(this, (Command)data[8]);
+                }
+                catch (Exception exception)
+                {
+                    ExceptionReceived(this, ($"{nameof(HerokuConsumerCameraService)}.{nameof(StartReceiving)}", exception));
+                    try { await socket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
+                    try { socket.Abort(); } catch (Exception) { }
+                    lock (ConnectionSync)
+                    {
+                        if (WebSocket == socket)
+                        {
+                            WebSocket = null;
+                            Monitor.PulseAll(ConnectionSync);
+                        }
+                    }
                 }
             }
         });

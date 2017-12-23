@@ -74,15 +74,17 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             var buffer = new ArraySegment<Byte>(new Byte[1024 * 1024]);
             while (true)
             {
+                var socket = (IWebSocket)null;
                 lock (ConnectionSync)
                 {
                     if (WebSocket == null)
                         Monitor.Wait(ConnectionSync);
+                    socket = WebSocket;
                 }
 
                 try
                 {
-                    var result = await WebSocket.ReceiveAsync(buffer).ConfigureAwait(false);
+                    var result = await socket.ReceiveAsync(buffer).ConfigureAwait(false);
                     var data = new Byte[result.Count];
                     Array.Copy(buffer.Array, data, result.Count);
                     DataReceived(this, data);
@@ -90,12 +92,15 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 catch (Exception exception)
                 {
                     ExceptionReceived(this, ($"{nameof(HerokuConsumerCameraService)}.{nameof(StartReceiving)}", exception));
-                    try { await WebSocket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
-                    try { WebSocket.Abort(); } catch (Exception) { }
+                    try { await socket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
+                    try { socket.Abort(); } catch (Exception) { }
                     lock (ConnectionSync)
                     {
-                        WebSocket = null;
-                        Monitor.PulseAll(ConnectionSync);
+                        if (WebSocket == socket)
+                        {
+                            WebSocket = null;
+                            Monitor.PulseAll(ConnectionSync);
+                        }
                     }
                 }
             }

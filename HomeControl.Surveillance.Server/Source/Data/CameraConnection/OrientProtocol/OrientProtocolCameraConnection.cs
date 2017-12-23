@@ -41,6 +41,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
             try
             {
+                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingIn."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
@@ -57,6 +58,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
             try
             {
+                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingOut."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomWide).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
@@ -73,6 +75,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
             try
             {
+                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StopZooming."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, -1, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
@@ -181,12 +184,12 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     switch (message)
                     {
                         case AuthorizationResponseMessage authorizationResponse:
-                            LogReceived(this, ($"{nameof(AuthorizationResponseMessage)}: Connection = {sender.Id}, SessionId = {authorizationResponse.SessionId:x}", null));
+                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(AuthorizationResponseMessage)}, SessionId = {authorizationResponse.SessionId:x}"));
                             SessionId = authorizationResponse.SessionId;
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
-                            LogReceived(this, ($"{nameof(OpMonitorClaimResponseMessage)}: Connection = {sender.Id}, SessionId = {claimResponse.SessionId:x}", null));
+                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(OpMonitorClaimResponseMessage)}, SessionId = {claimResponse.SessionId:x}"));
                             await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case VideoDataResponseMessage videoDataResponse:
@@ -194,7 +197,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             DataReceived(this, videoDataResponse.Data);
                             break;
                         case UnknownResponseMessage unknownResponse:
-                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
+                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
                             break;
                     }
                 }
