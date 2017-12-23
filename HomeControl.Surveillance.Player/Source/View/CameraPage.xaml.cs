@@ -42,10 +42,14 @@ namespace HomeControl.Surveillance.Player.View
                 var compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
                 compactOptions.CustomSize = new Size(500, 281);
                 await ApplicationView.TryEnterViewModeAsync(ViewMode, compactOptions);
+                CommandsControl.Opacity = 0;
+                CommandsControl.IsHitTestVisible = false;
             }
             else
             {
                 await ApplicationView.TryEnterViewModeAsync(ViewMode);
+                CommandsControl.Opacity = 1;
+                CommandsControl.IsHitTestVisible = true;
             }
         }
 

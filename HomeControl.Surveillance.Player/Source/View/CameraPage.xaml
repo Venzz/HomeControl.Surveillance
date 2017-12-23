@@ -9,7 +9,9 @@
     </Page.Resources>
     
     <Grid Background="Transparent">
+        <MediaElement x:Name="VideoPlayer" AutoPlay="True"/>
         <StackPanel
+            x:Name="CommandsControl"
             Margin="12"
             RequestedTheme="Dark"
             Background="#80000000"
@@ -20,7 +22,6 @@
             <Button Margin="12" Content="Zoom -" Width="100" Click="OnStartZoomingOutClicked"/>
             <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>
         </StackPanel>
-        <MediaElement x:Name="VideoPlayer" AutoPlay="True"/>
         <CommandBar RequestedTheme="Dark" VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
             <AppBarButton Tapped="OnCompactViewTapped">
                 <AppBarButton.Icon>
