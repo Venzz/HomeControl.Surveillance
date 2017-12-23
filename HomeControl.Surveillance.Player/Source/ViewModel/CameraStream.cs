@@ -41,8 +41,8 @@ namespace HomeControl.Surveillance.Player.ViewModel
                 }
 
                 args.Request.Sample = MediaStreamSample.CreateFromBuffer(data.AsBuffer(), NextSampleTimestamp);
-                args.Request.Sample.Duration = App.Model.OutdoorCameraController.SampleDuration;
-                NextSampleTimestamp += App.Model.OutdoorCameraController.SampleDuration;
+                args.Request.Sample.Duration = Camera.SampleDuration;
+                NextSampleTimestamp += Camera.SampleDuration;
                 break;
             }
             deferal.Complete();
