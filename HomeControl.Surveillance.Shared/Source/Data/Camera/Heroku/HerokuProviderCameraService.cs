@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -63,7 +64,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 if (socket == null)
                     return;
 
-                await socket.SendAsync(data).ConfigureAwait(false);
+                await socket.SendAsync(CreateMessage(data)).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -79,6 +80,21 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     }
                 }
             }
+        }
+        
+        private Byte[] CreateMessage(Byte[] data)
+        {
+            var message = new Byte[8 + data.Length];
+            using (var packetStream = new MemoryStream(8 + data.Length))
+            using (var writer = new BinaryWriter(packetStream))
+            {
+                writer.Write(new Byte[] { 0xFF, 0xFF, 0xFF, 0xFF });
+                writer.Write(data.Length);
+                writer.Write(data);
+                packetStream.Position = 0;
+                packetStream.Read(message, 0, (Int32)packetStream.Length);
+            }
+            return message;
         }
 
         private async void StartReconnectionMaintaining() => await Task.Run(async () =>

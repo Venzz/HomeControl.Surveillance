@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace HomeControl.Surveillance.Server.Data.Tcp
+namespace HomeControl.Surveillance.Data
 {
     internal class DataQueue: IDisposable
     {

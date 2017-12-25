@@ -10,6 +10,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private Object ConnectionSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
+        private DataQueue DataQueue = new DataQueue();
 
         public event TypedEventHandler<IConsumerCameraService, Byte[]> DataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
@@ -58,6 +59,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
                     lock (ConnectionSync)
                     {
+                        DataQueue = new DataQueue();
                         WebSocket = webSocket;
                         Monitor.PulseAll(ConnectionSync);
                     }
@@ -85,9 +87,16 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 try
                 {
                     var result = await socket.ReceiveAsync(buffer).ConfigureAwait(false);
-                    var data = new Byte[result.Count];
-                    Array.Copy(buffer.Array, data, result.Count);
-                    DataReceived(this, data);
+                    DataQueue.Enqueue(buffer.Array, 0, result.Count);
+                    while (DataQueue.Length > 8)
+                    {
+                        var dataLength = BitConverter.ToInt32(DataQueue.Peek(8), 4);
+                        if (dataLength + 8 > DataQueue.Length)
+                            break;
+
+                        DataQueue.Dequeue(8);
+                        DataReceived(this, DataQueue.Dequeue(dataLength));
+                    }
                 }
                 catch (Exception exception)
                 {
