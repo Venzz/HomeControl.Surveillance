@@ -185,11 +185,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     switch (message)
                     {
                         case AuthorizationResponseMessage authorizationResponse:
+                            ReconnectionController.ResetPermissionGrantedDate();
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(AuthorizationResponseMessage)}, SessionId = {authorizationResponse.SessionId:x}"));
                             SessionId = authorizationResponse.SessionId;
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
+                            ReconnectionController.ResetPermissionGrantedDate();
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(OpMonitorClaimResponseMessage)}, SessionId = {claimResponse.SessionId:x}"));
                             await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
