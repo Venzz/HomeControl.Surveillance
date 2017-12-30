@@ -28,6 +28,12 @@ namespace HomeControl.Surveillance.Player.ViewModel
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
         }
 
+        public void Synchronize()
+        {
+            lock (Sync)
+                VideoSamples.Clear();
+        }
+
         private async void OnMediaStreamSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
         {
             var deferal = args.Request.GetDeferral();

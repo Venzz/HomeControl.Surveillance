@@ -23,6 +23,7 @@
             <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>
         </StackPanel>
         <CommandBar RequestedTheme="Dark" VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
+            <AppBarButton Foreground="White" Icon="Sync" Tapped="OnSyncTapped"/>
             <AppBarButton Tapped="OnCompactViewTapped">
                 <AppBarButton.Icon>
                     <FontIcon FontFamily="ms-appx:/Resources/Fonts/SegMVR2.ttf#Segoe MVR MDL2 Assets" Glyph="&#xF15E;"/>
