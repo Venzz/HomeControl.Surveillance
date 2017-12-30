@@ -12,7 +12,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.15063.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -100,6 +100,7 @@
     <Compile Include="Source\ViewModel\CameraContext.cs" />
     <Compile Include="Source\ViewModel\HubContext.cs" />
     <Compile Include="Source\ViewModel\CameraStream.cs" />
+    <Compile Include="Source\ViewModel\PlayerContext.cs" />
     <Compile Include="Source\View\CameraPage.xaml.cs">
       <DependentUpon>CameraPage.xaml</DependentUpon>
     </Compile>
@@ -109,6 +110,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Model\ApplicationModel.cs" />
     <Compile Include="Source\Model\Camera\CameraController.cs" />
+    <Compile Include="Source\View\PlayerPage.xaml.cs">
+      <DependentUpon>PlayerPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Venz\Converters.cs" />
     <Compile Include="Venz\ObservableObject.cs" />
     <Compile Include="Venz\UI\Xaml\Application\Application.cs" />
@@ -142,6 +146,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Source\View\HubPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Source\View\PlayerPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

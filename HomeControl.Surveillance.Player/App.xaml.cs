@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Venz.Telemetry;
 using Venz.UI.Xaml;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml.Controls;
 
 namespace HomeControl.Surveillance.Player
@@ -24,6 +25,15 @@ namespace HomeControl.Surveillance.Player
             if (frame.Content == null)
                 frame.Navigate(typeof(HubPage), args);
 
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnFileActivatedAsync(Frame frame, Boolean newInstance, FileActivatedEventArgs args)
+        {
+            if (!(frame.Content is PlayerPage))
+                frame.Navigate(typeof(PlayerPage), null);
+
+            ((PlayerPage)frame.Content).Activate(args.Files[0]);
             return Task.CompletedTask;
         }
     }
