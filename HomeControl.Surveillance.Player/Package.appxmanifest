@@ -1,44 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
-<Package
-  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
-  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  IgnorableNamespaces="uap mp">
-
-  <Identity
-    Name="c897b9b5-676b-4892-bf2a-d8173b50c642"
-    Publisher="CN=venex"
-    Version="1.0.0.0" />
-
-  <mp:PhoneIdentity PhoneProductId="c897b9b5-676b-4892-bf2a-d8173b50c642" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
-
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity Name="2367Venz.HomeControl.Surveillance.Player" Publisher="CN=AC627798-581D-4841-B3BA-DD2C725E9A5E" Version="1.1.1.0" />
+  <mp:PhoneIdentity PhoneProductId="2e896179-acb0-4125-9234-7e0ded2263da" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>HomeControl.Surveillance.Player</DisplayName>
-    <PublisherDisplayName>venex</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <DisplayName>Camera Player</DisplayName>
+    <PublisherDisplayName>Venz</PublisherDisplayName>
+    <Logo>Resources\Package\Store.png</Logo>
   </Properties>
-
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
   </Dependencies>
-
   <Resources>
-    <Resource Language="x-generate"/>
+    <Resource Language="x-generate" />
   </Resources>
-
   <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="HomeControl.Surveillance.Player.App">
-      <uap:VisualElements
-        DisplayName="HomeControl.Surveillance.Player"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="HomeControl.Surveillance.Player"
-        BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="HomeControl.Surveillance.Player.App">
+      <uap:VisualElements DisplayName="Camera Player" Square150x150Logo="Resources\Package\Square_150x150.png" Square44x44Logo="Resources\Package\Square_44x44.png" Description="HomeControl.Surveillance.Player" BackgroundColor="transparent">
+        <uap:LockScreen Notification="badgeAndTileText" BadgeLogo="Resources\Package\Badge.png" />
+        <uap:DefaultTile Wide310x150Logo="Resources\Package\Wide_310x150.png" Square71x71Logo="Resources\Package\Square_71x71.png" ShortName="Camera Player" Square310x310Logo="Resources\Package\Square_310x310.png">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Resources\Package\Splash.png" />
       </uap:VisualElements>
       <Extensions>
         <uap:Extension Category="windows.fileTypeAssociation">
@@ -51,7 +37,6 @@
       </Extensions>
     </Application>
   </Applications>
-
   <Capabilities>
     <Capability Name="internetClient" />
   </Capabilities>
