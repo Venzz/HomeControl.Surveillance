@@ -12,7 +12,7 @@ namespace HomeControl.Surveillance.Server.Data
             var isAllowed = false;
             if (Attempts < 5)
             {
-                isAllowed = (DateTime.Now - LastPermissionGrantedDate) > TimeSpan.FromSeconds(30);
+                isAllowed = (DateTime.Now - LastPermissionGrantedDate) > TimeSpan.FromMinutes(2);
             }
             else if (Attempts < 10)
             {

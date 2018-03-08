@@ -11,6 +11,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private Object ConnectionSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
+        private (TimeSpan From, TimeSpan Duration)? IdlePeriod;
+        private DateTime IdlingStartedDate;
+        private Boolean IsIdlingActive => IdlePeriod.HasValue && (DateTime.Now - IdlingStartedDate < IdlePeriod.Value.Duration);
 
         public event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
@@ -18,9 +21,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
 
 
-        public HerokuProviderCameraService(String serviceName)
+        public HerokuProviderCameraService(String serviceName, (TimeSpan From, TimeSpan Duration)? idlePeriod)
         {
             ServiceName = serviceName;
+            IdlePeriod = idlePeriod;
             StartConnectionMaintaining();
             StartReconnectionMaintaining();
             StartReceiving();
@@ -36,21 +40,28 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         Monitor.Wait(ConnectionSync);
                 }
 
-                try
+                if (IsIdlingActive)
                 {
-                    var webSocket = new WebSocket();
-                    await webSocket.ConnectAsync($"{PrivateData.HerokuServiceUrl}/{ServiceName}/").ConfigureAwait(false);
-                    LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", "Connected."));
-
-                    lock (ConnectionSync)
-                    {
-                        WebSocket = webSocket;
-                        Monitor.PulseAll(ConnectionSync);
-                    }
+                    await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 }
-                catch (Exception exception)
+                else
                 {
-                    ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartConnectionMaintaining)}", exception));
+                    try
+                    {
+                        var webSocket = new WebSocket();
+                        await webSocket.ConnectAsync($"{PrivateData.HerokuServiceUrl}/{ServiceName}/").ConfigureAwait(false);
+                        LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", "Connected."));
+
+                        lock (ConnectionSync)
+                        {
+                            WebSocket = webSocket;
+                            Monitor.PulseAll(ConnectionSync);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartConnectionMaintaining)}", exception));
+                    }
                 }
             }
         });
@@ -69,8 +80,8 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             catch (Exception exception)
             {
                 ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendAsync)}", exception));
-                try { await socket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
-                try { socket.Abort(); } catch (Exception) { }
+                await CloseSocketAsync(socket).ConfigureAwait(false);
+
                 lock (ConnectionSync)
                 {
                     if (socket == WebSocket)
@@ -101,18 +112,30 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         {
             while (true)
             {
+                var socket = (IWebSocket)null;
                 lock (ConnectionSync)
                 {
                     if (WebSocket == null)
                         Monitor.Wait(ConnectionSync);
+                    socket = WebSocket;
                 }
 
                 try
                 {
                     await Task.Delay(TimeSpan.FromMinutes(5));
+                    await CloseSocketAsync(socket).ConfigureAwait(false);
+
                     lock (ConnectionSync)
                     {
-                        if (WebSocket != null)
+                        var now = DateTime.Now;
+                        LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", $"IdlePeriod.HasValue = {IdlePeriod.HasValue}, now.TimeOfDay = {now.TimeOfDay}, IdlePeriod.Value.From = {IdlePeriod.Value.From}, !IsIdlingActive = {!IsIdlingActive}"));
+                        if (IdlePeriod.HasValue && (now.TimeOfDay > IdlePeriod.Value.From) && !IsIdlingActive)
+                        {
+                            IdlingStartedDate = new DateTime(now.Year, now.Month, now.Day, IdlePeriod.Value.From.Hours, IdlePeriod.Value.From.Minutes, IdlePeriod.Value.From.Seconds, 0, now.Kind);
+                            LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", "Idling started."));
+                        }
+
+                        if ((WebSocket == socket) && (WebSocket != null) && !IsIdlingActive)
                         {
                             WebSocket = null;
                             Monitor.PulseAll(ConnectionSync);
@@ -149,9 +172,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
                 catch (Exception exception)
                 {
-                    ExceptionReceived(this, ($"{nameof(HerokuConsumerCameraService)}.{nameof(StartReceiving)}", exception));
-                    try { await socket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
-                    try { socket.Abort(); } catch (Exception) { }
+                    ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartReceiving)}", exception));
+                    await CloseSocketAsync(socket).ConfigureAwait(false);
+
                     lock (ConnectionSync)
                     {
                         if (WebSocket == socket)
@@ -163,5 +186,11 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
             }
         });
+
+        private async Task CloseSocketAsync(IWebSocket socket)
+        {
+            try { await socket.CloseAsync().ConfigureAwait(false); } catch (Exception) { }
+            try { socket.Abort(); } catch (Exception) { }
+        }
     }
 }

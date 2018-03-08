@@ -21,13 +21,13 @@ namespace HomeControl.Surveillance.Server.Model
 
         public ApplicationModel()
         {
-            var indoorProviderCameraService = new HerokuProviderCameraService("indoor-service");
+            var indoorProviderCameraService = new HerokuProviderCameraService("indoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
             indoorProviderCameraService.LogReceived += OnLogReceived;
             indoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             IndoorCamera = new Camera(indoorProviderCameraService);
             IndoorCamera.ExceptionReceived += OnExceptionReceived;
 
-            var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service");
+            var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
             outdoorProviderCameraService.LogReceived += OnLogReceived;
             outdoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             OutdoorCamera = new Camera(outdoorProviderCameraService);
