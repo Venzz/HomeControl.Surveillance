@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
 {
-    internal class RtspConnection
+    internal class RtspConnection: IDisposable
     {
         private TcpConnection Connection;
         private DataQueue DataQueue;
@@ -76,5 +76,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
             {
             }
         }
+
+        public void Dispose() => Connection.Dispose();
     }
 }

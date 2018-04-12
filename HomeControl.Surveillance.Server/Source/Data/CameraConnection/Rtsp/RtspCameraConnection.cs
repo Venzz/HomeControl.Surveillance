@@ -96,7 +96,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                         LogReceived(this, ($"{nameof(RtspCameraConnection)}", "No data captured, reconnecting..."));
                         lock (ConnectionSync)
                         {
-                            Client = null;
+                            DisposeClient();
                             ActiveSession = null;
                             Monitor.PulseAll(ConnectionSync);
                             continue;
@@ -121,7 +121,7 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                     ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception));
                     lock (ConnectionSync)
                     {
-                        Client = null;
+                        DisposeClient();
                         ActiveSession = null;
                         Monitor.PulseAll(ConnectionSync);
                     }
@@ -185,10 +185,24 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
                 ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(OnResponseReceived)}", exception));
                 lock (ConnectionSync)
                 {
-                    Client = null;
+                    DisposeClient();
                     ActiveSession = null;
                     Monitor.PulseAll(ConnectionSync);
                 }
+            }
+        }
+
+        private void DisposeClient()
+        {
+            try
+            {
+                Client.DataReceived -= OnDataReceived;
+                Client.Dispose();
+                Client = null;
+            }
+            catch (Exception exception)
+            {
+                ExceptionReceived(this, ($"{nameof(RtspCameraConnection)}.{nameof(DisposeClient)}", exception));
             }
         }
 

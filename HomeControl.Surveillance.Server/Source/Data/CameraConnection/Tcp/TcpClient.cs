@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HomeControl.Surveillance.Server.Data.Tcp
@@ -31,9 +32,12 @@ namespace HomeControl.Surveillance.Server.Data.Tcp
             await InternalTcpClient.GetStream().FlushAsync().ConfigureAwait(false);
         }
 
-        public async Task<Byte[]> ReceiveAsync()
+        public Task<Byte[]> ReceiveAsync() => ReceiveAsync(cancellationToken: null);
+
+        public async Task<Byte[]> ReceiveAsync(CancellationToken? cancellationToken)
         {
-            var readCount = await InternalTcpClient.GetStream().ReadAsync(Buffer, 0, 4096).ConfigureAwait(false);
+            var tcpStream = InternalTcpClient.GetStream();
+            var readCount = await (cancellationToken.HasValue ? tcpStream.ReadAsync(Buffer, 0, 4096, cancellationToken.Value) : tcpStream.ReadAsync(Buffer, 0, 4096)).ConfigureAwait(false);
             if (readCount > 0)
             {
                 var data = new Byte[readCount];
@@ -48,10 +52,14 @@ namespace HomeControl.Surveillance.Server.Data.Tcp
 
         public TcpClient DisposeAndRenew(Exception exception)
         {
-            InternalTcpClient.Dispose();
+            Dispose();
             return new TcpClient(IpAddress, Port) { Id = Id++ };
         }
 
-        public void Dispose() => InternalTcpClient.Dispose();
+        public void Dispose()
+        {
+            InternalTcpClient.Close();
+            InternalTcpClient.Dispose();
+        }
     }
 }

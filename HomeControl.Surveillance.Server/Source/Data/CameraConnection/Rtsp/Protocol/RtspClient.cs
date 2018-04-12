@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
 {
-    internal class RtspClient
+    internal class RtspClient: IDisposable
     {
         private RtspConnection Connection;
         private String Url;
@@ -115,6 +115,8 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp.Protocol
                     throw new NotSupportedException();
             }
         }
+
+        public void Dispose() => Connection.Dispose();
 
         public enum Message { Options, Describe, Setup, Play, GetParameter }
     }
