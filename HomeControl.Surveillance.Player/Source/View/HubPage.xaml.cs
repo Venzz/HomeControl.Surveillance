@@ -17,6 +17,7 @@ namespace HomeControl.Surveillance.Player.View
         {
             InitializeComponent();
             DataContext = Context;
+            SizeChanged += OnSizeChanged;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs args)
@@ -43,6 +44,15 @@ namespace HomeControl.Surveillance.Player.View
                 applicationViewId = ApplicationView.GetForCurrentView().Id;
             });
             await ApplicationViewSwitcher.TryShowAsStandaloneAsync(applicationViewId);
+        }
+
+        private void OnSizeChanged(Object sender, SizeChangedEventArgs args)
+        {
+            var availableSize = args.NewSize.Width - 40;
+            OutdoorCamera.Width = availableSize;
+            OutdoorCamera.Height = availableSize * 9 / 16;
+            IndoorCamera.Width = availableSize;
+            IndoorCamera.Height = availableSize * 9 / 16;
         }
     }
 }
