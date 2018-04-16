@@ -24,7 +24,13 @@ namespace HomeControl.Surveillance.Player.ViewModel
         {
             Camera = camera;
             Camera.DataReceived += OnCameraDataReceived;
-            MediaStream = new MediaStreamSource(new VideoStreamDescriptor(VideoEncodingProperties.CreateH264()));
+            var h264EncodingProperties = VideoEncodingProperties.CreateH264();
+            #if WP81
+            h264EncodingProperties.ProfileId = H264ProfileIds.High;
+            h264EncodingProperties.Width = 1920;
+            h264EncodingProperties.Height = 1080;
+            #endif
+            MediaStream = new MediaStreamSource(new VideoStreamDescriptor(h264EncodingProperties));
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
         }
 

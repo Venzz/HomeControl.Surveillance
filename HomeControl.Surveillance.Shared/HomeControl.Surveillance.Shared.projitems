@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\ITelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\DebugTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\EmptyTelemetryService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\FileTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\DataQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Empty\EmptyConsumerCameraService.cs" />

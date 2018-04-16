@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "HomeControl.Surveillance.Shared", "HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.shproj", "{09D8CB6C-15B1-4863-A3F9-46314345905D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeControl.Surveillance.Player.WP81", "HomeControl.Surveillance.Player.WP81\HomeControl.Surveillance.Player.WP81.csproj", "{69DE8235-DA8A-45CF-B402-041581919097}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems*{09d8cb6c-15b1-4863-a3f9-46314345905d}*SharedItemsImports = 13
+		HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems*{69de8235-da8a-45cf-b402-041581919097}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|ARM.ActiveCfg = Debug|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|ARM.Build.0 = Debug|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|ARM.Deploy.0 = Debug|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x64.Build.0 = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x86.ActiveCfg = Debug|x86
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x86.Build.0 = Debug|x86
+		{69DE8235-DA8A-45CF-B402-041581919097}.Debug|x86.Deploy.0 = Debug|x86
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|ARM.ActiveCfg = Release|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|ARM.Build.0 = Release|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|ARM.Deploy.0 = Release|ARM
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x64.ActiveCfg = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x64.Build.0 = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x64.Deploy.0 = Release|Any CPU
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x86.ActiveCfg = Release|x86
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x86.Build.0 = Release|x86
+		{69DE8235-DA8A-45CF-B402-041581919097}.Release|x86.Deploy.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DA743421-B682-4F3A-9546-5978B2F792AC}
+	EndGlobalSection
+EndGlobal

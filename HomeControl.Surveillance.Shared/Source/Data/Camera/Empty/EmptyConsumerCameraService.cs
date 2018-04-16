@@ -12,6 +12,6 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
 
         public EmptyConsumerCameraService() { }
 
-        public Task PerformAsync(Command command) => Task.CompletedTask;
+        public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
     }
 }

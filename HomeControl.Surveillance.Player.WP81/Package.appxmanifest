@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
+  <Identity Name="4bdd4475-c6f4-4fa4-bad7-1346674cfade" Publisher="CN=Vitaliy_Arsentyev" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="4bdd4475-c6f4-4fa4-bad7-1346674cfade" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>HomeControl.Surveillance.Player.WP81</DisplayName>
+    <PublisherDisplayName>Vitaliy_Arsentyev</PublisherDisplayName>
+    <Logo>Resources\Package\Store.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.3.1</OSMinVersion>
+    <OSMaxVersionTested>6.3.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="HomeControl.Surveillance.Player.WP81.App">
+      <m3:VisualElements DisplayName="HomeControl.Surveillance.Player.WP81" Square150x150Logo="Resources\Package\Square_150x150.png" Square44x44Logo="Resources\Package\Square_44x44.png" Description="HomeControl.Surveillance.Player.WP81" ForegroundText="light" BackgroundColor="transparent">
+        <m3:LockScreen Notification="badge" BadgeLogo="Resources\Package\Badge.png" />
+        <m3:DefaultTile Wide310x150Logo="Resources\Package\Wide_310x150.png" Square71x71Logo="Resources\Package\Square_71x71.png">
+        </m3:DefaultTile>
+      </m3:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClientServer" />
+  </Capabilities>
+</Package>

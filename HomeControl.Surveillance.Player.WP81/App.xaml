@@ -1,0 +1,16 @@
+﻿<Venz:Application
+    x:Class="HomeControl.Surveillance.Player.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Venz="using:Venz.UI.Xaml">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <SolidColorBrush x:Key="CommandBarBackground" Color="{ThemeResource PhoneChromeColor}"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Venz:Application>
