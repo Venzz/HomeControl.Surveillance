@@ -23,6 +23,7 @@
             <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>
         </StackPanel>
         <CommandBar RequestedTheme="Dark" VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
+            <AppBarButton Foreground="White" Icon="{Binding TileIcon}" Tapped="OnPinTapped"/>
             <AppBarButton Foreground="White" Icon="Sync" Tapped="OnSyncTapped"/>
             <AppBarButton Tapped="OnCompactViewTapped">
                 <AppBarButton.Icon>

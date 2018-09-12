@@ -11,15 +11,19 @@ namespace HomeControl.Surveillance.Player.Model
 
         public TimeSpan SampleDuration { get; }
         public Boolean SupportsCommands { get; }
+        public String Id { get; }
+        public String Title { get; }
 
         public event TypedEventHandler<CameraController, Byte[]> DataReceived = delegate { };
 
 
 
-        public CameraController(IConsumerCameraService consumerService, Boolean supportsCommands, TimeSpan sampleDuration)
+        public CameraController(IConsumerCameraService consumerService, Boolean supportsCommands, TimeSpan sampleDuration, String title)
         {
             SampleDuration = sampleDuration;
             SupportsCommands = supportsCommands;
+            Id = title.ToLower();
+            Title = title;
             ConsumerService = consumerService;
             ConsumerService.DataReceived += (sender, data) => DataReceived(this, data);
         }

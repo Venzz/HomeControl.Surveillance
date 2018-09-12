@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Venz.Telemetry;
 using Venz.UI.Xaml;
 using Windows.ApplicationModel.Activation;
+using Windows.Foundation;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
 
 namespace HomeControl.Surveillance.Player
@@ -22,9 +24,17 @@ namespace HomeControl.Surveillance.Player
 
         protected override Task OnManuallyActivatedAsync(Frame frame, Boolean newInstance, String args)
         {
-            if (frame.Content == null)
-                frame.Navigate(typeof(HubPage), args);
-
+            if (!String.IsNullOrWhiteSpace(args) && (frame.Content == null))
+            {
+                ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
+                frame.Navigate(typeof(CameraPage), (args == App.Model.OutdoorCameraController.Id) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController);
+            }
+            else if (frame.Content == null)
+            {
+                ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
+                ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
+                frame.Navigate(typeof(HubPage));
+            }
             return Task.CompletedTask;
         }
 

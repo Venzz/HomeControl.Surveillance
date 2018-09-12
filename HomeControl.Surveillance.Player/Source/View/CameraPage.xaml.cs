@@ -33,7 +33,9 @@ namespace HomeControl.Surveillance.Player.View
         private void OnStartZoomingOutClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingOut();
 
         private void OnStopZoomingClicked(Object sender, RoutedEventArgs args) => Context.StopZooming();
-        
+
+        private async void OnPinTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => await Context.ManageTileAsync();
+
         private void OnSyncTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => Context.CameraStream.Synchronize();
 
         private async void OnCompactViewTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
