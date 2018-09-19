@@ -154,6 +154,7 @@ namespace HomeControl.Model
                                     var frame = Marshal.PtrToStructure<AvFrame>(framePointer);
                                     var scaleContextPointer = LibSwScale.sws_getContext(videoCodecContext.width, videoCodecContext.height, videoCodecContext.pix_fmt, videoCodecContext.width, videoCodecContext.height, AvPixelFormat.AV_PIX_FMT_RGB24, ScalingFlags.SWS_BILINEAR, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
                                     LibSwScale.sws_scale(scaleContextPointer, frame.data, frame.linesize, 0, videoCodecContext.height, picture.data, picture.linesize);
+                                    LibSwScale.sws_freeContext(scaleContextPointer);
                                     picture = Marshal.PtrToStructure<AvFrame>(picturePointer);
 
                                     var now = DateTime.Now;

@@ -44,5 +44,8 @@ namespace FFmpeg
         /// <returns>Returns the height of the output slice.</returns>
         [DllImport(Libraries.SwScale)]
         public static extern IntPtr sws_scale(IntPtr c, IntPtr[] srcSlice, int[] srcStride, int srcSliceY, int srcSliceH, IntPtr[] dst, int[] dstStride);
+
+        [DllImport(Libraries.SwScale)]
+        public static extern IntPtr sws_freeContext(IntPtr c);
     }
 }
