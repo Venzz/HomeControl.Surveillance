@@ -54,9 +54,11 @@ namespace HomeControl.Model
             };
 
             var dataReadingBuffer = LibAvUtil.av_malloc(new UIntPtr(10000U * sizeof(Byte)));
-            var ioContextPointer = LibAvFormat.avio_alloc_context(dataReadingBuffer, 10000, 0, IntPtr.Zero, read, IntPtr.Zero, IntPtr.Zero);
+            var ioContextPointer = LibAvFormat.avio_alloc_context(dataReadingBuffer, 10000, 0, IntPtr.Zero, Marshal.GetFunctionPointerForDelegate(read), IntPtr.Zero, IntPtr.Zero);
             var contextPointer = LibAvFormat.avformat_alloc_context();
-            Marshal.StructureToPtr(ioContextPointer, IntPtr.Add(contextPointer, 4 * IntPtr.Size), false);
+            var avFormatContext = Marshal.PtrToStructure<AvFormatContext>(contextPointer);
+            avFormatContext.pb = ioContextPointer;
+            Marshal.StructureToPtr(avFormatContext, contextPointer, false);
 
             var videoStreamId = -1;
             var videoStream = new AvStream();
@@ -84,7 +86,8 @@ namespace HomeControl.Model
                 {
                     if (!IsInitialized)
                     {
-                        if (LibAvFormat.avformat_open_input(out contextPointer, "", IntPtr.Zero, IntPtr.Zero) < 0)
+                        var inputFormat = LibAvFormat.av_find_input_format("h264");
+                        if (LibAvFormat.avformat_open_input(out contextPointer, "", inputFormat, IntPtr.Zero) < 0)
                         {
                             OnFailure("avformat_open_input failed.");
                             return;

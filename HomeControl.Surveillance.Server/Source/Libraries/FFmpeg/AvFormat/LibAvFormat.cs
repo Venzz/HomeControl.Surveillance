@@ -67,11 +67,18 @@ namespace FFmpeg
         public static extern IntPtr avformat_alloc_context();
 
         public delegate int ReadPacket(IntPtr opaque, IntPtr buf, int buf_size);
+        public delegate long SeekPacket(IntPtr opaque, long offset, int whence);
 
         [DllImport(Libraries.AvFormat)]
-        public static extern IntPtr avio_alloc_context(IntPtr buffer, int buffer_size, int write_flag, IntPtr opaque, ReadPacket read_packet, IntPtr write_packet, IntPtr seek);
+        public static extern IntPtr avio_alloc_context(IntPtr buffer, int buffer_size, int write_flag, IntPtr opaque, IntPtr read_packet, IntPtr write_packet, IntPtr seek);
 
         [DllImport(Libraries.AvFormat)]
         public static extern void av_frame_free(IntPtr frame);
+
+        [DllImport(Libraries.AvFormat)]
+        public static extern uint avformat_version();
+
+        [DllImport(Libraries.AvFormat)]
+        public static extern IntPtr av_find_input_format([MarshalAs(UnmanagedType.LPStr)] string short_name);
     }
 }

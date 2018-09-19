@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace FFmpeg
@@ -133,17 +133,17 @@ namespace FFmpeg
         /// <summary>
         /// Contains forced video codec ID. For demuxing this is set by the user.
         /// </summary>
-        public int video_codec_id;
+        public AvCodecId video_codec_id;
 
         /// <summary>
         /// Contains forced audio codec ID. For demuxing this is set by the user.
         /// </summary>
-        public int audio_codec_id;
+        public AvCodecId audio_codec_id;
 
         /// <summary>
         /// Contains forced subtitle codec ID. For demuxing this is set by the user.
         /// </summary>
-        public int subtitle_codec_id;
+        public AvCodecId subtitle_codec_id;
 
         /// <summary>
         /// Contains the maximum amount of memory in bytes to use for the index of each stream. If the index exceeds this size, entries will be discarded as
@@ -201,7 +201,7 @@ namespace FFmpeg
         /// set by the user before avformat_write_header() (mainly useful for AVFMT_NOFILE formats). The callback should also be passed to avio_open2() if it's
         /// used to open the file.
         /// </summary>
-        public int interrupt_callback;
+        public AVIOInterruptCB interrupt_callback;
 
         /// <summary>
         /// Contains the flags for enabling debugging.
@@ -395,7 +395,7 @@ namespace FFmpeg
         /// <summary>
         /// Contains the forced data codec ID. For demuxing thsi is set by the user.
         /// </summary>
-        public int data_codec_id;
+        public AvCodecId data_codec_id;
 
         /// <summary>
         /// Contains a callback, which is called to open further IO contexts when needed for demuxing. This can be set by the user application to perform
@@ -434,6 +434,8 @@ namespace FFmpeg
         /// </summary>
         [MarshalAs(UnmanagedType.LPStr)]
         public string protocol_blacklist;
+
+        public int max_streams;
 
 
         /// <summary>
@@ -475,5 +477,29 @@ namespace FFmpeg
         /// <param name="s">The <see cref="AVFormatContext"/>.</param>
         /// <param name="pb">The open IO context, that is to be closed.</param>
         public delegate void IOCloseCallback(IntPtr s, IntPtr pb);
+
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct AVIOInterruptCB
+        {
+            /// <summary>
+            /// Contains the callback function for checking whether to abort blocking functions.
+            /// </summary>
+            [MarshalAs(UnmanagedType.FunctionPtr)]
+            public InterruptCallback callback;
+
+            /// <summary>
+            /// Contains the parameter, that is passed to the callback as a parameter.
+            /// </summary>
+            public IntPtr opaque;
+
+            /// <summary>
+            /// Represents a delegate for the interrupt callback function.
+            /// </summary>
+            /// <param name="opaque">The parameter that is passed to the callback during blokcing operations.</param>
+            /// <returns>Returns 1 when the blocking operation should be aborted and any other integer value otherwise.</returns>
+            public delegate int InterruptCallback(IntPtr opaque);
+        }
     }
 }

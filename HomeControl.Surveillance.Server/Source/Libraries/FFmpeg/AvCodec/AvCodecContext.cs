@@ -19,7 +19,7 @@ namespace FFmpeg
         /// <summary>
         /// Contains the media type of the codec.
         /// </summary>
-    	   public AvMediaType codec_type;
+        public AvMediaType codec_type;
 
         /// <summary>
         /// Contains a pointer to the codec (of type <see cref="AVCodec"/>).
@@ -121,7 +121,7 @@ namespace FFmpeg
         /// vop_time_increment_resolution and fixed_vop_rate (fixed_vop_rate == 0 implies that it is different from the framerate). When encoding it MUST be
         /// set by the user. When decoding the use of this field for decoding is deprecated. Use framerate instead.
         /// </summary>
-        public IntPtr time_base;
+        public AvRational time_base;
 
         /// <summary>
         /// Contains the ticks per frame. For some codecs, the time base is closer to the field rate than the frame rate. Most notably, H.264 and MPEG-2
@@ -181,6 +181,22 @@ namespace FFmpeg
         /// better. Note this field may not match the value of the last <see cref="AVFrame"/> output by avcodec_receive_frame() due frame reordering. When
         /// encoding this is set by the user. When decoding this is set by the user if known and otherwise overridden by libavcodec while parsing the data.
         /// </summary>
-    	   public AvPixelFormat pix_fmt;
+        public AvPixelFormat pix_fmt;
+
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct AvRational
+        {
+            /// <summary>
+            /// Contains the numerator of the rational number.
+            /// </summary>
+            public int num;
+
+            /// <summary>
+            /// Contains the denominator of the rational number.
+            /// </summary>
+            public int den;
+        }
     }
 }

@@ -30,5 +30,8 @@ namespace FFmpeg
 
         [DllImport(Libraries.AvUtil)]
         public static extern void av_log_set_level(int logLevel);
+
+        [DllImport(Libraries.AvUtil)]
+        public static extern int av_strerror(int errnum, IntPtr errbuf, int errbuf_size);
     }
 }

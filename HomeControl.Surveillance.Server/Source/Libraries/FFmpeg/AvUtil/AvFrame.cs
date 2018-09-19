@@ -66,7 +66,7 @@ namespace FFmpeg
         /// <summary>
         /// Contains the sample aspect ratio for the video frame, 0/1 if unknown/unspecified.
         /// </summary>
-        public int sample_aspect_ratio;
+        public AvRational sample_aspect_ratio;
 
         /// <summary>
         /// Contains the presentation timestamp in time_base units (time when frame should be shown to user).
@@ -280,5 +280,21 @@ namespace FFmpeg
         /// Contains a reference to the AVHWFramesContext describing the frame, for hwaccel-format frames.
         /// </summary>
         public IntPtr hw_frames_ctx;
+
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct AvRational
+        {
+            /// <summary>
+            /// Contains the numerator of the rational number.
+            /// </summary>
+            public int num;
+
+            /// <summary>
+            /// Contains the denominator of the rational number.
+            /// </summary>
+            public int den;
+        }
     }
 }
