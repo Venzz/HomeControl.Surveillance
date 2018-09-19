@@ -8,13 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
-namespace HomeControl.Model
+namespace HomeControl.Surveillance.Server.Model
 {
     public class MotionDetection
     {
         private DataQueue Data = new DataQueue();
         private Boolean IsInitialized;
-        private DateTime? DetectedDate;
         private DateTime BasePictureUpdatedDate;
         private Mat BasePicture = new Mat();
         private ContourAnalyzer ContourAnalyzer;

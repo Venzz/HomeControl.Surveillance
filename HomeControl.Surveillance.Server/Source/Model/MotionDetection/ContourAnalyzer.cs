@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Foundation;
 
-namespace HomeControl.Model
+namespace HomeControl.Surveillance.Server.Model
 {
     public class ContourAnalyzer
     {

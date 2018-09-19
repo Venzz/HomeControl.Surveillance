@@ -13,6 +13,7 @@ namespace HomeControl.Surveillance.Server.Model
         private ICameraConnection IndoorCameraConnection;
         private ICameraConnection OutdoorCameraConnection;
         private Storage Storage;
+        private MotionDetection MotionDetection = new MotionDetection();
 
         public Camera IndoorCamera { get; }
         public Camera OutdoorCamera { get; }
@@ -49,6 +50,9 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
+            MotionDetection.Detected += OnMotionDetected;
+            MotionDetection.LogReceived += OnLogReceived;
+            MotionDetection.Start();
         }
 
         private async void OnOutdoorCameraCommandReceived(Camera sender, Command command)
@@ -65,6 +69,11 @@ namespace HomeControl.Surveillance.Server.Model
                     await OutdoorCameraConnection.StopZoomingAsync().ConfigureAwait(false);
                     break;
             }
+        }
+
+        private void OnMotionDetected(MotionDetection sender, Object args)
+        {
+            App.Diagnostics.Debug.Log("Motion detected!");
         }
 
         private void OnLogReceived(Object sender, (String Message, String Parameter) args)
