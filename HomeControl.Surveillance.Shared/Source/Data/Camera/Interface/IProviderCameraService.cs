@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -12,5 +13,6 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
         Task SendAsync(Byte[] data);
+        Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<DateTime> storedRecordsMetadata);
     }
 }

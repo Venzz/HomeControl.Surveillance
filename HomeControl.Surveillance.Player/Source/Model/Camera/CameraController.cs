@@ -1,5 +1,7 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -33,5 +35,11 @@ namespace HomeControl.Surveillance.Player.Model
         public Task StartZoomingOutAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StartZoomingOut);
 
         public Task StopZoomingAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StopZooming);
+
+        public async Task<IReadOnlyCollection<StoredRecord>> GetStoredRecordsMetadataAsync()
+        {
+            var storedRecordsMetadata = await ConsumerService.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
+            return storedRecordsMetadata.Select(a => new StoredRecord() { Date = a }).ToList();
+        }
     }
 }

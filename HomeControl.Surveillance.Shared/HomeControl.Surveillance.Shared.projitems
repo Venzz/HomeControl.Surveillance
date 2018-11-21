@@ -20,6 +20,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\FileTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\MessageId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\DataQueue.cs" />

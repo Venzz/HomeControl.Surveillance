@@ -30,7 +30,18 @@ namespace HomeControl.Surveillance.Server.Model
             ProviderService = providerService;
             StartSendingCycle();
             ProviderService.CommandReceived += (sender, command) => CommandReceived(this, command);
+            ProviderService.MessageReceived += OnMessageReceived;
         }
+
+        private async void OnMessageReceived(IProviderCameraService sender, (UInt32 Id, IMessage Message) args) => await Task.Run(async () =>
+        {
+            switch (args.Message.Type)
+            {
+                case MessageId.StoredRecordsMetadata:
+                    await ProviderService.SendStoredRecordsMetadataAsync(args.Id, new List<DateTime>() { new DateTime(), DateTime.Now }).ConfigureAwait(false);
+                    break;
+            }
+        });
 
         public void Send(Byte[] data)
         {

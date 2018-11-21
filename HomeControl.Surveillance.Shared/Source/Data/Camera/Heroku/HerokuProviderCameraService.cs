@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -176,6 +177,13 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
             }
         });
+
+        public Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<DateTime> storedRecordsMetadata)
+        {
+            var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
+            var responseMessage = new Message(id, response);
+            return SendNewAsync(responseMessage.Data);
+        }
 
         private async void StartReceiving() => await Task.Run(async () =>
         {

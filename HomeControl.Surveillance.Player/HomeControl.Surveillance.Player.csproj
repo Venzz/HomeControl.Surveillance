@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Source\Data\System.Net.WebSockets\WinRTWebSocket.cs" />
     <Compile Include="Source\Data\WebSocket.cs" />
+    <Compile Include="Source\Model\Camera\StoredRecord.cs" />
     <Compile Include="Source\ViewModel\CameraContext.cs" />
     <Compile Include="Source\ViewModel\HubContext.cs" />
     <Compile Include="Source\ViewModel\CameraStream.cs" />

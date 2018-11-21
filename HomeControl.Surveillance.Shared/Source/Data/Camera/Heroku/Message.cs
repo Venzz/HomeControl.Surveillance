@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace HomeControl.Surveillance.Data.Camera.Heroku
@@ -32,6 +33,13 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 messageDataWriter.Write((Byte)message.Type);
                 switch (message)
                 {
+                    case StoredRecordsMetadataRequest storedRecordsMetadataRequest:
+                        break;
+                    case StoredRecordsMetadataResponse storedRecordsMetadataResponse:
+                        messageDataWriter.Write((UInt16)storedRecordsMetadataResponse.RecordsMetadata.Count);
+                        foreach (var item in storedRecordsMetadataResponse.RecordsMetadata)
+                            messageDataWriter.Write(item.Ticks);
+                        break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }
@@ -51,6 +59,12 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             {
                 switch (message.Type)
                 {
+                    case MessageId.StoredRecordsMetadata:
+                        var recordsCount = messageDataReader.ReadUInt16();
+                        var recordsMetadata = new List<DateTime>();
+                        for (var i = 0; i < recordsCount; i++)
+                            recordsMetadata.Add(new DateTime(messageDataReader.ReadInt64()));
+                        return new StoredRecordsMetadataResponse(recordsMetadata);
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }

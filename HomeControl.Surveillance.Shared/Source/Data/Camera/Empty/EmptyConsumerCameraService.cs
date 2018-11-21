@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -13,5 +14,7 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
         public EmptyConsumerCameraService() { }
 
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
+
+        public Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<DateTime>>(new List<DateTime>());        
     }
 }

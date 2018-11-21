@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -11,5 +12,6 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
         Task PerformAsync(Command command);
+        Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync();
     }
 }
