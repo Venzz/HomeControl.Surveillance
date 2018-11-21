@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Venz.Data;
+using Windows.UI.Core;
 using Windows.UI.StartScreen;
 using Windows.UI.Xaml.Controls;
 
@@ -16,8 +17,9 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
         public CameraContext() { }
 
-        public void Initialize(CameraController cameraController)
+        public void Initialize(CameraController cameraController, CoreDispatcher dispatcher)
         {
+            OverrideDispatcher(dispatcher);
             CameraController = cameraController;
             CameraStream = new CameraStream(cameraController);
             IsTilePinned = SecondaryTile.Exists(CameraController.Id);

@@ -1,7 +1,9 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using HomeControl.Surveillance.Player.ViewModel;
 using System;
+using System.Collections.Generic;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -21,11 +23,13 @@ namespace HomeControl.Surveillance.Player.View
             DataContext = Context;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs args)
+        protected override async void OnNavigatedTo(NavigationEventArgs args)
         {
+            var parameters = (List<Object>)args.Parameter;
             ApplicationView.Consolidated += OnApplicationViewConsolidated;
-            Context.Initialize((CameraController)args.Parameter);
+            Context.Initialize((CameraController)parameters[0], (CoreDispatcher)parameters[1]);
             VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
+            await Context.InitializeAsync();
         }
 
         private void OnStartZoomingInClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingIn();
