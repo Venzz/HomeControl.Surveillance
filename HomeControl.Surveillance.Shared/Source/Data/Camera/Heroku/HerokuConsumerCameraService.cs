@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -11,6 +12,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private IWebSocket WebSocket;
         private String ServiceName;
         private DataQueue DataQueue = new DataQueue();
+        private IDictionary<UInt32, TaskCompletionSource<IMessage>> Messages = new Dictionary<UInt32, TaskCompletionSource<IMessage>>();
 
         public event TypedEventHandler<IConsumerCameraService, Byte[]> DataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
@@ -90,12 +92,24 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     DataQueue.Enqueue(buffer.Array, 0, result.Count);
                     while (DataQueue.Length > 8)
                     {
-                        var dataLength = BitConverter.ToInt32(DataQueue.Peek(8), 4);
+                        var peekedData = DataQueue.Peek(8);
+                        var dataLength = BitConverter.ToInt32(peekedData, 4);
                         if (dataLength + 8 > DataQueue.Length)
                             break;
 
-                        DataQueue.Dequeue(8);
-                        DataReceived(this, DataQueue.Dequeue(dataLength));
+                        if ((peekedData[0] == 0xFF) && (peekedData[1] == 0xFF) && (peekedData[2] == 0xFF) && (peekedData[3] == 0xFE))
+                        {
+                            var data = DataQueue.Dequeue(dataLength + 8);
+                            var message = new Message(data);
+                            if (!Messages.ContainsKey(message.Id))
+                                return;
+                            Messages[message.Id].SetResult(Message.Create(message));
+                        }
+                        else
+                        {
+                            DataQueue.Dequeue(8);
+                            DataReceived(this, DataQueue.Dequeue(dataLength));
+                        }
                     }
                 }
                 catch (Exception exception)
@@ -114,5 +128,17 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
             }
         });
+
+        private async Task<IMessage> RequestAsync(Message message)
+        {
+            var webSocket = WebSocket;
+            if (webSocket == null)
+                throw new InvalidOperationException();
+
+            var messageResponseAwaiter = new TaskCompletionSource<IMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Messages.Add(message.Id, messageResponseAwaiter);
+            await webSocket.SendAsync(message.Data).ConfigureAwait(false);
+            return await messageResponseAwaiter.Task.ConfigureAwait(false);
+        }
     }
 }

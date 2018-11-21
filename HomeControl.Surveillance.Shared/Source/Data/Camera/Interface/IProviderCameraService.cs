@@ -7,6 +7,7 @@ namespace HomeControl.Surveillance.Data.Camera
     public interface IProviderCameraService
     {
         event TypedEventHandler<IProviderCameraService, Command> CommandReceived;
+        event TypedEventHandler<IProviderCameraService, (UInt32 Id, IMessage Message)> MessageReceived;
         event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived;
         event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived;
 

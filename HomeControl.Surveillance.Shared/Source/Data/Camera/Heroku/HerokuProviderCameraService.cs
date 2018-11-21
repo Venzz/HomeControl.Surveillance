@@ -15,9 +15,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private DateTime IdlingStartedDate;
         private Boolean IsIdlingActive => IdlePeriod.HasValue && (DateTime.Now - IdlingStartedDate < IdlePeriod.Value.Duration);
 
+        public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
+        public event TypedEventHandler<IProviderCameraService, (UInt32 Id, IMessage Message)> MessageReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
-        public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
 
 
 
@@ -92,7 +93,34 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
             }
         }
-        
+
+        private Task SendNewAsync(Byte[] data) => SendNewAsync(WebSocket, data);
+
+        private async Task SendNewAsync(IWebSocket socket, Byte[] data)
+        {
+            try
+            {
+                if (socket == null)
+                    return;
+
+                await socket.SendAsync(data).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendNewAsync)}", exception));
+                await CloseSocketAsync(socket).ConfigureAwait(false);
+
+                lock (ConnectionSync)
+                {
+                    if (socket == WebSocket)
+                    {
+                        WebSocket = null;
+                        Monitor.PulseAll(ConnectionSync);
+                    }
+                }
+            }
+        }
+
         private Byte[] CreateMessage(Byte[] data)
         {
             var message = new Byte[8 + data.Length];
@@ -168,7 +196,14 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     var data = new Byte[result.Count];
                     Array.Copy(buffer.Array, data, result.Count);
                     if ((data.Length == 9) && (data[0] == 0xFF) && (data[1] == 0xFF) && (data[2] == 0xFF) && (data[3] == 0xFF))
+                    {
                         CommandReceived(this, (Command)data[8]);
+                    }
+                    else if ((data.Length > 8) && (data[0] == 0xFF) && (data[1] == 0xFF) && (data[2] == 0xFF) && (data[3] == 0xFE))
+                    {
+                        var message = new Message(data);
+                        MessageReceived(this, (message.Id, Message.Create(message)));
+                    }
                 }
                 catch (Exception exception)
                 {
