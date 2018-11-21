@@ -16,7 +16,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         public Message(Byte[] data)
         {
             Id = BitConverter.ToUInt32(data, 8);
-            Type = (MessageId)data[9];
+            Type = (MessageId)data[12];
             Data = data;
         }
 
@@ -59,7 +59,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             {
                 switch (message.Type)
                 {
-                    case MessageId.StoredRecordsMetadata:
+                    case MessageId.StoredRecordsMetadataRequest:
+                        return new StoredRecordsMetadataRequest();
+                    case MessageId.StoredRecordsMetadataResponse:
                         var recordsCount = messageDataReader.ReadUInt16();
                         var recordsMetadata = new List<DateTime>();
                         for (var i = 0; i < recordsCount; i++)

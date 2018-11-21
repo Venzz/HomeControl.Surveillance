@@ -2,6 +2,7 @@
 {
     public enum MessageId
     {
-        StoredRecordsMetadata
+        StoredRecordsMetadataRequest,
+        StoredRecordsMetadataResponse
     }
 }

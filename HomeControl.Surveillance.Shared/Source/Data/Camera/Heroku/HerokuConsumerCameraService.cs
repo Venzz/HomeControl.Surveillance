@@ -43,6 +43,16 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         }
 
+        public async Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync()
+        {
+            var message = new Message(Message.GetId(), new StoredRecordsMetadataRequest());
+            var responseMessage = await RequestAsync(message);
+            if (responseMessage.Type != MessageId.StoredRecordsMetadataResponse)
+                throw new InvalidOperationException();
+            var response = (StoredRecordsMetadataResponse)responseMessage;
+            return response.RecordsMetadata;
+        }
+
         private async void StartConnectionMaintaining() => await Task.Run(async () =>
         {
             while (true)

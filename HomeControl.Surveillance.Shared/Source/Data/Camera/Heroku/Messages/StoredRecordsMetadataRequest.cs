@@ -2,6 +2,6 @@
 {
     public class StoredRecordsMetadataRequest: IMessage
     {
-        public MessageId Type { get; } = MessageId.StoredRecordsMetadata;
+        public MessageId Type { get; } = MessageId.StoredRecordsMetadataRequest;
     }
 }

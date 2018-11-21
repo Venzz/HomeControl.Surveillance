@@ -37,7 +37,7 @@ namespace HomeControl.Surveillance.Server.Model
         {
             switch (args.Message.Type)
             {
-                case MessageId.StoredRecordsMetadata:
+                case MessageId.StoredRecordsMetadataRequest:
                     await ProviderService.SendStoredRecordsMetadataAsync(args.Id, new List<DateTime>() { new DateTime(), DateTime.Now }).ConfigureAwait(false);
                     break;
             }
