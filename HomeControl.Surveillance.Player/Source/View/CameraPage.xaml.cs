@@ -38,6 +38,8 @@ namespace HomeControl.Surveillance.Player.View
 
         private void OnStopZoomingClicked(Object sender, RoutedEventArgs args) => Context.StopZooming();
 
+        private void OnMenuButtonTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => Overlay.IsPaneOpen = !Overlay.IsPaneOpen;
+
         private async void OnPinTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => await Context.ManageTileAsync();
 
         private void OnSyncTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => Context.CameraStream.Synchronize();
@@ -50,14 +52,14 @@ namespace HomeControl.Surveillance.Player.View
                 var compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
                 compactOptions.CustomSize = new Size(500, 281);
                 await ApplicationView.TryEnterViewModeAsync(ViewMode, compactOptions);
-                CommandsControl.Opacity = 0;
-                CommandsControl.IsHitTestVisible = false;
+                Overlay.Opacity = 0;
+                Overlay.IsHitTestVisible = false;
             }
             else
             {
                 await ApplicationView.TryEnterViewModeAsync(ViewMode);
-                CommandsControl.Opacity = 1;
-                CommandsControl.IsHitTestVisible = true;
+                Overlay.Opacity = 1;
+                Overlay.IsHitTestVisible = true;
             }
         }
 

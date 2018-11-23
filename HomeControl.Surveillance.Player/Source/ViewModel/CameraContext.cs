@@ -1,5 +1,6 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Venz.Data;
 using Windows.UI.Core;
@@ -14,6 +15,9 @@ namespace HomeControl.Surveillance.Player.ViewModel
         public CameraStream CameraStream { get; private set; }
         public Boolean IsTilePinned { get; private set; }
         public IconElement TileIcon => new SymbolIcon(IsTilePinned ? Symbol.UnPin : Symbol.Pin);
+        public IEnumerable<StoredRecord> StoredRecords { get; private set; }
+          
+
 
         public CameraContext() { }
 
@@ -25,6 +29,12 @@ namespace HomeControl.Surveillance.Player.ViewModel
             IsTilePinned = SecondaryTile.Exists(CameraController.Id);
             OnPropertyChanged(nameof(CameraController), nameof(IsTilePinned));
         }
+
+        public Task InitializeAsync() => Task.Run(async () =>
+        {
+            StoredRecords = await CameraController.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
+            OnPropertyChanged(nameof(StoredRecords));
+        });
 
         public async void StartZoomingIn() => await Task.Run(() => CameraController.StartZoomingInAsync());
 
