@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
 using HomeControl.Surveillance.Data.Camera.Heroku;
 using HomeControl.Surveillance.Server.Data;
+using HomeControl.Surveillance.Server.Data.DemoClip;
 using HomeControl.Surveillance.Server.Data.File;
 using HomeControl.Surveillance.Server.Data.OrientProtocol;
 using HomeControl.Surveillance.Server.Data.Rtsp;
@@ -43,7 +44,11 @@ namespace HomeControl.Surveillance.Server.Model
             IndoorCameraConnection.DataReceived += (sender, data) => IndoorCamera.Send(data);
             IndoorCameraConnection.LogReceived += OnLogReceived;
             IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
+            #if DEBUG
+            OutdoorCameraConnection = new DemoClipCameraConnection();
+            #else
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
+            #endif
             OutdoorCameraConnection.DataReceived += (sender, data) => OutdoorCamera.Send(data);
             OutdoorCameraConnection.DataReceived += (sender, data) => Storage.Store(data);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
