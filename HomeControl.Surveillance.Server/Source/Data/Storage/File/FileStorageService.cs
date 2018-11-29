@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -16,6 +17,8 @@ namespace HomeControl.Surveillance.Server.Data.File
 
         public event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
 
+
+
         public void Store(Byte[] data)
         {
             try
@@ -32,6 +35,15 @@ namespace HomeControl.Surveillance.Server.Data.File
             {
                 ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", exception));
             }
+        }
+
+        public IReadOnlyCollection<String> GetStoredRecords()
+        {
+            var storedRecords = new List<String>();
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            foreach (var file in directory.GetFiles("*.h264", SearchOption.TopDirectoryOnly))
+                storedRecords.Add(file.Name);
+            return storedRecords;
         }
 
         private Task FlushAsync(MemoryStream stream) => Task.Run(() =>

@@ -6,6 +6,7 @@ using HomeControl.Surveillance.Server.Data.File;
 using HomeControl.Surveillance.Server.Data.OrientProtocol;
 using HomeControl.Surveillance.Server.Data.Rtsp;
 using System;
+using System.Threading.Tasks;
 
 namespace HomeControl.Surveillance.Server.Model
 {
@@ -29,6 +30,7 @@ namespace HomeControl.Surveillance.Server.Model
             IndoorCamera.ExceptionReceived += OnExceptionReceived;
 
             var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
+            outdoorProviderCameraService.MessageReceived += OnMessageReceived;
             outdoorProviderCameraService.LogReceived += OnLogReceived;
             outdoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             OutdoorCamera = new Camera(outdoorProviderCameraService);
@@ -55,6 +57,17 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
         }
+
+        private async void OnMessageReceived(IProviderCameraService sender, (UInt32 Id, IMessage Message) args) => await Task.Run(async () =>
+        {
+            switch (args.Message.Type)
+            {
+                case MessageId.StoredRecordsMetadataRequest:
+                    var storedRecordsMetadata = Storage.GetStoredRecordsMetadata();
+                    await sender.SendStoredRecordsMetadataAsync(args.Id, storedRecordsMetadata).ConfigureAwait(false);
+                    break;
+            }
+        });
 
         private async void OnOutdoorCameraCommandReceived(Camera sender, Command command)
         {

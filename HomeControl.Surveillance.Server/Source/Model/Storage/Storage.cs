@@ -1,5 +1,7 @@
 ﻿using HomeControl.Surveillance.Server.Data;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Model
@@ -28,6 +30,18 @@ namespace HomeControl.Surveillance.Server.Model
             {
                 ExceptionReceived(this, ($"{nameof(Storage)}.{nameof(Store)}", exception));
             }
+        }
+
+        public IReadOnlyCollection<DateTime> GetStoredRecordsMetadata()
+        {
+            var storedRecordsMetadata = new HashSet<DateTime>();
+            var storedRecords = Service.GetStoredRecords();
+            foreach (var storedRecord in storedRecords)
+            {
+                var date = DateTime.Parse(storedRecord.Substring(0, 10));
+                storedRecordsMetadata.Add(date);
+            }
+            return storedRecordsMetadata.OrderByDescending(a => a).ToList();
         }
     }
 }

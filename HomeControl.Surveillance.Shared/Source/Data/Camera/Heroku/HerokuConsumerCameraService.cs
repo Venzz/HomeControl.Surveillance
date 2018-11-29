@@ -112,8 +112,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                             var data = DataQueue.Dequeue(dataLength + 8);
                             var message = new Message(data);
                             if (!Messages.ContainsKey(message.Id))
-                                return;
+                                continue;
                             Messages[message.Id].SetResult(Message.Create(message));
+                            Messages.Remove(message.Id);
                         }
                         else
                         {
