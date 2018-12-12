@@ -40,6 +40,11 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         foreach (var item in storedRecordsMetadataResponse.RecordsMetadata)
                             messageDataWriter.Write(item.Ticks);
                         break;
+                    case LiveMediaDataResponse liveMediaDataResponse:
+                        messageDataWriter.Write((Byte)liveMediaDataResponse.MediaType);
+                        messageDataWriter.Write(liveMediaDataResponse.Data.Length);
+                        messageDataWriter.Write(liveMediaDataResponse.Data);
+                        break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }
@@ -67,6 +72,11 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         for (var i = 0; i < recordsCount; i++)
                             recordsMetadata.Add(new DateTime(messageDataReader.ReadInt64()));
                         return new StoredRecordsMetadataResponse(recordsMetadata);
+                    case MessageId.LiveMediaData:
+                        var mediaDataType = (MediaDataType)messageDataReader.ReadByte();
+                        var dataLength = messageDataReader.ReadInt32();
+                        var data = messageDataReader.ReadBytes(dataLength);
+                        return new LiveMediaDataResponse(mediaDataType, data);
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }

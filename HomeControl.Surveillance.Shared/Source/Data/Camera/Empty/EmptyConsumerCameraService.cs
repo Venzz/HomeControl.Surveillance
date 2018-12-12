@@ -7,7 +7,7 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
 {
     public class EmptyConsumerCameraService: IConsumerCameraService
     {
-        public event TypedEventHandler<IConsumerCameraService, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data)> MediaDataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 

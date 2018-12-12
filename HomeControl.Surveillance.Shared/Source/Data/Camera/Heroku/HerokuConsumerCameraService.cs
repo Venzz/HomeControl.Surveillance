@@ -14,7 +14,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private DataQueue DataQueue = new DataQueue();
         private IDictionary<UInt32, TaskCompletionSource<IMessage>> Messages = new Dictionary<UInt32, TaskCompletionSource<IMessage>>();
 
-        public event TypedEventHandler<IConsumerCameraService, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data)> MediaDataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 
@@ -111,15 +111,22 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         {
                             var data = DataQueue.Dequeue(dataLength + 8);
                             var message = new Message(data);
-                            if (!Messages.ContainsKey(message.Id))
-                                continue;
-                            Messages[message.Id].SetResult(Message.Create(message));
-                            Messages.Remove(message.Id);
-                        }
-                        else
-                        {
-                            DataQueue.Dequeue(8);
-                            DataReceived(this, DataQueue.Dequeue(dataLength));
+                            if (message.Id == 0)
+                            {
+                                switch (Message.Create(message))
+                                {
+                                    case LiveMediaDataResponse liveMediaData:
+                                        MediaDataReceived(this, (liveMediaData.MediaType, liveMediaData.Data));
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                if (!Messages.ContainsKey(message.Id))
+                                    continue;
+                                Messages[message.Id].SetResult(Message.Create(message));
+                                Messages.Remove(message.Id);
+                            }
                         }
                     }
                 }

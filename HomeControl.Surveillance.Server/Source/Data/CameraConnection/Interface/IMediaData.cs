@@ -7,11 +7,4 @@ namespace HomeControl.Surveillance.Server.Data
         MediaDataType MediaDataType { get; }
         Byte[] Data { get; }
     }
-
-    public enum MediaDataType
-    {
-        AudioFrame,
-        PredictionFrame,
-        InterFrame
-    }
 }

@@ -3,6 +3,7 @@
     public enum MessageId
     {
         StoredRecordsMetadataRequest,
-        StoredRecordsMetadataResponse
+        StoredRecordsMetadataResponse,
+        LiveMediaData,
     }
 }

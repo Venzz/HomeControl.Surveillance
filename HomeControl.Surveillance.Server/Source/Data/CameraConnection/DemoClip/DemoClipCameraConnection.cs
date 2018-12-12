@@ -12,7 +12,7 @@ namespace HomeControl.Surveillance.Server.Data.DemoClip
 
         public Boolean IsZoomingSupported => false;
 
-        public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
 
@@ -45,8 +45,12 @@ namespace HomeControl.Surveillance.Server.Data.DemoClip
             var index = 0;
             while (true)
             {
-                
-                DataReceived(this, Data[index]);
+                if (Data[index].Length < 200)
+                    MediaReceived(this, new AudioMediaData(Data[index], DateTime.Now));
+                else if (Data[index].Length < 6000)
+                    MediaReceived(this, new PredictionFrameMediaData(Data[index], DateTime.Now));
+                else
+                    MediaReceived(this, new InterFrameMediaData(Data[index], DateTime.Now));
                 index = (index + 1) % Data.Count;
                 await Task.Delay(15);
             }

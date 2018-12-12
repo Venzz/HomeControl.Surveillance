@@ -62,16 +62,16 @@ namespace HomeControl.Surveillance.Player.ViewModel
             deferal.Complete();
         }
 
-        private void OnCameraDataReceived(CameraController sender, Byte[] data)
+        private void OnCameraDataReceived(CameraController sender, (MediaDataType MediaType, Byte[] Data) args)
         {
-            if (data.Length < 200)
+            if (args.MediaType == MediaDataType.AudioFrame)
                 return;
 
             lock (Sync)
             {
                 if (!StartDate.HasValue)
                     StartDate = DateTime.Now;
-                VideoSamples.Add(data);
+                VideoSamples.Add(args.Data);
             }
         }
 

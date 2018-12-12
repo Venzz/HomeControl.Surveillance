@@ -185,6 +185,13 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             return SendNewAsync(responseMessage.Data);
         }
 
+        public Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data)
+        {
+            var response = new LiveMediaDataResponse(type, data);
+            var responseMessage = new Message(0, response);
+            return SendNewAsync(responseMessage.Data);
+        }
+
         private async void StartReceiving() => await Task.Run(async () =>
         {
             var buffer = new ArraySegment<Byte>(new Byte[1024 * 1024]);
