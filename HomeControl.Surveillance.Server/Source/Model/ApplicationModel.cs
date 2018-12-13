@@ -40,12 +40,12 @@ namespace HomeControl.Surveillance.Server.Model
         public void Initialize()
         {
             IndoorCameraConnection = new RtspCameraConnection("192.168.1.168", 554, PrivateData.IndoorCameraRtspUrl);
-            IndoorCameraConnection.DataReceived += (sender, data) => IndoorCamera.Send(data);
+            IndoorCameraConnection.MediaReceived += (sender, media) => IndoorCamera.Send(media.Data);
             IndoorCameraConnection.LogReceived += OnLogReceived;
             IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
-            OutdoorCameraConnection.DataReceived += (sender, data) => OutdoorCamera.Send(data);
-            OutdoorCameraConnection.DataReceived += (sender, data) => Storage.Store(data);
+            OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media.Data);
+            OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media.Data);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;

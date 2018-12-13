@@ -8,7 +8,7 @@ namespace HomeControl.Surveillance.Server.Data
     {
         Boolean IsZoomingSupported { get; }
 
-        event TypedEventHandler<ICameraConnection, Byte[]> DataReceived;
+        event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived;
         event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived;
         event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived;
 
