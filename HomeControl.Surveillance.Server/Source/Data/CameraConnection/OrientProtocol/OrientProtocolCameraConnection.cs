@@ -15,12 +15,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
         private DataQueue DataQueue;
+        private DataQueue MediaDataQueue;
         private UInt32 SessionId;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public Boolean IsZoomingSupported => true;
 
-        public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
 
@@ -106,6 +107,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     {
                         Connection = connection;
                         DataQueue = new DataQueue();
+                        MediaDataQueue = new DataQueue();
                         ReconnectionController.ResetPermissionGrantedDate();
                         SessionId = 0;
                         Monitor.PulseAll(ConnectionSync);
@@ -160,13 +162,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
         private async void OnDataReceived(TcpConnection sender, Byte[] data)
         {
-            (TcpConnection Connection, DataQueue DataQueue) GetVariables()
+            (TcpConnection Connection, DataQueue DataQueue, DataQueue MediaDataQueue) GetVariables()
             {
                 lock (ConnectionSync)
                 {
                     if (Connection == null)
                         Monitor.Wait(ConnectionSync);
-                    return (Connection, DataQueue);
+                    return (Connection, DataQueue, MediaDataQueue);
                 }
             }
 
@@ -195,9 +197,9 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(OpMonitorClaimResponseMessage)}, SessionId = {claimResponse.SessionId:x}"));
                             await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
-                        case VideoDataResponseMessage videoDataResponse:
+                        case MediaDataResponseMessage mediaDataResponse:
                             ReconnectionController.Reset();
-                            DataReceived(this, videoDataResponse.Data);
+                            OnMediaReceived(variables.MediaDataQueue, mediaDataResponse);
                             break;
                         case UnknownResponseMessage unknownResponse:
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
@@ -217,6 +219,51 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         Connection = null;
                         Monitor.PulseAll(ConnectionSync);
                     }
+                }
+            }
+        }
+
+        private void OnMediaReceived(DataQueue mediaDataQueue, MediaDataResponseMessage mediaDataResponse)
+        {
+            mediaDataQueue.Enqueue(mediaDataResponse.Data);
+            while (mediaDataQueue.Length >= 16)
+            {
+                var peekedData = mediaDataQueue.Peek(16);
+                var operationCode = peekedData[2] * 256 + peekedData[3];
+                var dataSize = 0;
+                switch (operationCode)
+                {
+                    case (UInt16)Message.Operation.AudioFrame:
+                        dataSize = BitConverter.ToInt16(peekedData, 6);
+                        break;
+                    case (UInt16)Message.Operation.PredictionFrame:
+                        dataSize = BitConverter.ToInt32(peekedData, 4);
+                        break;
+                    case (UInt16)Message.Operation.InterFrame:
+                        dataSize = BitConverter.ToInt32(peekedData, 12);
+                        break;
+                }
+
+                if (mediaDataQueue.Length < dataSize + 16)
+                    return;
+
+                switch (operationCode)
+                {
+                    case (UInt16)Message.Operation.AudioFrame:
+                        mediaDataQueue.Dequeue(8);
+                        MediaReceived(this, new AudioMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        break;
+                    case (UInt16)Message.Operation.PredictionFrame:
+                        mediaDataQueue.Dequeue(8);
+                        MediaReceived(this, new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        break;
+                    case (UInt16)Message.Operation.InterFrame:
+                        mediaDataQueue.Dequeue(16);
+                        MediaReceived(this, new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        break;
+                    default:
+                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}", $"Unknown\n{peekedData.ToHexView()}"));
+                        break;
                 }
             }
         }

@@ -22,8 +22,8 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public Boolean IsZoomingSupported => false;
-
-        public event TypedEventHandler<ICameraConnection, Byte[]> DataReceived = delegate { };
+        
+        public event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
         public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
 
@@ -292,7 +292,6 @@ namespace HomeControl.Surveillance.Server.Data.Rtsp
             stream.Position = 0;
             stream.Read(completeData, 0, completeData.Length);
             stream.Dispose();
-            DataReceived(this, completeData);
         }
     }
 }

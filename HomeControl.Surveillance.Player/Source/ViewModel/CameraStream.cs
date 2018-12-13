@@ -12,7 +12,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
     {
         private CameraController Camera;
         private Boolean IsDisposed;
-        private TimeSpan NextSampleTimestamp;
+        private DateTime? StartDate;
         private Object Sync = new Object();
         private IList<Byte[]> VideoSamples = new List<Byte[]>();
 
@@ -37,7 +37,10 @@ namespace HomeControl.Surveillance.Player.ViewModel
         public void Synchronize()
         {
             lock (Sync)
+            {
                 VideoSamples.Clear();
+                StartDate = null;
+            }
         }
 
         private async void OnMediaStreamSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
@@ -52,9 +55,8 @@ namespace HomeControl.Surveillance.Player.ViewModel
                     continue;
                 }
 
-                args.Request.Sample = MediaStreamSample.CreateFromBuffer(data.AsBuffer(), NextSampleTimestamp);
+                args.Request.Sample = MediaStreamSample.CreateFromBuffer(data.AsBuffer(), DateTime.Now - StartDate.Value);
                 args.Request.Sample.Duration = Camera.SampleDuration;
-                NextSampleTimestamp += Camera.SampleDuration;
                 break;
             }
             deferal.Complete();
@@ -62,8 +64,15 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
         private void OnCameraDataReceived(CameraController sender, Byte[] data)
         {
+            if (data.Length < 200)
+                return;
+
             lock (Sync)
+            {
+                if (!StartDate.HasValue)
+                    StartDate = DateTime.Now;
                 VideoSamples.Add(data);
+            }
         }
 
         private Byte[] TryGetVideoSample()

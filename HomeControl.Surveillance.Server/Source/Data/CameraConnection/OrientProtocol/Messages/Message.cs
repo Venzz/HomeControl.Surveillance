@@ -27,11 +27,11 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
                 switch (operationCode)
                 {
-                    case 0x03E9:
+                    case (UInt16)Operation.AuthorizationResponse:
                         return new AuthorizationResponseMessage(sessionId, messageData);
-                    case 0x0584:
-                        return new VideoDataResponseMessage(sessionId, messageData);
-                    case 0x0586:
+                    case (UInt16)Operation.MediaDataResponse:
+                        return new MediaDataResponseMessage(sessionId, messageData);
+                    case (UInt16)Operation.OpMonitorClaimResponse:
                         return new OpMonitorClaimResponseMessage(sessionId, messageData);
                     default:
                         return new UnknownResponseMessage(sessionId, data);
@@ -43,10 +43,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
         public enum Operation
         {
+            AudioFrame = 0x01FA,
+            InterFrame = 0x01FC,
+            PredictionFrame = 0x01FD,
             AuthorizationRequest = 0x03E8,
             AuthorizationResponse = 0x03E9,
             OpMonitorStartRequest = 0x0582,
-            VideoDataResponse = 0x0584,
+            MediaDataResponse = 0x0584,
             OpMonitorClaimRequest = 0x0585,
             OpMonitorClaimResponse = 0x0586,
             OpPtzControl = 0x0578,
