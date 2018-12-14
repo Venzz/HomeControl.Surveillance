@@ -2,11 +2,11 @@
 
 namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 {
-    public class VideoDataResponseMessage: Message
+    public class AudioFrame
     {
         public Byte[] Data { get; }
 
-        public VideoDataResponseMessage(UInt32 sessionId, Byte[] data): base(sessionId)
+        public AudioFrame(Byte[] data)
         {
             Data = data;
         }
