@@ -6,5 +6,7 @@ namespace HomeControl.Surveillance.Server.Data
     {
         MediaDataType MediaDataType { get; }
         Byte[] Data { get; }
+        DateTime Timestamp { get; }
+        TimeSpan Duration { get; }
     }
 }

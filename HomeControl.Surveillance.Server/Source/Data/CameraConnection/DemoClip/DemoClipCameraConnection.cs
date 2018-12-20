@@ -46,11 +46,11 @@ namespace HomeControl.Surveillance.Server.Data.DemoClip
             while (true)
             {
                 if (Data[index].Length < 200)
-                    MediaReceived(this, new AudioMediaData(Data[index], DateTime.Now));
+                    MediaReceived(this, new AudioMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 50)));
                 else if (Data[index].Length < 6000)
-                    MediaReceived(this, new PredictionFrameMediaData(Data[index], DateTime.Now));
+                    MediaReceived(this, new PredictionFrameMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
                 else
-                    MediaReceived(this, new InterFrameMediaData(Data[index], DateTime.Now));
+                    MediaReceived(this, new InterFrameMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
                 index = (index + 1) % Data.Count;
                 await Task.Delay(15);
             }

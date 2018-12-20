@@ -1,16 +1,17 @@
 ﻿using System;
 
-namespace HomeControl.Surveillance.Server.Data
+namespace HomeControl.Surveillance.Player.Model
 {
-    public class InterFrameMediaData: IMediaData
+    public class MediaData
     {
-        public MediaDataType MediaDataType => MediaDataType.InterFrame;
+        public MediaDataType Type { get; }
         public Byte[] Data { get; }
         public DateTime Timestamp { get; }
         public TimeSpan Duration { get; }
 
-        public InterFrameMediaData(Byte[] data, DateTime timestamp, TimeSpan duration)
+        public MediaData(MediaDataType mediaType, Byte[] data, DateTime timestamp, TimeSpan duration)
         {
+            Type = mediaType;
             Data = data;
             Timestamp = timestamp;
             Duration = duration;

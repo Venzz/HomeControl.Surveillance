@@ -44,6 +44,8 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         messageDataWriter.Write((Byte)liveMediaDataResponse.MediaType);
                         messageDataWriter.Write(liveMediaDataResponse.Data.Length);
                         messageDataWriter.Write(liveMediaDataResponse.Data);
+                        messageDataWriter.Write(liveMediaDataResponse.Timestamp.Ticks);
+                        messageDataWriter.Write((UInt32)liveMediaDataResponse.Duration.TotalMilliseconds);
                         break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
@@ -76,7 +78,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         var mediaDataType = (MediaDataType)messageDataReader.ReadByte();
                         var dataLength = messageDataReader.ReadInt32();
                         var data = messageDataReader.ReadBytes(dataLength);
-                        return new LiveMediaDataResponse(mediaDataType, data);
+                        var timestamp = new DateTime(messageDataReader.ReadInt64(), DateTimeKind.Utc);
+                        var duration = TimeSpan.FromMilliseconds(messageDataReader.ReadUInt32());
+                        return new LiveMediaDataResponse(mediaDataType, data, timestamp, duration);
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }

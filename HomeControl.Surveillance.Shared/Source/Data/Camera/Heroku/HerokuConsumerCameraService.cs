@@ -14,7 +14,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private DataQueue DataQueue = new DataQueue();
         private IDictionary<UInt32, TaskCompletionSource<IMessage>> Messages = new Dictionary<UInt32, TaskCompletionSource<IMessage>>();
 
-        public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data)> MediaDataReceived = delegate { };
+        public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)> MediaDataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 
@@ -116,7 +116,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                                 switch (Message.Create(message))
                                 {
                                     case LiveMediaDataResponse liveMediaData:
-                                        MediaDataReceived(this, (liveMediaData.MediaType, liveMediaData.Data));
+                                        MediaDataReceived(this, (liveMediaData.MediaType, liveMediaData.Data, liveMediaData.Timestamp, liveMediaData.Duration));
                                         break;
                                 }
                             }

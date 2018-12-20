@@ -7,7 +7,7 @@ namespace HomeControl.Surveillance.Data.Camera
 {
     public interface IConsumerCameraService
     {
-        event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data)> MediaDataReceived;
+        event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)> MediaDataReceived;
         event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived;
         event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived;
 

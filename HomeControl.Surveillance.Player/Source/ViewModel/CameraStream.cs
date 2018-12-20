@@ -12,10 +12,10 @@ namespace HomeControl.Surveillance.Player.ViewModel
     {
         private CameraController Camera;
         private Boolean IsDisposed;
-        private DateTime? StartDate;
         private VideoEncodingProperties EncodingProperties;
+        private TimeSpan SampleTimestamp;
         private Object Sync = new Object();
-        private IList<Byte[]> VideoSamples = new List<Byte[]>();
+        private IList<MediaData> VideoSamples = new List<MediaData>();
 
         public MediaStreamSource MediaStream { get; private set; }
 
@@ -39,10 +39,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
         public void Synchronize()
         {
             lock (Sync)
-            {
                 VideoSamples.Clear();
-                StartDate = null;
-            }
         }
 
         private async void OnMediaStreamSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
@@ -50,15 +47,16 @@ namespace HomeControl.Surveillance.Player.ViewModel
             var deferal = args.Request.GetDeferral();
             while (!IsDisposed)
             {
-                var data = TryGetVideoSample();
-                if (data == null)
+                var mediaData = TryGetVideoSample();
+                if (mediaData == null)
                 {
                     await Task.Delay(10).ConfigureAwait(false);
                     continue;
                 }
 
-                args.Request.Sample = MediaStreamSample.CreateFromBuffer(data.AsBuffer(), DateTime.Now - StartDate.Value);
-                args.Request.Sample.Duration = Camera.SampleDuration;
+                args.Request.Sample = MediaStreamSample.CreateFromBuffer(mediaData.Data.AsBuffer(), SampleTimestamp);
+                args.Request.Sample.Duration = mediaData.Duration;
+                SampleTimestamp += mediaData.Duration;
                 break;
             }
             deferal.Complete();
@@ -69,20 +67,16 @@ namespace HomeControl.Surveillance.Player.ViewModel
             MediaStream = new MediaStreamSource(new VideoStreamDescriptor(EncodingProperties));
         }
 
-        private void OnCameraDataReceived(CameraController sender, (MediaDataType MediaType, Byte[] Data) args)
+        private void OnCameraDataReceived(CameraController sender, MediaData mediaData)
         {
-            if (args.MediaType == MediaDataType.AudioFrame)
+            if (mediaData.Type == MediaDataType.AudioFrame)
                 return;
 
             lock (Sync)
-            {
-                if (!StartDate.HasValue)
-                    StartDate = DateTime.Now;
-                VideoSamples.Add(args.Data);
-            }
+                VideoSamples.Add(mediaData);
         }
 
-        private Byte[] TryGetVideoSample()
+        private MediaData TryGetVideoSample()
         {
             lock (Sync)
             {

@@ -72,7 +72,7 @@ namespace HomeControl.Surveillance.Server.Model
                 }
                 
                 if (IsProviderCommunicationEnabled)
-                    await ProviderService.SendLiveMediaDataAsync(data.MediaDataType, data.Data).ConfigureAwait(false);
+                    await ProviderService.SendLiveMediaDataAsync(data.MediaDataType, data.Data, data.Timestamp, data.Duration).ConfigureAwait(false);
             }
         });
     }

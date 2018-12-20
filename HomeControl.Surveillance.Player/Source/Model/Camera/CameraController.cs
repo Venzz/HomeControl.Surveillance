@@ -16,7 +16,7 @@ namespace HomeControl.Surveillance.Player.Model
         public String Id { get; }
         public String Title { get; }
 
-        public event TypedEventHandler<CameraController, (MediaDataType MediaType, Byte[] Data)> DataReceived = delegate { };
+        public event TypedEventHandler<CameraController, MediaData> DataReceived = delegate { };
 
 
 
@@ -27,7 +27,7 @@ namespace HomeControl.Surveillance.Player.Model
             Id = title.ToLower();
             Title = title;
             ConsumerService = consumerService;
-            ConsumerService.MediaDataReceived += (sender, data) => DataReceived(this, data);
+            ConsumerService.MediaDataReceived += (sender, args) => DataReceived(this, new MediaData(args.MediaType, args.Data, args.Timestamp, args.Duration));
         }
 
         public Task StartZoomingInAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StartZoomingIn);

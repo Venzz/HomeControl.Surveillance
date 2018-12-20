@@ -251,15 +251,15 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 {
                     case (UInt16)Message.Operation.AudioFrame:
                         mediaDataQueue.Dequeue(8);
-                        MediaReceived(this, new AudioMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        MediaReceived(this, new AudioMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 50)));
                         break;
                     case (UInt16)Message.Operation.PredictionFrame:
                         mediaDataQueue.Dequeue(8);
-                        MediaReceived(this, new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        MediaReceived(this, new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
                         break;
                     case (UInt16)Message.Operation.InterFrame:
                         mediaDataQueue.Dequeue(16);
-                        MediaReceived(this, new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize)));
+                        MediaReceived(this, new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
                         break;
                     default:
                         LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}", $"Unknown\n{peekedData.ToHexView()}"));

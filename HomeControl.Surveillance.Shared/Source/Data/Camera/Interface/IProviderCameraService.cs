@@ -14,6 +14,6 @@ namespace HomeControl.Surveillance.Data.Camera
 
         Task SendAsync(Byte[] data);
         Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<DateTime> storedRecordsMetadata);
-        Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data);
+        Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration);
     }
 }
