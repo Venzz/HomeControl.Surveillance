@@ -52,7 +52,7 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
             #endif
             OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media);
-            OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media.Data);
+            OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;

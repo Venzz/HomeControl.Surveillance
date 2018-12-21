@@ -33,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\IWebSocket.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IProviderCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IConsumerCameraService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Storage\StoredRecordFile.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Primitives\MediaDataType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\PrivateData.cs" />
   </ItemGroup>

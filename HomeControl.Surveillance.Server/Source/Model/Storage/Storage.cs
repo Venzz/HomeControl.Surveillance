@@ -20,7 +20,7 @@ namespace HomeControl.Surveillance.Server.Model
             Service.ExceptionReceived += (sender, args) => ExceptionReceived(this, args);
         }
 
-        public void Store(Byte[] data)
+        public void Store(IMediaData data)
         {
             try
             {

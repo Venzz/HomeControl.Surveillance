@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,7 +9,7 @@ namespace HomeControl.Surveillance.Server.Data.DemoClip
 {
     public class DemoClipCameraConnection: ICameraConnection
     {
-        private List<Byte[]> Data = new List<Byte[]>();
+        private List<IMediaData> Data = new List<IMediaData>();
 
         public Boolean IsZoomingSupported => false;
 
@@ -31,28 +32,37 @@ namespace HomeControl.Surveillance.Server.Data.DemoClip
 
         private async void StartDataGeneration() => await Task.Run(async () =>
         {
-            using (var fileStream = new FileStream($"Source\\Data\\CameraConnection\\DemoClip\\DemoClip.h264", FileMode.Open))
-            using (var binaryReader = new BinaryReader(fileStream))
+            using (var fileStream = new FileStream($"Source\\Data\\CameraConnection\\DemoClip\\DemoClip.sr", FileMode.Open))
+            using (var fileStreamReader = new BinaryReader(fileStream))
             {
-                while (fileStream.Position < fileStream.Length)
+                var mediaDescriptors = StoredRecordFile.ReadMediaDescriptors(fileStream);
+                foreach (var mediaDescriptor in mediaDescriptors)
                 {
-                    var size = binaryReader.ReadInt32();
-                    var data = binaryReader.ReadBytes(size);
-                    Data.Add(data);
+                    fileStream.Seek(mediaDescriptor.Offset, SeekOrigin.Begin);
+                    var dataLength = fileStreamReader.ReadInt32();
+                    var data = fileStreamReader.ReadBytes(dataLength);
+                    switch (mediaDescriptor.Type)
+                    {
+                        case MediaDataType.AudioFrame:
+                            Data.Add(new AudioMediaData(data, mediaDescriptor.Timestamp, mediaDescriptor.Duration));
+                            break;
+                        case MediaDataType.InterFrame:
+                            Data.Add(new InterFrameMediaData(data, mediaDescriptor.Timestamp, mediaDescriptor.Duration));
+                            break;
+                        case MediaDataType.PredictionFrame:
+                            Data.Add(new PredictionFrameMediaData(data, mediaDescriptor.Timestamp, mediaDescriptor.Duration));
+                            break;
+                    }
                 }
             }
 
-            var index = 0;
+            var currentIndex = 0;
             while (true)
             {
-                if (Data[index].Length < 200)
-                    MediaReceived(this, new AudioMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 50)));
-                else if (Data[index].Length < 6000)
-                    MediaReceived(this, new PredictionFrameMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
-                else
-                    MediaReceived(this, new InterFrameMediaData(Data[index], DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
-                index = (index + 1) % Data.Count;
-                await Task.Delay(15);
+                var nextIndex = (currentIndex + 1) % Data.Count;
+                MediaReceived(this, Data[currentIndex]);
+                currentIndex = nextIndex;
+                await Task.Delay(10);
             }
         });
     }

@@ -8,7 +8,7 @@ namespace HomeControl.Surveillance.Server.Data
     {
         event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived;
 
-        void Store(Byte[] data);
+        void Store(IMediaData mediaData);
         IReadOnlyCollection<String> GetStoredRecords();
     }
 }
