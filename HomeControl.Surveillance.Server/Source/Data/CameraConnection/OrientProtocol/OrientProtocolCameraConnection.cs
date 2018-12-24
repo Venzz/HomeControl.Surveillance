@@ -7,16 +7,14 @@ using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 {
-    public class OrientProtocolCameraConnection: ICameraConnection
+    public class OrientProtocolCameraConnection : ICameraConnection
     {
         private UInt32 ConnectionId;
         private String IpAddress;
         private UInt16 Port;
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
-        private DataQueue DataQueue;
-        private DataQueue MediaDataQueue;
-        private UInt32 SessionId;
+        private SessionProperties Session;
         private ReconnectionController ReconnectionController = new ReconnectionController();
 
         public Boolean IsZoomingSupported => true;
@@ -106,10 +104,8 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     lock (ConnectionSync)
                     {
                         Connection = connection;
-                        DataQueue = new DataQueue();
-                        MediaDataQueue = new DataQueue();
+                        Session = new SessionProperties();
                         ReconnectionController.ResetPermissionGrantedDate();
-                        SessionId = 0;
                         Monitor.PulseAll(ConnectionSync);
                     }
                 }
@@ -135,7 +131,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                     await Task.Delay(2000).ConfigureAwait(false);
                     if (ReconnectionController.IsAllowed())
                     {
-                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", $"No data captured, reconnecting... SessionId = {SessionId:x}"));
+                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", $"No data captured, reconnecting... SessionId = {Session.Id:x}"));
                         lock (ConnectionSync)
                         {
                             Connection.DataReceived -= OnDataReceived;
@@ -162,34 +158,34 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 
         private async void OnDataReceived(TcpConnection sender, Byte[] data)
         {
-            (TcpConnection Connection, DataQueue DataQueue, DataQueue MediaDataQueue) GetVariables()
+            (TcpConnection Connection, SessionProperties Session) GetVariables()
             {
                 lock (ConnectionSync)
                 {
                     if (Connection == null)
                         Monitor.Wait(ConnectionSync);
-                    return (Connection, DataQueue, MediaDataQueue);
+                    return (Connection, Session);
                 }
             }
 
             var variables = GetVariables();
             try
             {
-                variables.DataQueue.Enqueue(data);
-                while (variables.DataQueue.Length >= 20)
+                variables.Session.DataQueue.Enqueue(data);
+                while (variables.Session.DataQueue.Length >= 20)
                 {
-                    var peekedData = variables.DataQueue.Peek(20);
+                    var peekedData = variables.Session.DataQueue.Peek(20);
                     var dataSize = peekedData[16] + peekedData[17] * 256;
-                    if (variables.DataQueue.Length < dataSize + 20)
+                    if (variables.Session.DataQueue.Length < dataSize + 20)
                         return;
 
-                    var message = Message.Create(variables.DataQueue.Dequeue(dataSize + 20));
+                    var message = Message.Create(variables.Session.DataQueue.Dequeue(dataSize + 20));
                     switch (message)
                     {
                         case AuthorizationResponseMessage authorizationResponse:
                             ReconnectionController.ResetPermissionGrantedDate();
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(AuthorizationResponseMessage)}, SessionId = {authorizationResponse.SessionId:x}"));
-                            SessionId = authorizationResponse.SessionId;
+                            variables.Session.Id = authorizationResponse.SessionId;
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
@@ -199,7 +195,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                             break;
                         case MediaDataResponseMessage mediaDataResponse:
                             ReconnectionController.Reset();
-                            OnMediaReceived(variables.MediaDataQueue, mediaDataResponse);
+                            OnMediaReceived(variables.Session, mediaDataResponse);
                             break;
                         case UnknownResponseMessage unknownResponse:
                             LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
@@ -223,12 +219,12 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
             }
         }
 
-        private void OnMediaReceived(DataQueue mediaDataQueue, MediaDataResponseMessage mediaDataResponse)
+        private void OnMediaReceived(SessionProperties session, MediaDataResponseMessage mediaDataResponse)
         {
-            mediaDataQueue.Enqueue(mediaDataResponse.Data);
-            while (mediaDataQueue.Length >= 16)
+            session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+            while (session.MediaDataQueue.Length >= 16)
             {
-                var peekedData = mediaDataQueue.Peek(16);
+                var peekedData = session.MediaDataQueue.Peek(16);
                 var operationCode = peekedData[2] * 256 + peekedData[3];
                 var dataSize = 0;
                 switch (operationCode)
@@ -244,25 +240,49 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         break;
                 }
 
-                if (mediaDataQueue.Length < dataSize + 16)
+                if (session.MediaDataQueue.Length < dataSize + 16)
                     return;
 
+                var now = DateTime.UtcNow;
                 switch (operationCode)
                 {
                     case (UInt16)Message.Operation.AudioFrame:
-                        mediaDataQueue.Dequeue(8);
-                        MediaReceived(this, new AudioMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 50)));
+                        if (!session.LastAudioTimestamp.HasValue)
+                            session.LastAudioTimestamp = now;
+                        var duration = now - session.LastAudioTimestamp.Value;
+                        if (duration.TotalMilliseconds == 0)
+                            duration = TimeSpan.FromMilliseconds(1.0 / 50);
+
+                        session.LastAudioTimestamp = now;
+                        session.MediaDataQueue.Dequeue(8);
+                        MediaReceived(this, new AudioMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
                     case (UInt16)Message.Operation.PredictionFrame:
-                        mediaDataQueue.Dequeue(8);
-                        MediaReceived(this, new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
+                        if (!session.LastVideoTimestamp.HasValue)
+                            session.LastVideoTimestamp = now;
+                        duration = now - session.LastVideoTimestamp.Value;
+                        if (duration.TotalMilliseconds == 0)
+                            duration = TimeSpan.FromMilliseconds(1.0 / 12.5);
+
+                        session.LastVideoTimestamp = now;
+                        session.MediaDataQueue.Dequeue(8);
+                        MediaReceived(this, new PredictionFrameMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
                     case (UInt16)Message.Operation.InterFrame:
-                        mediaDataQueue.Dequeue(16);
-                        MediaReceived(this, new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize), DateTime.UtcNow, TimeSpan.FromSeconds(1.0 / 12.5)));
+                        if (!session.LastVideoTimestamp.HasValue)
+                            session.LastVideoTimestamp = now;
+                        duration = now - session.LastVideoTimestamp.Value;
+                        if (duration.TotalMilliseconds == 0)
+                            duration = TimeSpan.FromMilliseconds(1.0 / 12.5);
+
+                        session.LastVideoTimestamp = now;
+                        session.MediaDataQueue.Dequeue(16);
+                        MediaReceived(this, new InterFrameMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
                     default:
-                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}", $"Unknown\n{peekedData.ToHexView()}"));
+                        var queuedData = session.MediaDataQueue.Peek(session.MediaDataQueue.Length);
+                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}", $"Unknown\n{queuedData.ToHexView()}"));
+                        session.MediaDataQueue.Clear();
                         break;
                 }
             }
@@ -272,9 +292,29 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
         {
             lock (ConnectionSync)
             {
-                if ((Connection == null) || (SessionId == 0))
+                if ((Connection == null) || (Session.Id == 0))
                     return (null, 0);
-                return (Connection, SessionId);
+                return (Connection, Session.Id);
+            }
+        }
+
+
+
+        private class SessionProperties
+        {
+            public UInt32 Id { get; set; }
+            public DataQueue DataQueue { get; }
+            public DataQueue MediaDataQueue { get; }
+            public DateTime? LastAudioTimestamp { get; set; }
+            public DateTime? LastVideoTimestamp { get; set; }
+
+            public SessionProperties()
+            {
+                Id = 0;
+                DataQueue = new DataQueue();
+                MediaDataQueue = new DataQueue();
+                LastAudioTimestamp = null;
+                LastVideoTimestamp = null;
             }
         }
     }
