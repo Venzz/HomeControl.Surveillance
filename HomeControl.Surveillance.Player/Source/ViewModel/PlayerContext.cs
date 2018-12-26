@@ -32,13 +32,23 @@ namespace HomeControl.Surveillance.Player.ViewModel
             var mediaDescriptors = StoredRecordFile.ReadMediaDescriptors(Stream.AsStream());
             MediaDescriptors = mediaDescriptors.Where(a => (a.Type == MediaDataType.InterFrame || a.Type == MediaDataType.PredictionFrame)).SkipWhile(a => a.Type == MediaDataType.PredictionFrame).ToList();
 
-            var duration = TimeSpan.FromSeconds(MediaDescriptors.Sum(a => a.Duration.TotalSeconds));
             MediaStream = new MediaStreamSource(new VideoStreamDescriptor(VideoEncodingProperties.CreateH264()));
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
             MediaStream.Starting += OnMediaStreamStarting;
             MediaStream.CanSeek = true;
-            MediaStream.Duration = duration;
+            MediaStream.Duration = TimeSpan.FromSeconds(MediaDescriptors.Sum(a => a.Duration.TotalSeconds));
+            MediaStream.MaxSupportedPlaybackRate = 10;
+
             MediaPlayer.PlaybackSession.Position = new TimeSpan();
+            MediaPlayer.AutoPlay = true;
+            MediaPlayer.Source = MediaSource.CreateFromMediaStreamSource(MediaStream);
+        }
+
+        public void TryCloseOpenedFile()
+        {
+            if (MediaPlayer != null)
+                MediaPlayer.Source = null;
+            Stream?.Dispose();
         }
 
         private void OnMediaStreamStarting(MediaStreamSource sender, MediaStreamSourceStartingEventArgs args)
@@ -52,6 +62,10 @@ namespace HomeControl.Surveillance.Player.ViewModel
             {
                 CurrentSampleTimestamp += MediaDescriptors[index].Duration;
                 index++;
+            }
+            if (index >= MediaDescriptors.Count)
+            {
+                index = MediaDescriptors.Count - 1;
             }
             while ((index >= 0) && (MediaDescriptors[index].Type != MediaDataType.InterFrame))
             {
@@ -74,7 +88,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
                 return;
 
             var deferral = args.Request.GetDeferral();
-            var mediaDescriptor = MediaDescriptors[(Int32)CurrentSampleIndex++];
+            var mediaDescriptor = MediaDescriptors[(Int32)CurrentSampleIndex];
             var sampleData = (IBuffer)null;
             using (var reader = new DataReader(Stream) { ByteOrder = ByteOrder.LittleEndian })
             {
@@ -89,7 +103,21 @@ namespace HomeControl.Surveillance.Player.ViewModel
             args.Request.Sample = MediaStreamSample.CreateFromBuffer(sampleData, CurrentSampleTimestamp);
             args.Request.Sample.Duration = mediaDescriptor.Duration;
             CurrentSampleTimestamp += mediaDescriptor.Duration;
+            CurrentSampleIndex++;
+
             deferral.Complete();
+        }
+
+        public void EnabledNormalRate() => MediaPlayer.PlaybackSession.PlaybackRate = 1.0;
+
+        public void EnabledMaxRate() => MediaPlayer.PlaybackSession.PlaybackRate = 3.0;
+
+        public void EnabledFastForward()
+        {
+        }
+
+        public void DisableFastForward()
+        {
         }
 
         public void Dispose() => Stream.Dispose();

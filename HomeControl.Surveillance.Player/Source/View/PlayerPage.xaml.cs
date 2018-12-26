@@ -1,4 +1,5 @@
 ﻿using HomeControl.Surveillance.Player.ViewModel;
+using System;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Controls;
@@ -14,6 +15,7 @@ namespace HomeControl.Surveillance.Player.View
         {
             InitializeComponent();
             DataContext = Context;
+            VideoPlayer.SetMediaPlayer(Context.MediaPlayer);
         }
 
         public async void Activate(IStorageItem item)
@@ -21,12 +23,17 @@ namespace HomeControl.Surveillance.Player.View
             if (!(item is StorageFile file))
                 return;
 
+            Context.TryCloseOpenedFile();
             await Context.OpenAsync(file);
-
-            Context.MediaPlayer.Source = MediaSource.CreateFromMediaStreamSource(Context.MediaStream);
-            Context.MediaPlayer.AutoPlay = true;
-            VideoPlayer.SetMediaPlayer(Context.MediaPlayer);
         }
+
+        private void OnNormalRateEnabled(Controls.PlayerControls sender, Object args) => Context.EnabledNormalRate();
+
+        private void OnMaxRateEnabled(Controls.PlayerControls sender, Object args) => Context.EnabledMaxRate();
+
+        private void OnFastForwardEnabled(Controls.PlayerControls sender, Object args) => Context.EnabledFastForward();
+
+        private void OnFastForwardDisabled(Controls.PlayerControls sender, Object args) => Context.DisableFastForward();
 
         protected override void OnNavigatedFrom(NavigationEventArgs args)
         {

@@ -115,6 +115,7 @@
     <Compile Include="Source\View\PlayerPage.xaml.cs">
       <DependentUpon>PlayerPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Source\View\Controls\PlayerControls.cs" />
     <Compile Include="Venz\Converters.cs" />
     <Compile Include="Venz\ObservableObject.cs" />
     <Compile Include="Venz\UI\Xaml\Application\Application.cs" />
@@ -191,6 +192,10 @@
     <Page Include="Source\View\PlayerPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
