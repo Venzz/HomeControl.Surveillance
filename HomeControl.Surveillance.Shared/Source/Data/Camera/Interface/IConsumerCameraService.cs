@@ -12,6 +12,6 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
         Task PerformAsync(Command command);
-        Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync();
+        Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync();
     }
 }

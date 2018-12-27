@@ -6,9 +6,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
     public class StoredRecordsMetadataResponse: IMessage
     {
         public MessageId Type { get; } = MessageId.StoredRecordsMetadataResponse;
-        public IReadOnlyCollection<DateTime> RecordsMetadata { get; }
+        public IReadOnlyCollection<(String Id, DateTime Date)> RecordsMetadata { get; }
 
-        public StoredRecordsMetadataResponse(IReadOnlyCollection<DateTime> recordsMetadata)
+        public StoredRecordsMetadataResponse(IReadOnlyCollection<(String Id, DateTime Date)> recordsMetadata)
         {
             RecordsMetadata = recordsMetadata;
         }

@@ -178,7 +178,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         });
 
-        public Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<DateTime> storedRecordsMetadata)
+        public Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<(String Id, DateTime Date)> storedRecordsMetadata)
         {
             var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
             var responseMessage = new Message(id, response);

@@ -32,16 +32,16 @@ namespace HomeControl.Surveillance.Server.Model
             }
         }
 
-        public IReadOnlyCollection<DateTime> GetStoredRecordsMetadata()
+        public IReadOnlyCollection<(String Id, DateTime Date)> GetStoredRecordsMetadata()
         {
-            var storedRecordsMetadata = new HashSet<DateTime>();
+            var storedRecordsMetadata = new List<(String Id, DateTime Date)>();
             var storedRecords = Service.GetStoredRecords();
             foreach (var storedRecord in storedRecords)
             {
-                var date = DateTime.Parse(storedRecord.Substring(0, 10));
-                storedRecordsMetadata.Add(date);
+                var date = DateTime.Parse(storedRecord.Substring(0, 10)).AddHours(Int32.Parse(storedRecord.Substring(11, 2)));
+                storedRecordsMetadata.Add((storedRecord, date));
             }
-            return storedRecordsMetadata.OrderByDescending(a => a).ToList();
+            return storedRecordsMetadata.OrderByDescending(a => a.Date).ToList();
         }
     }
 }

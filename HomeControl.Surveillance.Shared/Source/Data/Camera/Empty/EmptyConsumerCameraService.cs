@@ -15,6 +15,6 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
 
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
 
-        public Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<DateTime>>(new List<DateTime>());        
+        public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<(String Id, DateTime Date)>>(new List<(String Id, DateTime Date)>());        
     }
 }

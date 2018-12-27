@@ -43,7 +43,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         }
 
-        public async Task<IReadOnlyCollection<DateTime>> GetStoredRecordsMetadataAsync()
+        public async Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync()
         {
             var message = new Message(Message.GetId(), new StoredRecordsMetadataRequest());
             var responseMessage = await RequestAsync(message);

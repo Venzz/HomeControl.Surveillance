@@ -39,7 +39,7 @@ namespace HomeControl.Surveillance.Player.Model
         public async Task<IReadOnlyCollection<StoredRecord>> GetStoredRecordsMetadataAsync()
         {
             var storedRecordsMetadata = await ConsumerService.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
-            return storedRecordsMetadata.Select(a => new StoredRecord() { Date = a }).ToList();
+            return storedRecordsMetadata.Select(a => new StoredRecord() { Id = a.Id, Date = a.Date }).ToList();
         }
     }
 }

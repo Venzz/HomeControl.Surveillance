@@ -38,7 +38,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     case StoredRecordsMetadataResponse storedRecordsMetadataResponse:
                         messageDataWriter.Write((UInt16)storedRecordsMetadataResponse.RecordsMetadata.Count);
                         foreach (var item in storedRecordsMetadataResponse.RecordsMetadata)
-                            messageDataWriter.Write(item.Ticks);
+                        {
+                            messageDataWriter.Write(item.Id);
+                            messageDataWriter.Write(item.Date.Ticks);
+                        }
                         break;
                     case LiveMediaDataResponse liveMediaDataResponse:
                         messageDataWriter.Write((Byte)liveMediaDataResponse.MediaType);
@@ -70,9 +73,9 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         return new StoredRecordsMetadataRequest();
                     case MessageId.StoredRecordsMetadataResponse:
                         var recordsCount = messageDataReader.ReadUInt16();
-                        var recordsMetadata = new List<DateTime>();
+                        var recordsMetadata = new List<(String Id, DateTime Date)>();
                         for (var i = 0; i < recordsCount; i++)
-                            recordsMetadata.Add(new DateTime(messageDataReader.ReadInt64()));
+                            recordsMetadata.Add((messageDataReader.ReadString(), new DateTime(messageDataReader.ReadInt64())));
                         return new StoredRecordsMetadataResponse(recordsMetadata);
                     case MessageId.LiveMediaData:
                         var mediaDataType = (MediaDataType)messageDataReader.ReadByte();
