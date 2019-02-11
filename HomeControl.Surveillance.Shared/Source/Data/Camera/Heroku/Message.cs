@@ -50,6 +50,11 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         messageDataWriter.Write(liveMediaDataResponse.Timestamp.Ticks);
                         messageDataWriter.Write((UInt32)liveMediaDataResponse.Duration.TotalMilliseconds);
                         break;
+                    case PartialMessageResponse partialMessageResponse:
+                        messageDataWriter.Write(partialMessageResponse.Final);
+                        messageDataWriter.Write(partialMessageResponse.Data.Length);
+                        messageDataWriter.Write(partialMessageResponse.Data);
+                        break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }
@@ -72,7 +77,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     case MessageId.StoredRecordsMetadataRequest:
                         return new StoredRecordsMetadataRequest();
                     case MessageId.StoredRecordsMetadataResponse:
-                        var recordsCount = messageDataReader.ReadUInt16();
+                        var recordsCount = (UInt32)messageDataReader.ReadUInt16();
                         var recordsMetadata = new List<(String Id, DateTime Date)>();
                         for (var i = 0; i < recordsCount; i++)
                             recordsMetadata.Add((messageDataReader.ReadString(), new DateTime(messageDataReader.ReadInt64())));
@@ -84,6 +89,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         var timestamp = new DateTime(messageDataReader.ReadInt64(), DateTimeKind.Utc);
                         var duration = TimeSpan.FromMilliseconds(messageDataReader.ReadUInt32());
                         return new LiveMediaDataResponse(mediaDataType, data, timestamp, duration);
+                    case MessageId.PartialMessageResponse:
+                        var final = messageDataReader.ReadBoolean();
+                        dataLength = messageDataReader.ReadInt32();
+                        return new PartialMessageResponse(final, messageDataReader.ReadBytes(dataLength));
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }

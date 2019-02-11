@@ -5,5 +5,6 @@
         StoredRecordsMetadataRequest,
         StoredRecordsMetadataResponse,
         LiveMediaData,
+        PartialMessageResponse
     }
 }

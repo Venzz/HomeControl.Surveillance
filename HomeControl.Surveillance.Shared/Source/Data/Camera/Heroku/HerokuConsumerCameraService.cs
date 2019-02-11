@@ -13,6 +13,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private String ServiceName;
         private DataQueue DataQueue = new DataQueue();
         private IDictionary<UInt32, TaskCompletionSource<IMessage>> Messages = new Dictionary<UInt32, TaskCompletionSource<IMessage>>();
+        private IDictionary<UInt32, DataQueue> PartialMessages = new Dictionary<UInt32, DataQueue>();
 
         public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)> MediaDataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
@@ -124,8 +125,27 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                             {
                                 if (!Messages.ContainsKey(message.Id))
                                     continue;
-                                Messages[message.Id].SetResult(Message.Create(message));
-                                Messages.Remove(message.Id);
+
+                                var messageResponse = Message.Create(message);
+                                if (!(messageResponse is PartialMessageResponse partialMessageResponse))
+                                {
+                                    Messages[message.Id].SetResult(messageResponse);
+                                    Messages.Remove(message.Id);
+                                }
+                                else
+                                {
+                                    if (!PartialMessages.ContainsKey(message.Id))
+                                        PartialMessages.Add(message.Id, new DataQueue());
+                                    PartialMessages[message.Id].Enqueue(partialMessageResponse.Data);
+
+                                    if (partialMessageResponse.Final)
+                                    {
+                                        message = new Message(PartialMessages[message.Id].Dequeue(PartialMessages[message.Id].Length));
+                                        Messages[message.Id].SetResult(Message.Create(message));
+                                        Messages.Remove(message.Id);
+                                        PartialMessages.Remove(message.Id);
+                                    }
+                                }
                             }
                         }
                     }

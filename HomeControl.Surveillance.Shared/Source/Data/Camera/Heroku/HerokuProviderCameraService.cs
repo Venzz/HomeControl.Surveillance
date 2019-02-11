@@ -9,6 +9,8 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 {
     public class HerokuProviderCameraService: IProviderCameraService
     {
+        private const UInt32 MaximumMessageSize = 100000;
+
         private Object ConnectionSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
@@ -95,16 +97,30 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         }
 
-        private Task SendNewAsync(Byte[] data) => SendNewAsync(WebSocket, data);
+        private Task SendNewAsync(Message message) => SendNewAsync(WebSocket, message);
 
-        private async Task SendNewAsync(IWebSocket socket, Byte[] data)
+        private async Task SendNewAsync(IWebSocket socket, Message message)
         {
             try
             {
                 if (socket == null)
                     return;
 
-                await socket.SendAsync(data).ConfigureAwait(false);
+                if (message.Data.Length >= MaximumMessageSize)
+                {
+                    var packetsCount = (message.Data.Length / MaximumMessageSize) + (message.Data.Length % MaximumMessageSize > 0 ? 1 : 0);
+                    for (var i = 0; i < packetsCount; i++)
+                    {
+                        var packetData = new Byte[((i == packetsCount - 1) && (message.Data.Length % MaximumMessageSize > 0)) ? message.Data.Length % MaximumMessageSize : MaximumMessageSize];
+                        Array.Copy(message.Data, i * MaximumMessageSize, packetData, 0, packetData.Length);
+                        var partialMessageResponse = new PartialMessageResponse(i == packetsCount - 1, packetData);
+                        await socket.SendAsync(new Message(message.Id, partialMessageResponse).Data).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    await socket.SendAsync(message.Data).ConfigureAwait(false);
+                }
             }
             catch (Exception exception)
             {
@@ -182,14 +198,14 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         {
             var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
             var responseMessage = new Message(id, response);
-            return SendNewAsync(responseMessage.Data);
+            return SendNewAsync(responseMessage);
         }
 
         public Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration)
         {
             var response = new LiveMediaDataResponse(type, data, timestamp, duration);
             var responseMessage = new Message(0, response);
-            return SendNewAsync(responseMessage.Data);
+            return SendNewAsync(responseMessage);
         }
 
         private async void StartReceiving() => await Task.Run(async () =>
