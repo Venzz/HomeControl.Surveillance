@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -205,6 +206,20 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         {
             var response = new LiveMediaDataResponse(type, data, timestamp, duration);
             var responseMessage = new Message(0, response);
+            return SendNewAsync(responseMessage);
+        }
+
+        public Task SendMediaDataDescriptorsAsync(UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors)
+        {
+            var response = new StoredRecordMediaDescriptorsResponse(descriptors);
+            var responseMessage = new Message(id, response);
+            return SendNewAsync(responseMessage);
+        }
+
+        public Task SendMediaDataAsync(UInt32 id, Byte[] data)
+        {
+            var response = new StoredRecordMediaDataResponse(data);
+            var responseMessage = new Message(id, response);
             return SendNewAsync(responseMessage);
         }
 

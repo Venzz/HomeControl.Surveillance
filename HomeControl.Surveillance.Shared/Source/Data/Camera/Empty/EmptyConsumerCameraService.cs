@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -15,6 +16,16 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
 
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
 
-        public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<(String Id, DateTime Date)>>(new List<(String Id, DateTime Date)>());        
+        public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<(String Id, DateTime Date)>>(new List<(String Id, DateTime Date)>());
+
+        public Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

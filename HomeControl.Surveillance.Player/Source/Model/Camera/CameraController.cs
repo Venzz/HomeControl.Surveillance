@@ -1,4 +1,5 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
+using HomeControl.Surveillance.Data.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,18 @@ namespace HomeControl.Surveillance.Player.Model
         {
             var storedRecordsMetadata = await ConsumerService.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
             return storedRecordsMetadata.Select(a => new StoredRecord() { Id = a.Id, Date = a.Date }).ToList();
+        }
+
+        public async Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
+        {
+            var mediaDataDescriptors = await ConsumerService.GetMediaDataDescriptorsAsync(id).ConfigureAwait(false);
+            return mediaDataDescriptors;
+        }
+
+        public async Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
+        {
+            var mediaData = await ConsumerService.GetMediaDataAsync(id, offset).ConfigureAwait(false);
+            return mediaData;
         }
     }
 }

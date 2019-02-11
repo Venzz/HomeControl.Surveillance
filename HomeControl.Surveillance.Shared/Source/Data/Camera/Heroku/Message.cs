@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -50,6 +51,27 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         messageDataWriter.Write(liveMediaDataResponse.Timestamp.Ticks);
                         messageDataWriter.Write((UInt32)liveMediaDataResponse.Duration.TotalMilliseconds);
                         break;
+                    case StoredRecordMediaDescriptorsRequest storedRecordMediaDescriptorsRequest:
+                        messageDataWriter.Write(storedRecordMediaDescriptorsRequest.StoredRecordId);
+                        break;
+                    case StoredRecordMediaDescriptorsResponse storedRecordMediaDescriptorsResponse:
+                        messageDataWriter.Write((UInt32)storedRecordMediaDescriptorsResponse.MediaDescriptors.Count);
+                        foreach (var item in storedRecordMediaDescriptorsResponse.MediaDescriptors)
+                        {
+                            messageDataWriter.Write((Byte)item.Type);
+                            messageDataWriter.Write(item.Offset);
+                            messageDataWriter.Write(item.Timestamp.Ticks);
+                            messageDataWriter.Write(item.Duration.TotalMilliseconds);
+                        }
+                        break;
+                    case StoredRecordMediaDataRequest storedRecordMediaDataRequest:
+                        messageDataWriter.Write(storedRecordMediaDataRequest.StoredRecordId);
+                        messageDataWriter.Write(storedRecordMediaDataRequest.Offset);
+                        break;
+                    case StoredRecordMediaDataResponse storedRecordMediaDataResponse:
+                        messageDataWriter.Write(storedRecordMediaDataResponse.Data.Length);
+                        messageDataWriter.Write(storedRecordMediaDataResponse.Data);
+                        break;
                     case PartialMessageResponse partialMessageResponse:
                         messageDataWriter.Write(partialMessageResponse.Final);
                         messageDataWriter.Write(partialMessageResponse.Data.Length);
@@ -89,6 +111,27 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         var timestamp = new DateTime(messageDataReader.ReadInt64(), DateTimeKind.Utc);
                         var duration = TimeSpan.FromMilliseconds(messageDataReader.ReadUInt32());
                         return new LiveMediaDataResponse(mediaDataType, data, timestamp, duration);
+                    case MessageId.StoredRecordMediaDescriptorsRequest:
+                        return new StoredRecordMediaDescriptorsRequest(messageDataReader.ReadString());
+                    case MessageId.StoredRecordMediaDescriptorsResponse:
+                        recordsCount = messageDataReader.ReadUInt32();
+                        var mediaDataDescriptors = new List<StoredRecordFile.MediaDataDescriptor>();
+                        for (var i = 0; i < recordsCount; i++)
+                        {
+                            mediaDataDescriptors.Add(new StoredRecordFile.MediaDataDescriptor()
+                            {
+                                Type = (MediaDataType)messageDataReader.ReadByte(),
+                                Offset = messageDataReader.ReadUInt32(),
+                                Timestamp = new DateTime(messageDataReader.ReadInt64(), DateTimeKind.Utc),
+                                Duration = TimeSpan.FromMilliseconds(messageDataReader.ReadDouble())
+                            });
+                        }
+                        return new StoredRecordMediaDescriptorsResponse(mediaDataDescriptors);
+                    case MessageId.StoredRecordMediaDataRequest:
+                        return new StoredRecordMediaDataRequest(messageDataReader.ReadString(), messageDataReader.ReadUInt32());
+                    case MessageId.StoredRecordMediaDataResponse:
+                        dataLength = messageDataReader.ReadInt32();
+                        return new StoredRecordMediaDataResponse(messageDataReader.ReadBytes(dataLength));
                     case MessageId.PartialMessageResponse:
                         var final = messageDataReader.ReadBoolean();
                         dataLength = messageDataReader.ReadInt32();

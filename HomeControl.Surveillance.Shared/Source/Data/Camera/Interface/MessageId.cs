@@ -5,6 +5,10 @@
         StoredRecordsMetadataRequest,
         StoredRecordsMetadataResponse,
         LiveMediaData,
+        StoredRecordMediaDescriptorsRequest,
+        StoredRecordMediaDescriptorsResponse,
+        StoredRecordMediaDataRequest,
+        StoredRecordMediaDataResponse,
         PartialMessageResponse
     }
 }

@@ -66,6 +66,16 @@ namespace HomeControl.Surveillance.Server.Model
                     var storedRecordsMetadata = Storage.GetStoredRecordsMetadata();
                     await sender.SendStoredRecordsMetadataAsync(args.Id, storedRecordsMetadata).ConfigureAwait(false);
                     break;
+                case MessageId.StoredRecordMediaDescriptorsRequest:
+                    var storedRecordMediaDescriptorsRequest = (StoredRecordMediaDescriptorsRequest)args.Message;
+                    var mediaDescriptors = Storage.GetStoredRecordMediaDescriptors(storedRecordMediaDescriptorsRequest.StoredRecordId);
+                    await sender.SendMediaDataDescriptorsAsync(args.Id, mediaDescriptors).ConfigureAwait(false);
+                    break;
+                case MessageId.StoredRecordMediaDataRequest:
+                    var storedRecordMediaDataRequest = (StoredRecordMediaDataRequest)args.Message;
+                    var mediaData = Storage.GetStoredRecordMediaData(storedRecordMediaDataRequest.StoredRecordId, storedRecordMediaDataRequest.Offset);
+                    await sender.SendMediaDataAsync(args.Id, mediaData).ConfigureAwait(false);
+                    break;
             }
         });
 

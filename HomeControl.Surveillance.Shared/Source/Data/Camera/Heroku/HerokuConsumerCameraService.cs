@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +53,26 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 throw new InvalidOperationException();
             var response = (StoredRecordsMetadataResponse)responseMessage;
             return response.RecordsMetadata;
+        }
+
+        public async Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
+        {
+            var message = new Message(Message.GetId(), new StoredRecordMediaDescriptorsRequest(id));
+            var responseMessage = await RequestAsync(message);
+            if (responseMessage.Type != MessageId.StoredRecordMediaDescriptorsResponse)
+                throw new InvalidOperationException();
+            var response = (StoredRecordMediaDescriptorsResponse)responseMessage;
+            return response.MediaDescriptors;
+        }
+
+        public async Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
+        {
+            var message = new Message(Message.GetId(), new StoredRecordMediaDataRequest(id, offset));
+            var responseMessage = await RequestAsync(message);
+            if (responseMessage.Type != MessageId.StoredRecordMediaDataResponse)
+                throw new InvalidOperationException();
+            var response = (StoredRecordMediaDataResponse)responseMessage;
+            return response.Data;
         }
 
         private async void StartConnectionMaintaining() => await Task.Run(async () =>

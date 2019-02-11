@@ -1,4 +1,5 @@
-﻿using HomeControl.Surveillance.Server.Data;
+﻿using HomeControl.Surveillance.Data.Storage;
+using HomeControl.Surveillance.Server.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,16 @@ namespace HomeControl.Surveillance.Server.Model
                 storedRecordsMetadata.Add((storedRecord, date));
             }
             return storedRecordsMetadata.OrderByDescending(a => a.Date).ToList();
+        }
+
+        public IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id)
+        {
+            return Service.GetStoredRecordMediaDescriptors(id);
+        }
+
+        public Byte[] GetStoredRecordMediaData(String id, UInt32 offset)
+        {
+            return Service.GetStoredRecordMediaData(id, offset);
         }
     }
 }

@@ -53,6 +53,25 @@ namespace HomeControl.Surveillance.Server.Data.File
             return storedRecords;
         }
 
+        public IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id)
+        {
+            var file = new FileInfo(id);
+            using (var fileStream = file.Open(FileMode.Open, FileAccess.Read))
+                return StoredRecordFile.ReadMediaDescriptors(fileStream);
+        }
+
+        public Byte[] GetStoredRecordMediaData(String id, UInt32 offset)
+        {
+            var file = new FileInfo(id);
+            using (var fileStream = file.Open(FileMode.Open, FileAccess.Read))
+            using (var binaryFileReader = new BinaryReader(fileStream))
+            {
+                fileStream.Position = offset;
+                var size = binaryFileReader.ReadInt32();
+                return binaryFileReader.ReadBytes(size);
+            }
+        }
+
         private Task FlushAsync(List<IMediaData> mediaData) => Task.Run(() =>
         {
             try
