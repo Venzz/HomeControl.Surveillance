@@ -100,6 +100,7 @@
     <Compile Include="Source\Model\Camera\MediaData.cs" />
     <Compile Include="Source\Model\Camera\StoredRecord.cs" />
     <Compile Include="Source\ViewModel\CameraContext.cs" />
+    <Compile Include="Source\ViewModel\StoredRecordStream.cs" />
     <Compile Include="Source\ViewModel\HubContext.cs" />
     <Compile Include="Source\ViewModel\CameraStream.cs" />
     <Compile Include="Source\ViewModel\PlayerContext.cs" />

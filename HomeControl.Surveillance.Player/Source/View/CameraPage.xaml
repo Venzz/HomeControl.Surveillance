@@ -26,14 +26,18 @@
                         <Button Margin="12" Content="Zoom -" Width="100" Click="OnStartZoomingOutClicked"/>
                         <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>
                     </StackPanel>
-                    <ListView Grid.Row="1" ItemsSource="{Binding StoredRecords}">
+                    <ListView
+                        x:Name="StoredRecordsView"
+                        Grid.Row="1"
+                        ItemsSource="{Binding StoredRecords}"
+                        SelectionChanged="OnSelectionChanged">
                         <ListView.ItemContainerTransitions>
                             <TransitionCollection/>
                         </ListView.ItemContainerTransitions>
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
-                                    <TextBlock Text="{Binding Date}"/>
+                                    <TextBlock Text="{Binding Title}"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -42,8 +46,8 @@
                                 <Style.Setters>
                                     <Setter Property="Padding" Value="12"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                        <Setter Property="Height" Value="0"/>
-                                    </Style.Setters>
+                                    <Setter Property="Height" Value="0"/>
+                                </Style.Setters>
                             </Style>
                         </ListView.ItemContainerStyle>
                     </ListView>

@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Venz.Data;
 using Windows.UI.Core;
@@ -16,7 +17,8 @@ namespace HomeControl.Surveillance.Player.ViewModel
         public Boolean IsTilePinned { get; private set; }
         public IconElement TileIcon => new SymbolIcon(IsTilePinned ? Symbol.UnPin : Symbol.Pin);
         public IEnumerable<StoredRecord> StoredRecords { get; private set; }
-          
+        public StoredRecordStream StoredRecordStream { get; private set; }
+
 
 
         public CameraContext() { }
@@ -32,7 +34,12 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
         public Task InitializeAsync() => Task.Run(async () =>
         {
-            StoredRecords = await CameraController.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
+            var storedRecordsMetadata = await CameraController.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
+            var storedRecords = new List<StoredRecord>();
+            storedRecords.Add(new StoredRecord(null));
+            storedRecords.AddRange(storedRecordsMetadata.Select(a => new StoredRecord(a)));
+
+            StoredRecords = storedRecords;
             OnPropertyChanged(nameof(StoredRecords));
         });
 
@@ -57,9 +64,30 @@ namespace HomeControl.Surveillance.Player.ViewModel
             OnPropertyChanged(nameof(TileIcon));
         }
 
+        public Task InitializeStoredRecordStreamAsync(StoredRecord storedRecord) => Task.Run(async () =>
+        {
+            var mediaDataDescriptors = await CameraController.GetMediaDataDescriptorsAsync(storedRecord.Model.Id).ConfigureAwait(false);
+            StoredRecordStream = new StoredRecordStream(CameraController, storedRecord.Model.Id, mediaDataDescriptors);
+        });
+
         public void Dispose()
         {
             CameraStream.Dispose();
+            StoredRecordStream?.Dispose();
+        }
+
+
+
+        public class StoredRecord
+        {
+            public Model.StoredRecord Model { get; }
+            public String Title { get; }
+
+            public StoredRecord(Model.StoredRecord model)
+            {
+                Model = model;
+                Title = (model == null) ? "Live" : model.Id;
+            }
         }
     }
 }

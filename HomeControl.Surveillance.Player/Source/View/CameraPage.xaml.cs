@@ -28,8 +28,8 @@ namespace HomeControl.Surveillance.Player.View
             var parameters = (List<Object>)args.Parameter;
             ApplicationView.Consolidated += OnApplicationViewConsolidated;
             Context.Initialize((CameraController)parameters[0], (CoreDispatcher)parameters[1]);
-            VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
             await Context.InitializeAsync();
+            StoredRecordsView.SelectedIndex = 0;
         }
 
         private void OnStartZoomingInClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingIn();
@@ -67,6 +67,23 @@ namespace HomeControl.Surveillance.Player.View
         {
             Context.Dispose();
             Window.Current.Close();
+        }
+
+        private async void OnSelectionChanged(Object sender, SelectionChangedEventArgs args)
+        {
+            var selectedItem = (CameraContext.StoredRecord)args.AddedItems[0];
+            if (selectedItem.Model == null)
+            {
+                VideoPlayer.AreTransportControlsEnabled = false;
+                VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
+                Context.CameraStream.Synchronize();
+            }
+            else
+            {
+                await Context.InitializeStoredRecordStreamAsync(selectedItem);
+                VideoPlayer.SetMediaStreamSource(Context.StoredRecordStream.MediaStream);
+                VideoPlayer.AreTransportControlsEnabled = true;
+            }
         }
     }
 }

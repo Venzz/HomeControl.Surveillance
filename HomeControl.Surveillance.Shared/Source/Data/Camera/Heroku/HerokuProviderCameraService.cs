@@ -113,7 +113,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     for (var i = 0; i < packetsCount; i++)
                     {
                         var packetData = new Byte[((i == packetsCount - 1) && (message.Data.Length % MaximumMessageSize > 0)) ? message.Data.Length % MaximumMessageSize : MaximumMessageSize];
-                        Array.Copy(message.Data, i * MaximumMessageSize, packetData, 0, packetData.Length);
+                        Array.Copy(message.Data, i * (Int32)MaximumMessageSize, packetData, 0, packetData.Length);
                         var partialMessageResponse = new PartialMessageResponse(i == packetsCount - 1, packetData);
                         await socket.SendAsync(new Message(message.Id, partialMessageResponse).Data).ConfigureAwait(false);
                     }
