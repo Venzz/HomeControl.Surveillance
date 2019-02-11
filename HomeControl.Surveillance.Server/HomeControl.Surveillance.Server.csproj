@@ -7,4 +7,10 @@
 
   <Import Project="..\HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems" Label="Shared" />
 
+  <ItemGroup>
+    <None Update="Source\Data\CameraConnection\DemoClip\DemoClip.sr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

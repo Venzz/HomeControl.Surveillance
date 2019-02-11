@@ -1,7 +1,9 @@
 ﻿using HomeControl.Surveillance.Player.Model;
 using HomeControl.Surveillance.Player.ViewModel;
 using System;
+using System.Collections.Generic;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -21,11 +23,13 @@ namespace HomeControl.Surveillance.Player.View
             DataContext = Context;
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs args)
+        protected override async void OnNavigatedTo(NavigationEventArgs args)
         {
+            var parameters = (List<Object>)args.Parameter;
             ApplicationView.Consolidated += OnApplicationViewConsolidated;
-            Context.Initialize((CameraController)args.Parameter);
-            VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
+            Context.Initialize((CameraController)parameters[0], (CoreDispatcher)parameters[1]);
+            await Context.InitializeAsync();
+            StoredRecordsView.SelectedIndex = 0;
         }
 
         private void OnStartZoomingInClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingIn();
@@ -33,6 +37,8 @@ namespace HomeControl.Surveillance.Player.View
         private void OnStartZoomingOutClicked(Object sender, RoutedEventArgs args) => Context.StartZoomingOut();
 
         private void OnStopZoomingClicked(Object sender, RoutedEventArgs args) => Context.StopZooming();
+
+        private void OnMenuButtonTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => Overlay.IsPaneOpen = !Overlay.IsPaneOpen;
 
         private async void OnPinTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args) => await Context.ManageTileAsync();
 
@@ -46,14 +52,14 @@ namespace HomeControl.Surveillance.Player.View
                 var compactOptions = ViewModePreferences.CreateDefault(ApplicationViewMode.CompactOverlay);
                 compactOptions.CustomSize = new Size(500, 281);
                 await ApplicationView.TryEnterViewModeAsync(ViewMode, compactOptions);
-                CommandsControl.Opacity = 0;
-                CommandsControl.IsHitTestVisible = false;
+                Overlay.Opacity = 0;
+                Overlay.IsHitTestVisible = false;
             }
             else
             {
                 await ApplicationView.TryEnterViewModeAsync(ViewMode);
-                CommandsControl.Opacity = 1;
-                CommandsControl.IsHitTestVisible = true;
+                Overlay.Opacity = 1;
+                Overlay.IsHitTestVisible = true;
             }
         }
 
@@ -61,6 +67,23 @@ namespace HomeControl.Surveillance.Player.View
         {
             Context.Dispose();
             Window.Current.Close();
+        }
+
+        private async void OnSelectionChanged(Object sender, SelectionChangedEventArgs args)
+        {
+            var selectedItem = (CameraContext.StoredRecord)args.AddedItems[0];
+            if (selectedItem.Model == null)
+            {
+                VideoPlayer.AreTransportControlsEnabled = false;
+                VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
+                Context.CameraStream.Synchronize();
+            }
+            else
+            {
+                await Context.InitializeStoredRecordStreamAsync(selectedItem);
+                VideoPlayer.SetMediaStreamSource(Context.StoredRecordStream.MediaStream);
+                VideoPlayer.AreTransportControlsEnabled = true;
+            }
         }
     }
 }

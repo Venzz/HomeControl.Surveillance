@@ -1,10 +1,12 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
 using HomeControl.Surveillance.Data.Camera.Heroku;
 using HomeControl.Surveillance.Server.Data;
+using HomeControl.Surveillance.Server.Data.DemoClip;
 using HomeControl.Surveillance.Server.Data.File;
 using HomeControl.Surveillance.Server.Data.OrientProtocol;
 using HomeControl.Surveillance.Server.Data.Rtsp;
 using System;
+using System.Threading.Tasks;
 
 namespace HomeControl.Surveillance.Server.Model
 {
@@ -28,6 +30,7 @@ namespace HomeControl.Surveillance.Server.Model
             IndoorCamera.ExceptionReceived += OnExceptionReceived;
 
             var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
+            outdoorProviderCameraService.MessageReceived += OnMessageReceived;
             outdoorProviderCameraService.LogReceived += OnLogReceived;
             outdoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
             OutdoorCamera = new Camera(outdoorProviderCameraService);
@@ -40,16 +43,41 @@ namespace HomeControl.Surveillance.Server.Model
         public void Initialize()
         {
             IndoorCameraConnection = new RtspCameraConnection("192.168.1.168", 554, PrivateData.IndoorCameraRtspUrl);
-            IndoorCameraConnection.MediaReceived += (sender, media) => IndoorCamera.Send(media.Data);
+            IndoorCameraConnection.MediaReceived += (sender, media) => IndoorCamera.Send(media);
             IndoorCameraConnection.LogReceived += OnLogReceived;
             IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
+            #if DEBUG
+            OutdoorCameraConnection = new DemoClipCameraConnection();
+            #else
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
-            OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media.Data);
-            OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media.Data);
+            #endif
+            OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media);
+            OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.LogReceived += OnLogReceived;
             OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
         }
+
+        private async void OnMessageReceived(IProviderCameraService sender, (UInt32 Id, IMessage Message) args) => await Task.Run(async () =>
+        {
+            switch (args.Message.Type)
+            {
+                case MessageId.StoredRecordsMetadataRequest:
+                    var storedRecordsMetadata = Storage.GetStoredRecordsMetadata();
+                    await sender.SendStoredRecordsMetadataAsync(args.Id, storedRecordsMetadata).ConfigureAwait(false);
+                    break;
+                case MessageId.StoredRecordMediaDescriptorsRequest:
+                    var storedRecordMediaDescriptorsRequest = (StoredRecordMediaDescriptorsRequest)args.Message;
+                    var mediaDescriptors = Storage.GetStoredRecordMediaDescriptors(storedRecordMediaDescriptorsRequest.StoredRecordId);
+                    await sender.SendMediaDataDescriptorsAsync(args.Id, mediaDescriptors).ConfigureAwait(false);
+                    break;
+                case MessageId.StoredRecordMediaDataRequest:
+                    var storedRecordMediaDataRequest = (StoredRecordMediaDataRequest)args.Message;
+                    var mediaData = Storage.GetStoredRecordMediaData(storedRecordMediaDataRequest.StoredRecordId, storedRecordMediaDataRequest.Offset);
+                    await sender.SendMediaDataAsync(args.Id, mediaData).ConfigureAwait(false);
+                    break;
+            }
+        });
 
         private async void OnOutdoorCameraCommandReceived(Camera sender, Command command)
         {

@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Windows.UI.Core;
 
 namespace Venz.Data
 {
     public class ObservableObject: INotifyPropertyChanged
     {
+        private CoreDispatcher DispatcherOverride;
+
         public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
 
+
+        public void OverrideDispatcher(CoreDispatcher dispatcher) => DispatcherOverride = dispatcher;
 
         protected async void OnPropertyChanged(params String[] propertyNames) => await OnPropertyChangedAsync(propertyNames);
 
@@ -22,7 +27,9 @@ namespace Venz.Data
             try
             {
                 var dispatcher = UI.Xaml.Application.Dispatcher;
-                if (dispatcher != null)
+                if (DispatcherOverride != null)
+                    await DispatcherOverride.RunAsync(CoreDispatcherPriority.Normal, () => OnPropertyChangedInternal(propertyNames)).AsTask().ConfigureAwait(false);
+                else if (dispatcher != null)
                     await dispatcher.RunAsync(() => OnPropertyChangedInternal(propertyNames)).ConfigureAwait(false);
                 else
                     OnPropertyChangedInternal(propertyNames);

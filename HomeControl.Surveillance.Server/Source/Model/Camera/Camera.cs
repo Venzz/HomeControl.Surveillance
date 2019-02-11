@@ -1,4 +1,5 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
+using HomeControl.Surveillance.Server.Data;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -12,7 +13,7 @@ namespace HomeControl.Surveillance.Server.Model
         private const Int32 PendingDataSize = 50;
 
         private IProviderCameraService ProviderService;
-        private Queue<Byte[]> Data = new Queue<Byte[]>(PendingDataSize);
+        private Queue<IMediaData> Data = new Queue<IMediaData>(PendingDataSize);
         private Object Sync = new Object();
 
         public Boolean IsProviderCommunicationEnabled { get; set; } = true;
@@ -32,12 +33,12 @@ namespace HomeControl.Surveillance.Server.Model
             ProviderService.CommandReceived += (sender, command) => CommandReceived(this, command);
         }
 
-        public void Send(Byte[] data)
+        public void Send(IMediaData mediaData)
         {
             try
             {
-                LastSentDataLength = (UInt32)data.Length;
-                TotalSentDataLength += (UInt32)data.Length;
+                LastSentDataLength = (UInt32)mediaData.Data.Length;
+                TotalSentDataLength += (UInt32)mediaData.Data.Length;
 
                 if ((DateTime.Now.Hour >= 22) || (DateTime.Now.Hour < 6))
                     return;
@@ -47,7 +48,7 @@ namespace HomeControl.Surveillance.Server.Model
                     if (Data.Count == PendingDataSize)
                         Data.Dequeue();
 
-                    Data.Enqueue(data);
+                    Data.Enqueue(mediaData);
                     Monitor.PulseAll(Sync);
                 }
             }
@@ -61,7 +62,7 @@ namespace HomeControl.Surveillance.Server.Model
         {
             while (true)
             {
-                var data = (Byte[])null;
+                var data = (IMediaData)null;
                 lock (Sync)
                 {
                     if (Data.Count == 0)
@@ -71,7 +72,7 @@ namespace HomeControl.Surveillance.Server.Model
                 }
                 
                 if (IsProviderCommunicationEnabled)
-                    await ProviderService.SendAsync(data).ConfigureAwait(false);
+                    await ProviderService.SendLiveMediaDataAsync(data.MediaDataType, data.Data, data.Timestamp, data.Duration).ConfigureAwait(false);
             }
         });
     }

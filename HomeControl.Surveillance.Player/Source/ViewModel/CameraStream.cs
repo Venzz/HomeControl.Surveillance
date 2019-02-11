@@ -12,11 +12,12 @@ namespace HomeControl.Surveillance.Player.ViewModel
     {
         private CameraController Camera;
         private Boolean IsDisposed;
-        private DateTime? StartDate;
+        private VideoEncodingProperties EncodingProperties;
+        private TimeSpan SampleTimestamp;
         private Object Sync = new Object();
-        private IList<Byte[]> VideoSamples = new List<Byte[]>();
+        private IList<MediaData> VideoSamples = new List<MediaData>();
 
-        public MediaStreamSource MediaStream { get; }
+        public MediaStreamSource MediaStream { get; private set; }
 
 
 
@@ -24,23 +25,21 @@ namespace HomeControl.Surveillance.Player.ViewModel
         {
             Camera = camera;
             Camera.DataReceived += OnCameraDataReceived;
-            var h264EncodingProperties = VideoEncodingProperties.CreateH264();
+            EncodingProperties = VideoEncodingProperties.CreateH264();
             #if WP81
-            h264EncodingProperties.ProfileId = H264ProfileIds.High;
-            h264EncodingProperties.Width = 1920;
-            h264EncodingProperties.Height = 1080;
+            EncodingProperties.ProfileId = H264ProfileIds.High;
+            EncodingProperties.Width = 1920;
+            EncodingProperties.Height = 1080;
             #endif
-            MediaStream = new MediaStreamSource(new VideoStreamDescriptor(h264EncodingProperties));
+            MediaStream = new MediaStreamSource(new VideoStreamDescriptor(EncodingProperties));
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
+            MediaStream.Closed += OnMediaStreamClosed;
         }
 
         public void Synchronize()
         {
             lock (Sync)
-            {
                 VideoSamples.Clear();
-                StartDate = null;
-            }
         }
 
         private async void OnMediaStreamSampleRequested(MediaStreamSource sender, MediaStreamSourceSampleRequestedEventArgs args)
@@ -48,34 +47,36 @@ namespace HomeControl.Surveillance.Player.ViewModel
             var deferal = args.Request.GetDeferral();
             while (!IsDisposed)
             {
-                var data = TryGetVideoSample();
-                if (data == null)
+                var mediaData = TryGetVideoSample();
+                if (mediaData == null)
                 {
                     await Task.Delay(10).ConfigureAwait(false);
                     continue;
                 }
 
-                args.Request.Sample = MediaStreamSample.CreateFromBuffer(data.AsBuffer(), DateTime.Now - StartDate.Value);
-                args.Request.Sample.Duration = Camera.SampleDuration;
+                args.Request.Sample = MediaStreamSample.CreateFromBuffer(mediaData.Data.AsBuffer(), SampleTimestamp);
+                args.Request.Sample.Duration = mediaData.Duration;
+                SampleTimestamp += mediaData.Duration;
                 break;
             }
             deferal.Complete();
         }
 
-        private void OnCameraDataReceived(CameraController sender, Byte[] data)
+        private void OnMediaStreamClosed(MediaStreamSource sender, MediaStreamSourceClosedEventArgs args)
         {
-            if (data.Length < 200)
+            MediaStream = new MediaStreamSource(new VideoStreamDescriptor(EncodingProperties));
+        }
+
+        private void OnCameraDataReceived(CameraController sender, MediaData mediaData)
+        {
+            if (mediaData.Type == MediaDataType.AudioFrame)
                 return;
 
             lock (Sync)
-            {
-                if (!StartDate.HasValue)
-                    StartDate = DateTime.Now;
-                VideoSamples.Add(data);
-            }
+                VideoSamples.Add(mediaData);
         }
 
-        private Byte[] TryGetVideoSample()
+        private MediaData TryGetVideoSample()
         {
             lock (Sync)
             {
@@ -92,6 +93,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
         {
             IsDisposed = true;
             MediaStream.SampleRequested -= OnMediaStreamSampleRequested;
+            MediaStream.Closed -= OnMediaStreamClosed;
             Camera.DataReceived -= OnCameraDataReceived;
         }
     }

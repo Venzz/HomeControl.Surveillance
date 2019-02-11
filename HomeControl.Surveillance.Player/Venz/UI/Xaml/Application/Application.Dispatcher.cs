@@ -6,7 +6,7 @@ namespace Venz.UI.Xaml
 {
     public sealed class ApplicationDispatcher
     {
-        public TaskFactory TaskFactory { get; }
+        public TaskFactory TaskFactory { get; private set; }
         public Boolean IsInContext => Window.Current?.Dispatcher?.HasThreadAccess == true;
 
 

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HomeControl.Surveillance.Data.Storage;
+using System;
+using System.Collections.Generic;
 using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data
@@ -7,6 +9,9 @@ namespace HomeControl.Surveillance.Server.Data
     {
         event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived;
 
-        void Store(Byte[] data);
+        void Store(IMediaData mediaData);
+        IReadOnlyCollection<String> GetStoredRecords();
+        IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id);
+        Byte[] GetStoredRecordMediaData(String id, UInt32 offset);
     }
 }
