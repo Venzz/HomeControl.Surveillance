@@ -1,5 +1,6 @@
 ﻿using HomeControl.Surveillance.Player.ViewModel;
 using System;
+using System.Collections.Generic;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -37,8 +38,13 @@ namespace HomeControl.Surveillance.Player.View
             var coreApplicationView = CoreApplication.CreateNewView();
             await coreApplicationView.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
+                var parameters = new List<Object>()
+                {
+                    (sender == OutdoorCamera) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController,
+                    coreApplicationView.Dispatcher
+                };
                 var frame = new Frame();
-                frame.Navigate(typeof(CameraPage), (sender == OutdoorCamera) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController);
+                frame.Navigate(typeof(CameraPage), parameters);
                 Window.Current.Content = frame;
                 Window.Current.Activate();
                 applicationViewId = ApplicationView.GetForCurrentView().Id;

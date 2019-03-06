@@ -1,5 +1,8 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
+using HomeControl.Surveillance.Data.Storage;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -14,7 +17,7 @@ namespace HomeControl.Surveillance.Player.Model
         public String Id { get; }
         public String Title { get; }
 
-        public event TypedEventHandler<CameraController, Byte[]> DataReceived = delegate { };
+        public event TypedEventHandler<CameraController, MediaData> DataReceived = delegate { };
 
 
 
@@ -25,7 +28,7 @@ namespace HomeControl.Surveillance.Player.Model
             Id = title.ToLower();
             Title = title;
             ConsumerService = consumerService;
-            ConsumerService.DataReceived += (sender, data) => DataReceived(this, data);
+            ConsumerService.MediaDataReceived += (sender, args) => DataReceived(this, new MediaData(args.MediaType, args.Data, args.Timestamp, args.Duration));
         }
 
         public Task StartZoomingInAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StartZoomingIn);
@@ -33,5 +36,23 @@ namespace HomeControl.Surveillance.Player.Model
         public Task StartZoomingOutAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StartZoomingOut);
 
         public Task StopZoomingAsync() => !SupportsCommands ? Task.CompletedTask : ConsumerService.PerformAsync(Command.StopZooming);
+
+        public async Task<IReadOnlyCollection<StoredRecord>> GetStoredRecordsMetadataAsync()
+        {
+            var storedRecordsMetadata = await ConsumerService.GetStoredRecordsMetadataAsync().ConfigureAwait(false);
+            return storedRecordsMetadata.Select(a => new StoredRecord() { Id = a.Id, Date = a.Date }).ToList();
+        }
+
+        public async Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
+        {
+            var mediaDataDescriptors = await ConsumerService.GetMediaDataDescriptorsAsync(id).ConfigureAwait(false);
+            return mediaDataDescriptors;
+        }
+
+        public async Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
+        {
+            var mediaData = await ConsumerService.GetMediaDataAsync(id, offset).ConfigureAwait(false);
+            return mediaData;
+        }
     }
 }

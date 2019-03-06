@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="2367Venz.HomeControl.Surveillance.Player" Publisher="CN=AC627798-581D-4841-B3BA-DD2C725E9A5E" Version="1.1.1.0" />
+  <Identity Name="2367Venz.HomeControl.Surveillance.Player" Publisher="CN=AC627798-581D-4841-B3BA-DD2C725E9A5E" Version="1.1.5.0" />
   <mp:PhoneIdentity PhoneProductId="2e896179-acb0-4125-9234-7e0ded2263da" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Camera Player</DisplayName>
@@ -28,9 +28,10 @@
       </uap:VisualElements>
       <Extensions>
         <uap:Extension Category="windows.fileTypeAssociation">
-          <uap:FileTypeAssociation Name="h264">
+          <uap:FileTypeAssociation Name="sr">
+            <uap:DisplayName>Stored Record</uap:DisplayName>
             <uap:SupportedFileTypes>
-              <uap:FileType>.h264</uap:FileType>
+              <uap:FileType>.sr</uap:FileType>
             </uap:SupportedFileTypes>
           </uap:FileTypeAssociation>
         </uap:Extension>

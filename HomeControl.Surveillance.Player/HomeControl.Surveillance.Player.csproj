@@ -17,7 +17,12 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
-    <PackageCertificateKeyFile>HomeSecurity.Player_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>HomeControl.Surveillance.Player_StoreKey.pfx</PackageCertificateKeyFile>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <AppxPackageDir>I:\Windows Desktop\HomeControl\Packages</AppxPackageDir>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <PackageCertificateThumbprint>61BC360D1010F390E47D8587797BD45D13CEA9B3</PackageCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -97,7 +102,10 @@
     </Compile>
     <Compile Include="Source\Data\System.Net.WebSockets\WinRTWebSocket.cs" />
     <Compile Include="Source\Data\WebSocket.cs" />
+    <Compile Include="Source\Model\Camera\MediaData.cs" />
+    <Compile Include="Source\Model\Camera\StoredRecord.cs" />
     <Compile Include="Source\ViewModel\CameraContext.cs" />
+    <Compile Include="Source\ViewModel\StoredRecordStream.cs" />
     <Compile Include="Source\ViewModel\HubContext.cs" />
     <Compile Include="Source\ViewModel\CameraStream.cs" />
     <Compile Include="Source\ViewModel\PlayerContext.cs" />
@@ -123,6 +131,7 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <None Include="HomeControl.Surveillance.Player_StoreKey.pfx" />
     <Content Include="Resources\Package\Badge.scale-100.png" />
     <Content Include="Resources\Package\Badge.scale-125.png" />
     <Content Include="Resources\Package\Badge.scale-150.png" />

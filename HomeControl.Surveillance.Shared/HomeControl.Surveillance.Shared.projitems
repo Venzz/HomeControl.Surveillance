@@ -19,6 +19,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\EmptyTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\FileTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Message.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\LiveMediaDataResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordMediaDescriptorsRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordMediaDescriptorsResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordMediaDataRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordMediaDataResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\PartialMessageResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\MessageId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\DataQueue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Empty\EmptyConsumerCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\HerokuConsumerCameraService.cs" />
@@ -27,6 +38,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\IWebSocket.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IProviderCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IConsumerCameraService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Storage\StoredRecordFile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Primitives\MediaDataType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\PrivateData.cs" />
   </ItemGroup>
 </Project>
