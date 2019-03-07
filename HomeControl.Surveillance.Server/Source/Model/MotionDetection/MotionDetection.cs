@@ -1,5 +1,6 @@
 ﻿using FFmpeg;
 using HomeControl.Surveillance.Data;
+using HomeControl.Surveillance.Server.Data;
 using OpenCv;
 using System;
 using System.Collections.Generic;
@@ -42,11 +43,14 @@ namespace HomeControl.Surveillance.Server.Model
             ContourAnalyzer.MotionFinished += MotionFinished;
         }
 
-        public void Process(Byte[] data)
+        public void Process(IMediaData mediaData)
         {
+            if (mediaData.MediaDataType == MediaDataType.AudioFrame)
+                return;
+
             lock (this)
             {
-                Data.Enqueue(data);
+                Data.Enqueue(mediaData.Data);
                 Monitor.Pulse(this);
             }
         }
