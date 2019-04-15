@@ -102,7 +102,6 @@ namespace HomeControl.Surveillance.Server.Model
 
         private void OnMotionDetected(MotionDetection sender, Object args)
         {
-            App.Diagnostics.Debug.Log("Motion detected!");
         }
 
         private void OnLogReceived(Object sender, (String Message, String Parameter) args)

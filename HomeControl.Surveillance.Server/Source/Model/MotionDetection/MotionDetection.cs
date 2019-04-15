@@ -1,9 +1,9 @@
 ﻿using FFmpeg;
-using HomeControl.Surveillance.Data;
 using HomeControl.Surveillance.Server.Data;
 using OpenCv;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +13,11 @@ namespace HomeControl.Surveillance.Server.Model
 {
     public class MotionDetection
     {
-        private DataQueue Data = new DataQueue();
-        private Boolean IsInitialized;
+        private const AvPixelFormat PictureBufferPixelFormat = AvPixelFormat.AV_PIX_FMT_RGB24;
+        private const UInt16 PictureBufferWidth = 320;
+        private const UInt16 PictureBufferHeight = 180;
+
+        private List<IMediaData> CapturedMedia = new List<IMediaData>();
         private DateTime BasePictureUpdatedDate;
         private Mat BasePicture = new Mat();
         private ContourAnalyzer ContourAnalyzer;
@@ -26,7 +29,7 @@ namespace HomeControl.Surveillance.Server.Model
 
         static MotionDetection()
         {
-            LibAvFormat.av_register_all();
+            LibAvCodec.avcodec_register_all();
             LibAvUtil.av_log_set_level(-8);
         }
 
@@ -34,9 +37,8 @@ namespace HomeControl.Surveillance.Server.Model
         {
             var contourExclusions = new List<(Windows.Foundation.Point TopLeft, Windows.Foundation.Point BottomRight)>
             {
-                (new Windows.Foundation.Point(1540, 40), new Windows.Foundation.Point(1980, 120)), // Time
-                (new Windows.Foundation.Point(180, 1030), new Windows.Foundation.Point(350, 1080)), // Title
-                (new Windows.Foundation.Point(440, 180), new Windows.Foundation.Point(600, 330)) // Tree
+                (new Windows.Foundation.Point(240, 7), new Windows.Foundation.Point(320, 18)), // Time
+                (new Windows.Foundation.Point(27, 169), new Windows.Foundation.Point(59, 180)), // Title
             };
             ContourAnalyzer = new ContourAnalyzer(contourExclusions);
             ContourAnalyzer.MotionStarted += MotionStarted;
@@ -50,169 +52,101 @@ namespace HomeControl.Surveillance.Server.Model
 
             lock (this)
             {
-                Data.Enqueue(mediaData.Data);
+                CapturedMedia.Add(mediaData);
                 Monitor.Pulse(this);
             }
         }
 
-        public async void Start() => await Task.Run(async () =>
+        public async void Start() => await Task.Run(() =>
         {
-            LibAvFormat.ReadPacket read = (opaque, buf, buf_size) =>
+            var videoCodecPointer = LibAvCodec.avcodec_find_decoder(AvCodecId.AV_CODEC_ID_H264);
+            if (videoCodecPointer == IntPtr.Zero)
             {
-                if (Data.Length > 0)
-                {
-                    var data = Data.Dequeue(Data.Length > buf_size ? buf_size : Data.Length);
-                    Marshal.Copy(data, 0, buf, data.Length);
-                    return data.Length;
-                }
-                else
-                {
-                    return 0;
-                }
-            };
+                OnFailure("The video codec is not supported.");
+                return;
+            }
+            var codecContext = LibAvCodec.avcodec_alloc_context3(videoCodecPointer);
+            if (LibAvCodec.avcodec_open2(codecContext, videoCodecPointer, IntPtr.Zero) < 0)
+            {
+                OnFailure($"The codec {AvCodecId.AV_CODEC_ID_H264} could not be opened.");
+                return;
+            }
 
-            var dataReadingBuffer = LibAvUtil.av_malloc(new UIntPtr(10000U * sizeof(Byte)));
-            var ioContextPointer = LibAvFormat.avio_alloc_context(dataReadingBuffer, 10000, 0, IntPtr.Zero, Marshal.GetFunctionPointerForDelegate(read), IntPtr.Zero, IntPtr.Zero);
-            var contextPointer = LibAvFormat.avformat_alloc_context();
-            var avFormatContext = Marshal.PtrToStructure<AvFormatContext>(contextPointer);
-            avFormatContext.pb = ioContextPointer;
-            Marshal.StructureToPtr(avFormatContext, contextPointer, false);
-
-            var videoStreamId = -1;
-            var videoStream = new AvStream();
-            var videoCodecContext = new AvCodecContext();
             var picturePointer = LibAvUtil.av_frame_alloc();
-            var picture = new AvFrame();
-            var framePointer = LibAvUtil.av_frame_alloc();
+            var pictureSize = (UInt32)LibAvCodec.avpicture_get_size(PictureBufferPixelFormat, PictureBufferWidth, PictureBufferWidth);
+            var pictureBufferPointer = LibAvUtil.av_malloc(new UIntPtr(pictureSize * sizeof(Byte)));
+            LibAvCodec.avpicture_fill(picturePointer, pictureBufferPointer, PictureBufferPixelFormat, PictureBufferWidth, PictureBufferWidth);
+            var picture = Marshal.PtrToStructure<AvFrame>(picturePointer);
 
             while (true)
             {
-                var tooLowData = false;
+                var mediaData = (Byte[])null;
                 lock (this)
                 {
-                    tooLowData = Data.Length < 1 * 1000 * 1000;
-                    if (tooLowData)
+                    if (CapturedMedia.Count == 0)
                         Monitor.Wait(this);
-                }
-                if (tooLowData)
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    continue;
+
+                    mediaData = CapturedMedia[0].Data;
+                    CapturedMedia.RemoveAt(0);
                 }
 
-                lock (this)
+                var packetPointer = Marshal.AllocHGlobal(Marshal.SizeOf<AvPacket>());
+                var packetData = Marshal.AllocHGlobal(mediaData.Length);
+                Marshal.Copy(mediaData, 0, packetData, mediaData.Length);
+                Marshal.StructureToPtr(new AvPacket() { data = packetData, size = mediaData.Length }, packetPointer, false);
+
+                var frameFinished = 0;
+                var framePointer = LibAvUtil.av_frame_alloc();
+                LibAvCodec.avcodec_decode_video2(codecContext, framePointer, ref frameFinished, packetPointer);
+                if (frameFinished != 0)
                 {
-                    if (!IsInitialized)
+                    var frame = Marshal.PtrToStructure<AvFrame>(framePointer);
+                    var scaleContextPointer = LibSwScale.sws_getContext(frame.width, frame.height, (AvPixelFormat)frame.format, PictureBufferWidth, PictureBufferHeight, PictureBufferPixelFormat, ScalingFlags.SWS_BILINEAR, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+                    LibSwScale.sws_scale(scaleContextPointer, frame.data, frame.linesize, 0, frame.height, picture.data, picture.linesize);
+                    LibSwScale.sws_freeContext(scaleContextPointer);
+                    picture = Marshal.PtrToStructure<AvFrame>(picturePointer);
+
+                    var now = DateTime.Now;
+                    if (now - BasePictureUpdatedDate > TimeSpan.FromMilliseconds(1000))
                     {
-                        var inputFormat = LibAvFormat.av_find_input_format("h264");
-                        if (LibAvFormat.avformat_open_input(out contextPointer, "", inputFormat, IntPtr.Zero) < 0)
-                        {
-                            OnFailure("avformat_open_input failed.");
-                            return;
-                        }
+                        lock (this)
+                            CapturedMedia.Clear();
 
-                        var context = Marshal.PtrToStructure<AvFormatContext>(contextPointer);
-                        if (LibAvFormat.avformat_find_stream_info(contextPointer, IntPtr.Zero) < 0)
-                        {
-                            OnFailure("An error occurred while retrieving the stream information of the video.");
-                            return;
-                        }
-
-                        for (var i = 0; i < context.nb_streams; i++)
-                        {
-                            var stream = Marshal.PtrToStructure<AvStream>(Marshal.PtrToStructure<IntPtr>(IntPtr.Add(context.streams, i * IntPtr.Size)));
-                            var codecContext = Marshal.PtrToStructure<AvCodecContext>(stream.codec);
-                            if (codecContext.codec_type == AvMediaType.AVMEDIA_TYPE_VIDEO)
-                            {
-                                videoStreamId = i;
-                                videoStream = stream;
-                                videoCodecContext = codecContext;
-                                break;
-                            }
-                        }
-                        if (videoStreamId == -1)
-                        {
-                            OnFailure("No video stream found.");
-                            return;
-                        }
-
-                        var videoCodecPointer = LibAvCodec.avcodec_find_decoder(videoCodecContext.codec_id);
-                        if (videoCodecPointer == IntPtr.Zero)
-                        {
-                            OnFailure("The video codec is not supported.");
-                            return;
-                        }
-
-                        var videoCodec = Marshal.PtrToStructure<AvCodec>(videoCodecPointer);
-                        if (LibAvCodec.avcodec_open2(videoStream.codec, videoCodecPointer, IntPtr.Zero) < 0)
-                        {
-                            OnFailure($"The codec {videoCodec.long_name} could not be opened.");
-                            return;
-                        }
-     
-                        var pictureSize = (UInt32)LibAvCodec.avpicture_get_size(AvPixelFormat.AV_PIX_FMT_RGB24, videoCodecContext.width, videoCodecContext.height);
-                        var pictureBufferPointer = LibAvUtil.av_malloc(new UIntPtr(pictureSize * sizeof(Byte)));
-                        LibAvCodec.avpicture_fill(picturePointer, pictureBufferPointer, AvPixelFormat.AV_PIX_FMT_RGB24, videoCodecContext.width, videoCodecContext.height);
-                        picture = Marshal.PtrToStructure<AvFrame>(picturePointer);
-
-                        IsInitialized = true;
+                        BasePictureUpdatedDate = now;
+                        Cv2.CvtColor(new Mat(PictureBufferHeight, PictureBufferWidth, MatType.CV_8UC3, picture.data[0]), BasePicture, ColorConversionCodes.RGB2GRAY);
                     }
                     else
                     {
-                        var packetPointer = Marshal.AllocHGlobal(Marshal.SizeOf<AvPacket>());
-                        while (LibAvFormat.av_read_frame(contextPointer, packetPointer) >= 0)
-                        {
-                            var packet = Marshal.PtrToStructure<AvPacket>(packetPointer);
-                            if (packet.stream_index == videoStreamId)
-                            {
-                                var frameFinished = 0;
-                                LibAvCodec.avcodec_decode_video2(videoStream.codec, framePointer, ref frameFinished, packetPointer);
-                                if (frameFinished != 0)
-                                {
-                                    var frame = Marshal.PtrToStructure<AvFrame>(framePointer);
-                                    var scaleContextPointer = LibSwScale.sws_getContext(videoCodecContext.width, videoCodecContext.height, videoCodecContext.pix_fmt, videoCodecContext.width, videoCodecContext.height, AvPixelFormat.AV_PIX_FMT_RGB24, ScalingFlags.SWS_BILINEAR, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-                                    LibSwScale.sws_scale(scaleContextPointer, frame.data, frame.linesize, 0, videoCodecContext.height, picture.data, picture.linesize);
-                                    LibSwScale.sws_freeContext(scaleContextPointer);
-                                    picture = Marshal.PtrToStructure<AvFrame>(picturePointer);
+                        var currentPicture = new Mat();
+                        var pictureDifference = new Mat();
+                        var pictureThreshold = new Mat();
+                        var pictureDilated = new Mat();
+                        var hierarchy = new Mat();
 
-                                    var now = DateTime.Now;
-                                    if (now - BasePictureUpdatedDate > TimeSpan.FromMilliseconds(1000))
-                                    {
-                                        BasePictureUpdatedDate = now;
-                                        Cv2.CvtColor(new Mat(frame.height, frame.width, MatType.CV_8UC3, picture.data[0]), BasePicture, ColorConversionCodes.RGB2GRAY);
-                                    }
-                                    else
-                                    {
-                                        var currentPicture = new Mat();
-                                        var pictureDifference = new Mat();
-                                        var pictureThreshold = new Mat();
-                                        var pictureDilated = new Mat();
-                                        var hierarchy = new Mat();
+                        Cv2.CvtColor(new Mat(PictureBufferHeight, PictureBufferWidth, MatType.CV_8UC3, picture.data[0]), currentPicture, ColorConversionCodes.RGB2GRAY);
+                        Cv2.Absdiff(BasePicture, currentPicture, pictureDifference);
+                        Cv2.Threshold(pictureDifference, pictureThreshold, 75, 255, ThresholdTypes.Binary);
+                        Cv2.Dilate(pictureThreshold, pictureDilated, new Mat(), null, 2);
+                        Cv2.FindContours(pictureDilated, out var contours, hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
 
-                                        Cv2.CvtColor(new Mat(frame.height, frame.width, MatType.CV_8UC3, picture.data[0]), currentPicture, ColorConversionCodes.RGB2GRAY);
-                                        Cv2.Absdiff(BasePicture, currentPicture, pictureDifference);
-                                        Cv2.Threshold(pictureDifference, pictureThreshold, 75, 255, ThresholdTypes.Binary);
-                                        Cv2.Dilate(pictureThreshold, pictureDilated, new Mat(), null, 2);
-                                        Cv2.FindContours(pictureDilated, out var contours, hierarchy, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
-                                        ContourAnalyzer.Process(contours);
-                                    }
-                                }
-                            }
-                            LibAvCodec.av_free_packet(packetPointer);
-                        }
+                        ContourAnalyzer.Process(contours);
                     }
                 }
+
+                Marshal.FreeHGlobal(packetData);
+                LibAvCodec.av_free_packet(packetPointer);
             }
         });
 
-        private void MotionStarted(ContourAnalyzer sender, Object args)
+        private void MotionStarted(ContourAnalyzer sender, IEnumerable<Windows.Foundation.Point> countourCenters)
         {
-            Detected(this, args);
+            Detected(this, null);
+            LogReceived(this, ("Motion Started.", String.Join(", ", countourCenters.Select(a => $"{a.X:0}x{a.Y:0}"))));
         }
 
         private void MotionFinished(ContourAnalyzer sender, Object args)
         {
-
+            LogReceived(this, ("Motion Finished.", null));
         }
 
         private void OnFailure(String message)
