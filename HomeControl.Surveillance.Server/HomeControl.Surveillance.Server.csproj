@@ -8,6 +8,21 @@
   <Import Project="..\HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <None Update="Resources\avcodec-57.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\avutil-55.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\OpenCvLibrary.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\swresample-2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\swscale-4.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Source\Data\CameraConnection\DemoClip\DemoClip.sr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
