@@ -14,7 +14,9 @@ namespace HomeControl.Surveillance.Server
         {
             Diagnostics.Debug.Add(new DebugTelemetryService());
             Diagnostics.Debug.Add(new ConsoleTelemetryService());
+            #if !DEBUG
             Diagnostics.Debug.Add(new FileTelemetryService());
+            #endif
         }
 
         public async void Start() => await Task.Run(() =>

@@ -174,7 +174,6 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     lock (ConnectionSync)
                     {
                         var now = DateTime.Now;
-                        LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", $"IdlePeriod.HasValue = {IdlePeriod.HasValue}, now.TimeOfDay = {now.TimeOfDay}, IdlePeriod.Value.From = {IdlePeriod.Value.From}, !IsIdlingActive = {!IsIdlingActive}"));
                         if (IdlePeriod.HasValue && (now.TimeOfDay > IdlePeriod.Value.From) && !IsIdlingActive)
                         {
                             IdlingStartedDate = new DateTime(now.Year, now.Month, now.Day, IdlePeriod.Value.From.Hours, IdlePeriod.Value.From.Minutes, IdlePeriod.Value.From.Seconds, 0, now.Kind);
