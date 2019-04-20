@@ -11,6 +11,7 @@ namespace HomeControl.Surveillance.Server.Model
     {
         private IStorageService Service;
 
+        public event TypedEventHandler<Storage, (String CustomText, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<Storage, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
 
 
@@ -18,6 +19,7 @@ namespace HomeControl.Surveillance.Server.Model
         public Storage(IStorageService storageService)
         {
             Service = storageService;
+            Service.LogReceived += (sender, args) => LogReceived(this, (nameof(Storage), args.Parameter));
             Service.ExceptionReceived += (sender, args) => ExceptionReceived(this, args);
         }
 

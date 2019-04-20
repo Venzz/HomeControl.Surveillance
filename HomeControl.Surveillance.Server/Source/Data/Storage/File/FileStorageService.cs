@@ -11,13 +11,13 @@ namespace HomeControl.Surveillance.Server.Data.File
     public class FileStorageService: IStorageService
     {
         private TimeSpan CachedDurationLength = TimeSpan.FromMinutes(10);
-
+        private DateTime CachedDataDate = DateTime.Now;
+        private List<IMediaData> CachedData = new List<IMediaData>();
+        private Task DataFlushingSequence = Task.CompletedTask;
         private Stream ActiveFileStream;
         private String ActiveFileName;
-        private List<IMediaData> CachedData = new List<IMediaData>();
-        private TimeSpan CachedDuration = new TimeSpan();
-        private Task DataFlushingSequence = Task.CompletedTask;
 
+        public event TypedEventHandler<IStorageService, (String CustomText, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
 
 
@@ -27,15 +27,14 @@ namespace HomeControl.Surveillance.Server.Data.File
             try
             {
                 CachedData.Add(mediaData);
-                if ((mediaData.MediaDataType == MediaDataType.InterFrame) || (mediaData.MediaDataType == MediaDataType.PredictionFrame))
-                    CachedDuration += mediaData.Duration;
-
-                if (CachedDuration > CachedDurationLength)
+                var now = DateTime.Now;
+                if ((now - CachedDataDate > CachedDurationLength) || (now.Hour != CachedDataDate.Hour))
                 {
                     var cachedData = CachedData;
-                    DataFlushingSequence = DataFlushingSequence.ContinueWith(task => FlushAsync(cachedData)).Unwrap();
+                    var cachedDataDate = CachedDataDate;
+                    DataFlushingSequence = DataFlushingSequence.ContinueWith(task => FlushAsync(cachedData, cachedDataDate)).Unwrap();
                     CachedData = new List<IMediaData>();
-                    CachedDuration = new TimeSpan();
+                    CachedDataDate = now;
                 }
             }
             catch (Exception exception)
@@ -43,6 +42,38 @@ namespace HomeControl.Surveillance.Server.Data.File
                 ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", exception));
             }
         }
+
+        private Task FlushAsync(List<IMediaData> mediaData, DateTime mediaDataDate) => Task.Run(() =>
+        {
+            try
+            {
+                var mediaStream = new MemoryStream();
+                var mediaDataItems = mediaData.Select(a => (new StoredRecordFile.MediaDataDescriptor() { Type = a.MediaDataType, Timestamp = a.Timestamp, Duration = a.Duration }, a.Data)).ToList();
+                StoredRecordFile.WriteSlice(mediaStream, mediaDataItems);
+
+                var fileName = $"{mediaDataDate.ToString("yyyy-MM-dd_HH")}";
+                if (ActiveFileName != fileName)
+                {
+                    if (ActiveFileStream != null)
+                    {
+                        ActiveFileStream.Flush();
+                        ActiveFileStream.Close();
+                    }
+                    ActiveFileStream = new FileStream($"{fileName}.sr", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
+                    ActiveFileName = fileName;
+                }
+
+                mediaStream.Seek(0, SeekOrigin.Begin);
+                mediaStream.CopyTo(ActiveFileStream);
+                mediaStream.Dispose();
+                ActiveFileStream.Flush();
+                LogReceived(this, (nameof(FileStorageService), $"Stored {mediaStream.Length} of data."));
+            }
+            catch (Exception exception)
+            {
+                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(FlushAsync)}", exception));
+            }
+        });
 
         public IReadOnlyCollection<String> GetStoredRecords()
         {
@@ -71,37 +102,5 @@ namespace HomeControl.Surveillance.Server.Data.File
                 return binaryFileReader.ReadBytes(size);
             }
         }
-
-        private Task FlushAsync(List<IMediaData> mediaData) => Task.Run(() =>
-        {
-            try
-            {
-                var mediaStream = new MemoryStream();
-                var mediaDataItems = mediaData.Select(a => (new StoredRecordFile.MediaDataDescriptor() { Type = a.MediaDataType, Timestamp = a.Timestamp, Duration = a.Duration }, a.Data)).ToList();
-                StoredRecordFile.WriteSlice(mediaStream, mediaDataItems);
-
-                var now = DateTime.Now;
-                var fileName = $"{now.ToString("yyyy-MM-dd_HH")}";
-                if (ActiveFileName != fileName)
-                {
-                    if (ActiveFileStream != null)
-                    {
-                        ActiveFileStream.Flush();
-                        ActiveFileStream.Close();
-                    }
-                    ActiveFileStream = new FileStream($"{fileName}.sr", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-                    ActiveFileName = fileName;
-                }
-
-                mediaStream.Seek(0, SeekOrigin.Begin);
-                mediaStream.CopyTo(ActiveFileStream);
-                mediaStream.Dispose();
-                ActiveFileStream.Flush();
-            }
-            catch (Exception exception)
-            {
-                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(FlushAsync)}", exception));
-            }
-        });
     }
 }

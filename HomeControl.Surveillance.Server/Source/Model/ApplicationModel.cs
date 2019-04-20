@@ -38,6 +38,7 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCamera.ExceptionReceived += OnExceptionReceived;
 
             Storage = new Storage(new FileStorageService());
+            Storage.LogReceived += OnLogReceived;
             Storage.ExceptionReceived += OnExceptionReceived;
         }
 

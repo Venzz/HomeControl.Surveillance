@@ -7,6 +7,7 @@ namespace HomeControl.Surveillance.Server.Data
 {
     public interface IStorageService
     {
+        event TypedEventHandler<IStorageService, (String CustomText, String Parameter)> LogReceived;
         event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived;
 
         void Store(IMediaData mediaData);
