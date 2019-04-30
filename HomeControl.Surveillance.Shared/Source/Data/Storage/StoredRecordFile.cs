@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace HomeControl.Surveillance.Data.Storage
 {
@@ -10,7 +11,7 @@ namespace HomeControl.Surveillance.Data.Storage
         public static IReadOnlyCollection<MediaDataDescriptor> ReadMediaDescriptors(Stream stream)
         {
             var mediaDataDescriptor = new List<MediaDataDescriptor>();
-            var mediaStreamReader = new BinaryReader(stream);
+            var mediaStreamReader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
             while (stream.Position < stream.Length)
             {
                 var previousHeaderOffset = (UInt32)stream.Position;
@@ -36,7 +37,7 @@ namespace HomeControl.Surveillance.Data.Storage
                 return;
 
             var generalTimestamp = items.First().Descriptor.Timestamp;
-            var mediaStreamWriter = new BinaryWriter(stream);
+            var mediaStreamWriter = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
 
             // Writing header
 
