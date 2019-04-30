@@ -6,20 +6,20 @@ namespace HomeControl.Surveillance.Player.Model
 {
     public class ApplicationModel
     {
+        private IConsumerCameraService ConsumerCameraService;
+
         public CameraController OutdoorCameraController { get; }
         public CameraController IndoorCameraController { get; }
 
         public ApplicationModel()
         {
-            var indoorConsumerCameraService = new HerokuConsumerCameraService("indoor-client");
-            indoorConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
-            indoorConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
-            IndoorCameraController = new CameraController(indoorConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(42), title: "Indoor");
+            ConsumerCameraService = new HerokuConsumerCameraService("client");
+            ConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
+            ConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
 
-            var outdoorConsumerCameraService = new HerokuConsumerCameraService("outdoor-client");
-            outdoorConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
-            outdoorConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
-            OutdoorCameraController = new CameraController(outdoorConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13), title: "Outdoor");
+            IndoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(42), title: "Indoor");
+            OutdoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13), title: "Outdoor");
+
         }
 
         private void OnCameraServiceLogReceived(IConsumerCameraService sender, (String Message, String Parameter) args)

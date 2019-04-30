@@ -13,8 +13,8 @@ namespace HomeControl.Surveillance.Server.Model
 {
     public class ApplicationModel
     {
-        private ICameraConnection IndoorCameraConnection;
         private ICameraConnection OutdoorCameraConnection;
+        private IProviderCameraService ProviderCameraService;
         private Storage Storage;
         private MotionDetection MotionDetection = new MotionDetection();
 
@@ -25,17 +25,12 @@ namespace HomeControl.Surveillance.Server.Model
 
         public ApplicationModel()
         {
-            var indoorProviderCameraService = new HerokuProviderCameraService("indoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
-            indoorProviderCameraService.LogReceived += OnLogReceived;
-            indoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
-            IndoorCamera = new Camera(indoorProviderCameraService);
-            IndoorCamera.ExceptionReceived += OnExceptionReceived;
+            ProviderCameraService = new HerokuProviderCameraService("service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
+            ProviderCameraService.MessageReceived += OnMessageReceived;
+            ProviderCameraService.LogReceived += OnLogReceived;
+            ProviderCameraService.ExceptionReceived += OnExceptionReceived;
 
-            var outdoorProviderCameraService = new HerokuProviderCameraService("outdoor-service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
-            outdoorProviderCameraService.MessageReceived += OnMessageReceived;
-            outdoorProviderCameraService.LogReceived += OnLogReceived;
-            outdoorProviderCameraService.ExceptionReceived += OnExceptionReceived;
-            OutdoorCamera = new Camera(outdoorProviderCameraService);
+            OutdoorCamera = new Camera(ProviderCameraService);
             OutdoorCamera.ExceptionReceived += OnExceptionReceived;
 
             #if DEBUG
@@ -49,10 +44,6 @@ namespace HomeControl.Surveillance.Server.Model
 
         public void Initialize()
         {
-            IndoorCameraConnection = new RtspCameraConnection("192.168.1.168", 554, PrivateData.IndoorCameraRtspUrl);
-            IndoorCameraConnection.MediaReceived += (sender, media) => IndoorCamera.Send(media);
-            IndoorCameraConnection.LogReceived += OnLogReceived;
-            IndoorCameraConnection.ExceptionReceived += OnExceptionReceived;
             #if DEBUG
             OutdoorCameraConnection = new DemoClipCameraConnection();
             #else
