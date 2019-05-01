@@ -13,7 +13,6 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived;
         event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
-        Task SendAsync(Byte[] data);
         Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<(String Id, DateTime Date)> storedRecordsMetadata);
         Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration);
         Task SendMediaDataDescriptorsAsync(UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors);

@@ -70,37 +70,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 }
             }
         });
+        
+        private Task SendAsync(Message message) => SendAsync(WebSocket, message);
 
-        public Task SendAsync(Byte[] data) => SendAsync(WebSocket, data);
-
-        private async Task SendAsync(IWebSocket socket, Byte[] data)
-        {
-            try
-            {
-                if (socket == null)
-                    return;
-
-                await socket.SendAsync(CreateMessage(data)).ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendAsync)}", exception));
-                await CloseSocketAsync(socket).ConfigureAwait(false);
-
-                lock (ConnectionSync)
-                {
-                    if (socket == WebSocket)
-                    {
-                        WebSocket = null;
-                        Monitor.PulseAll(ConnectionSync);
-                    }
-                }
-            }
-        }
-
-        private Task SendNewAsync(Message message) => SendNewAsync(WebSocket, message);
-
-        private async Task SendNewAsync(IWebSocket socket, Message message)
+        private async Task SendAsync(IWebSocket socket, Message message)
         {
             try
             {
@@ -125,7 +98,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendNewAsync)}", exception));
+                ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendAsync)}", exception));
                 await CloseSocketAsync(socket).ConfigureAwait(false);
 
                 lock (ConnectionSync)
@@ -198,28 +171,28 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         {
             var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
             var responseMessage = new Message(id, response);
-            return SendNewAsync(responseMessage);
+            return SendAsync(responseMessage);
         }
 
         public Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration)
         {
             var response = new LiveMediaDataResponse(type, data, timestamp, duration);
             var responseMessage = new Message(0, response);
-            return SendNewAsync(responseMessage);
+            return SendAsync(responseMessage);
         }
 
         public Task SendMediaDataDescriptorsAsync(UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors)
         {
             var response = new StoredRecordMediaDescriptorsResponse(descriptors);
             var responseMessage = new Message(id, response);
-            return SendNewAsync(responseMessage);
+            return SendAsync(responseMessage);
         }
 
         public Task SendMediaDataAsync(UInt32 id, Byte[] data)
         {
             var response = new StoredRecordMediaDataResponse(data);
             var responseMessage = new Message(id, response);
-            return SendNewAsync(responseMessage);
+            return SendAsync(responseMessage);
         }
 
         private async void StartReceiving() => await Task.Run(async () =>
