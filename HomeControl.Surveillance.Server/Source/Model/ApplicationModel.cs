@@ -60,23 +60,23 @@ namespace HomeControl.Surveillance.Server.Model
             MotionDetection.Start();
         }
 
-        private async void OnMessageReceived(IProviderCameraService sender, (UInt32 Id, IMessage Message) args) => await Task.Run(async () =>
+        private async void OnMessageReceived(IProviderCameraService sender, (UInt32 ConsumerId, UInt32 Id, IMessage Message) args) => await Task.Run(async () =>
         {
             switch (args.Message.Type)
             {
                 case MessageId.StoredRecordsMetadataRequest:
                     var storedRecordsMetadata = Storage.GetStoredRecordsMetadata();
-                    await sender.SendStoredRecordsMetadataAsync(args.Id, storedRecordsMetadata).ConfigureAwait(false);
+                    await sender.SendStoredRecordsMetadataAsync(args.ConsumerId, args.Id, storedRecordsMetadata).ConfigureAwait(false);
                     break;
                 case MessageId.StoredRecordMediaDescriptorsRequest:
                     var storedRecordMediaDescriptorsRequest = (StoredRecordMediaDescriptorsRequest)args.Message;
                     var mediaDescriptors = Storage.GetStoredRecordMediaDescriptors(storedRecordMediaDescriptorsRequest.StoredRecordId);
-                    await sender.SendMediaDataDescriptorsAsync(args.Id, mediaDescriptors).ConfigureAwait(false);
+                    await sender.SendMediaDataDescriptorsAsync(args.ConsumerId, args.Id, mediaDescriptors).ConfigureAwait(false);
                     break;
                 case MessageId.StoredRecordMediaDataRequest:
                     var storedRecordMediaDataRequest = (StoredRecordMediaDataRequest)args.Message;
                     var mediaData = Storage.GetStoredRecordMediaData(storedRecordMediaDataRequest.StoredRecordId, storedRecordMediaDataRequest.Offset);
-                    await sender.SendMediaDataAsync(args.Id, mediaData).ConfigureAwait(false);
+                    await sender.SendMediaDataAsync(args.ConsumerId, args.Id, mediaData).ConfigureAwait(false);
                     break;
             }
         });

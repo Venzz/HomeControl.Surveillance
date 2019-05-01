@@ -20,7 +20,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private Boolean IsIdlingActive => IdlePeriod.HasValue && (DateTime.Now - IdlingStartedDate < IdlePeriod.Value.Duration);
 
         public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
-        public event TypedEventHandler<IProviderCameraService, (UInt32 Id, IMessage Message)> MessageReceived = delegate { };
+        public event TypedEventHandler<IProviderCameraService, (UInt32 ConsumerId, UInt32 Id, IMessage Message)> MessageReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 
@@ -88,7 +88,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         var packetData = new Byte[((i == packetsCount - 1) && (message.Data.Length % MaximumMessageSize > 0)) ? message.Data.Length % MaximumMessageSize : MaximumMessageSize];
                         Array.Copy(message.Data, i * (Int32)MaximumMessageSize, packetData, 0, packetData.Length);
                         var partialMessageResponse = new PartialMessageResponse(i == packetsCount - 1, packetData);
-                        await socket.SendAsync(new Message(message.Id, partialMessageResponse).Data).ConfigureAwait(false);
+                        await socket.SendAsync(new Message(message.ConsumerId, message.Id, partialMessageResponse).Data).ConfigureAwait(false);
                     }
                 }
                 else
@@ -167,31 +167,31 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         });
 
-        public Task SendStoredRecordsMetadataAsync(UInt32 id, IReadOnlyCollection<(String Id, DateTime Date)> storedRecordsMetadata)
+        public Task SendStoredRecordsMetadataAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<(String Id, DateTime Date)> storedRecordsMetadata)
         {
             var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
-            var responseMessage = new Message(id, response);
+            var responseMessage = new Message(consumerId, id, response);
             return SendAsync(responseMessage);
         }
 
         public Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration)
         {
             var response = new LiveMediaDataResponse(type, data, timestamp, duration);
-            var responseMessage = new Message(0, response);
+            var responseMessage = new Message(0, 0, response);
             return SendAsync(responseMessage);
         }
 
-        public Task SendMediaDataDescriptorsAsync(UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors)
+        public Task SendMediaDataDescriptorsAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors)
         {
             var response = new StoredRecordMediaDescriptorsResponse(descriptors);
-            var responseMessage = new Message(id, response);
+            var responseMessage = new Message(consumerId, id, response);
             return SendAsync(responseMessage);
         }
 
-        public Task SendMediaDataAsync(UInt32 id, Byte[] data)
+        public Task SendMediaDataAsync(UInt32 consumerId, UInt32 id, Byte[] data)
         {
             var response = new StoredRecordMediaDataResponse(data);
-            var responseMessage = new Message(id, response);
+            var responseMessage = new Message(consumerId, id, response);
             return SendAsync(responseMessage);
         }
 
@@ -217,10 +217,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     {
                         CommandReceived(this, (Command)data[8]);
                     }
-                    else if ((data.Length > 8) && (data[0] == 0xFF) && (data[1] == 0xFF) && (data[2] == 0xFF) && (data[3] == 0xFE))
+                    else if ((data.Length > 12) && (data[0] == 0xFF) && (data[1] == 0xFF) && (data[2] == 0xFF) && (data[3] == 0xFE))
                     {
                         var message = new Message(data);
-                        MessageReceived(this, (message.Id, Message.Create(message)));
+                        MessageReceived(this, (message.ConsumerId, message.Id, Message.Create(message)));
                     }
                 }
                 catch (Exception exception)

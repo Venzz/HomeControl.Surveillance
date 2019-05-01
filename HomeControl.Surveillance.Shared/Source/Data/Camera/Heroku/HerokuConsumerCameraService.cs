@@ -9,6 +9,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 {
     public class HerokuConsumerCameraService: IConsumerCameraService
     {
+        private UInt32 Id = 0;
         private Object ConnectionSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
@@ -47,7 +48,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
         public async Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync()
         {
-            var message = new Message(Message.GetId(), new StoredRecordsMetadataRequest());
+            var message = new Message(Id, Message.GetId(), new StoredRecordsMetadataRequest());
             var responseMessage = await RequestAsync(message);
             if (responseMessage.Type != MessageId.StoredRecordsMetadataResponse)
                 throw new InvalidOperationException();
@@ -57,7 +58,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
         public async Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
         {
-            var message = new Message(Message.GetId(), new StoredRecordMediaDescriptorsRequest(id));
+            var message = new Message(Id, Message.GetId(), new StoredRecordMediaDescriptorsRequest(id));
             var responseMessage = await RequestAsync(message);
             if (responseMessage.Type != MessageId.StoredRecordMediaDescriptorsResponse)
                 throw new InvalidOperationException();
@@ -67,7 +68,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
         public async Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
         {
-            var message = new Message(Message.GetId(), new StoredRecordMediaDataRequest(id, offset));
+            var message = new Message(Id, Message.GetId(), new StoredRecordMediaDataRequest(id, offset));
             var responseMessage = await RequestAsync(message);
             if (responseMessage.Type != MessageId.StoredRecordMediaDataResponse)
                 throw new InvalidOperationException();
@@ -124,14 +125,14 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     DataQueue.Enqueue(buffer.Array, 0, result.Count);
                     while (DataQueue.Length > 8)
                     {
-                        var peekedData = DataQueue.Peek(8);
-                        var dataLength = BitConverter.ToInt32(peekedData, 4);
-                        if (dataLength + 8 > DataQueue.Length)
+                        var peekedData = DataQueue.Peek(12);
+                        var dataLength = BitConverter.ToInt32(peekedData, 8);
+                        if (dataLength + 12 > DataQueue.Length)
                             break;
 
                         if ((peekedData[0] == 0xFF) && (peekedData[1] == 0xFF) && (peekedData[2] == 0xFF) && (peekedData[3] == 0xFE))
                         {
-                            var data = DataQueue.Dequeue(dataLength + 8);
+                            var data = DataQueue.Dequeue(dataLength + 12);
                             var message = new Message(data);
                             if (message.Id == 0)
                             {

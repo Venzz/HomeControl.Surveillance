@@ -10,25 +10,29 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         private static UInt32 LastGeneratedId;
         private static Object Sync = new Object();
 
+        public UInt32 ConsumerId { get; }
         public UInt32 Id { get; }
         public MessageId Type { get; }
         public Byte[] Data { get; }
 
         public Message(Byte[] data)
         {
-            Id = BitConverter.ToUInt32(data, 8);
-            Type = (MessageId)data[12];
+            ConsumerId = BitConverter.ToUInt32(data, 4);
+            Id = BitConverter.ToUInt32(data, 12);
+            Type = (MessageId)data[16];
             Data = data;
         }
 
-        public Message(UInt32 id, IMessage message)
+        public Message(UInt32 consumerId, UInt32 id, IMessage message)
         {
+            ConsumerId = consumerId;
             Id = id;
             Type = message.Type;
             using (var messageDataStream = new MemoryStream())
             using (var messageDataWriter = new BinaryWriter(messageDataStream))
             {
                 messageDataWriter.Write(new Byte[] { 0xFF, 0xFF, 0xFF, 0xFE });
+                messageDataWriter.Write(ConsumerId);
                 messageDataWriter.Write(new Byte[] { 0x00, 0x00, 0x00, 0x00 });
                 messageDataWriter.Write(id);
                 messageDataWriter.Write((Byte)message.Type);
@@ -80,8 +84,8 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }
-                messageDataWriter.Seek(4, SeekOrigin.Begin);
-                messageDataWriter.Write((UInt32)messageDataStream.Length - 8);
+                messageDataWriter.Seek(8, SeekOrigin.Begin);
+                messageDataWriter.Write((UInt32)messageDataStream.Length - 12);
 
                 Data = new Byte[messageDataStream.Length];
                 messageDataStream.Position = 0;
@@ -91,7 +95,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
 
         public static IMessage Create(Message message)
         {
-            using (var messageDataStream = new MemoryStream(message.Data, 13, message.Data.Length - 13))
+            using (var messageDataStream = new MemoryStream(message.Data, 17, message.Data.Length - 17))
             using (var messageDataReader = new BinaryReader(messageDataStream))
             {
                 switch (message.Type)
