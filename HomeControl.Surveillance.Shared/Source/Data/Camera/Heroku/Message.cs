@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace HomeControl.Surveillance.Data.Camera.Heroku
 {
@@ -83,6 +84,38 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
+                }
+                messageDataWriter.Seek(8, SeekOrigin.Begin);
+                messageDataWriter.Write((UInt32)messageDataStream.Length - 12);
+
+                Data = new Byte[messageDataStream.Length];
+                messageDataStream.Position = 0;
+                messageDataStream.Read(Data, 0, (Int32)messageDataStream.Length);
+            }
+        }
+
+        public Message(IServiceMessage message)
+        {
+            using (var messageDataStream = new MemoryStream())
+            using (var messageDataWriter = new BinaryWriter(messageDataStream))
+            {
+                messageDataWriter.Write(new Byte[] { 0xFF, 0xFF, 0xFF, 0xFD });
+                messageDataWriter.Write(new Byte[] { 0x00, 0x00, 0x00, 0x00 });
+                messageDataWriter.Write(new Byte[] { 0x00, 0x00, 0x00, 0x00 });
+                messageDataWriter.Write((UInt32)0);
+                messageDataWriter.Write((Byte)message.Type);
+                switch (message)
+                {
+                    case PushChannelUri pushChannelUri:
+                        var previousChannelUriData = Encoding.UTF8.GetBytes(pushChannelUri.PreviousChannelUri);
+                        var channelUriData = Encoding.UTF8.GetBytes(pushChannelUri.ChannelUri);
+                        messageDataWriter.Write(previousChannelUriData.Length);
+                        messageDataWriter.Write(previousChannelUriData);
+                        messageDataWriter.Write(channelUriData.Length);
+                        messageDataWriter.Write(channelUriData);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Service Message of type {message.Type} is not supported.");
                 }
                 messageDataWriter.Seek(8, SeekOrigin.Begin);
                 messageDataWriter.Write((UInt32)messageDataStream.Length - 12);

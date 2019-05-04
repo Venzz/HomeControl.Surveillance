@@ -16,16 +16,24 @@ namespace HomeControl.Surveillance.Data.Camera.Empty
 
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
 
-        public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync() => Task.FromResult<IReadOnlyCollection<(String Id, DateTime Date)>>(new List<(String Id, DateTime Date)>());
+        public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync()
+        {
+            return Task.FromResult<IReadOnlyCollection<(String Id, DateTime Date)>>(new List<(String Id, DateTime Date)>());
+        }
 
         public Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id)
         {
-            throw new NotImplementedException();
+            return Task.FromResult<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>>(new List<StoredRecordFile.MediaDataDescriptor>());
         }
 
         public Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new Byte[0]);
+        }
+
+        public Task SetPushChannelUriAsync(String previousChannelUri, String channelUri)
+        {
+            return Task.CompletedTask;
         }
     }
 }

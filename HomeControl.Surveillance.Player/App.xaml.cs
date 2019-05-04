@@ -14,6 +14,7 @@ namespace HomeControl.Surveillance.Player
     public sealed partial class App: Application
     {
         public static Diagnostics Diagnostics { get; } = new Diagnostics("App");
+        public static Settings Settings { get; } = new Settings();
         public static ApplicationModel Model { get; } = new ApplicationModel();
 
         public App()
@@ -28,12 +29,14 @@ namespace HomeControl.Surveillance.Player
             {
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
                 frame.Navigate(typeof(CameraPage), (args == App.Model.OutdoorCameraController.Id) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController);
+                return Model.InitializeAsync();
             }
             else if (frame.Content == null)
             {
                 ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
                 frame.Navigate(typeof(HubPage));
+                return Model.InitializeAsync();
             }
             return Task.CompletedTask;
         }

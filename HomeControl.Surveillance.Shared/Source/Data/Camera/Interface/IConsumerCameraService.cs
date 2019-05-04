@@ -16,5 +16,7 @@ namespace HomeControl.Surveillance.Data.Camera
         Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync();
         Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id);
         Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset);
+
+        Task SetPushChannelUriAsync(String previousChannelUri, String channelUri);
     }
 }

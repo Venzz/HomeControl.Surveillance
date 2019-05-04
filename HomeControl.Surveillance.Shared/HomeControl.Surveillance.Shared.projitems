@@ -28,6 +28,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\PartialMessageResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\Messages\StoredRecordsMetadataRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Heroku\ServiceMessages\PushChannelUri.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IServiceMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\ServiceMessageId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\MessageId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\IMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\DataQueue.cs" />

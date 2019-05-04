@@ -76,6 +76,12 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             return response.Data;
         }
 
+        public async Task SetPushChannelUriAsync(String previousChannelUri, String channelUri)
+        {
+            var message = new Message(new PushChannelUri(previousChannelUri, channelUri));
+            await PerformAsync(message).ConfigureAwait(false);
+        }
+
         private async void StartConnectionMaintaining() => await Task.Run(async () =>
         {
             while (true)
@@ -199,6 +205,15 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             Messages.Add(message.Id, messageResponseAwaiter);
             await webSocket.SendAsync(message.Data).ConfigureAwait(false);
             return await messageResponseAwaiter.Task.ConfigureAwait(false);
+        }
+
+        private async Task PerformAsync(Message message)
+        {
+            var webSocket = WebSocket;
+            if (webSocket == null)
+                return;
+
+            await webSocket.SendAsync(message.Data).ConfigureAwait(false);
         }
     }
 }
