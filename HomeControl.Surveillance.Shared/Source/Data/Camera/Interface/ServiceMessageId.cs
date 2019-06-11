@@ -2,6 +2,8 @@
 {
     public enum ServiceMessageId
     {
+        PushChannelSettings,
+        PushNotification,
         PushChannelUri
     }
 }

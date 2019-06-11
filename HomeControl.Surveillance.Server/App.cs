@@ -19,9 +19,9 @@ namespace HomeControl.Surveillance.Server
             #endif
         }
 
-        public async void Start() => await Task.Run(() =>
+        public async void Start() => await Task.Run(async () =>
         {
-            Model.Initialize();
+            await Model.InitializeAsync().ConfigureAwait(false);
         });
 
         public sealed class ConsoleTelemetryService: ITelemetryService

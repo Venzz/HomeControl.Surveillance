@@ -17,6 +17,7 @@ namespace HomeControl.Surveillance.Server.Model
         private IProviderCameraService ProviderCameraService;
         private Storage Storage;
         private MotionDetection MotionDetection = new MotionDetection();
+        private INotificationService NotificationService;
 
         public Camera IndoorCamera { get; }
         public Camera OutdoorCamera { get; }
@@ -40,9 +41,11 @@ namespace HomeControl.Surveillance.Server.Model
             #endif
             Storage.LogReceived += OnLogReceived;
             Storage.ExceptionReceived += OnExceptionReceived;
+
+            NotificationService = new WindowsNotificationService(ProviderCameraService);
         }
 
-        public void Initialize()
+        public async Task InitializeAsync()
         {
             #if DEBUG
             OutdoorCameraConnection = new DemoClipCameraConnection();
@@ -58,6 +61,8 @@ namespace HomeControl.Surveillance.Server.Model
             MotionDetection.Detected += OnMotionDetected;
             MotionDetection.LogReceived += OnLogReceived;
             MotionDetection.Start();
+
+            await NotificationService.InitializeAsync().ConfigureAwait(false);
         }
 
         private async void OnMessageReceived(IProviderCameraService sender, (UInt32 ConsumerId, UInt32 Id, IMessage Message) args) => await Task.Run(async () =>

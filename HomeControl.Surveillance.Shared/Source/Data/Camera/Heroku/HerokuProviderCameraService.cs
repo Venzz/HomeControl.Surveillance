@@ -167,6 +167,15 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         });
 
+        public void EnsureConnected()
+        {
+            lock (ConnectionSync)
+            {
+                if (WebSocket == null)
+                    Monitor.Wait(ConnectionSync);
+            }
+        }
+
         public Task SendStoredRecordsMetadataAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<(String Id, DateTime Date)> storedRecordsMetadata)
         {
             var response = new StoredRecordsMetadataResponse(storedRecordsMetadata);
@@ -193,6 +202,20 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             var response = new StoredRecordMediaDataResponse(data);
             var responseMessage = new Message(consumerId, id, response);
             return SendAsync(responseMessage);
+        }
+
+        public Task SetPushChannelSettingsAsync(String clientId, String clientSecret)
+        {
+            var serviceMessage = new PushChannelSettings(clientId, clientSecret);
+            var message = new Message(serviceMessage);
+            return SendAsync(message);
+        }
+
+        public Task SetPushMessageAsync(String content)
+        {
+            var serviceMessage = new PushNotification(content);
+            var message = new Message(serviceMessage);
+            return SendAsync(message);
         }
 
         private async void StartReceiving() => await Task.Run(async () =>

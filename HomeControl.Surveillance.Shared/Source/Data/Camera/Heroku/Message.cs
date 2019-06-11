@@ -106,6 +106,19 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                 messageDataWriter.Write((Byte)message.Type);
                 switch (message)
                 {
+                    case PushChannelSettings pushChannelSettings:
+                        var clientIdData = Encoding.UTF8.GetBytes(pushChannelSettings.ClientId);
+                        var clientSecretData = Encoding.UTF8.GetBytes(pushChannelSettings.ClientSecret);
+                        messageDataWriter.Write(clientIdData.Length);
+                        messageDataWriter.Write(clientIdData);
+                        messageDataWriter.Write(clientSecretData.Length);
+                        messageDataWriter.Write(clientSecretData);
+                        break;
+                    case PushNotification pushNotification:
+                        var contentData = Encoding.UTF8.GetBytes(pushNotification.Content);
+                        messageDataWriter.Write(contentData.Length);
+                        messageDataWriter.Write(contentData);
+                        break;
                     case PushChannelUri pushChannelUri:
                         var previousChannelUriData = Encoding.UTF8.GetBytes(pushChannelUri.PreviousChannelUri);
                         var channelUriData = Encoding.UTF8.GetBytes(pushChannelUri.ChannelUri);
