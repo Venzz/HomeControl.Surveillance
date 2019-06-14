@@ -281,7 +281,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                         break;
                     default:
                         var queuedData = session.MediaDataQueue.Peek(session.MediaDataQueue.Length);
-                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}", $"Unknown\n{queuedData.ToHexView()}"));
+                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}, Header = {mediaDataResponse.Header}", $"Unknown\n{queuedData.ToHexView()}"));
                         session.MediaDataQueue.Clear();
                         break;
                 }

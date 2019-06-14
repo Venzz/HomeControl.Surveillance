@@ -6,6 +6,7 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
     public class Message
     {
         public UInt32 SessionId { get; private set; }
+        public String Header { get; private set; }
 
 
 
@@ -28,13 +29,13 @@ namespace HomeControl.Surveillance.Server.Data.OrientProtocol
                 switch (operationCode)
                 {
                     case (UInt16)Operation.AuthorizationResponse:
-                        return new AuthorizationResponseMessage(sessionId, messageData);
+                        return new AuthorizationResponseMessage(sessionId, messageData) { Header = data.ToTestView(0, 20) };
                     case (UInt16)Operation.MediaDataResponse:
-                        return new MediaDataResponseMessage(sessionId, messageData);
+                        return new MediaDataResponseMessage(sessionId, messageData) { Header = data.ToTestView(0, 20) };
                     case (UInt16)Operation.OpMonitorClaimResponse:
-                        return new OpMonitorClaimResponseMessage(sessionId, messageData);
+                        return new OpMonitorClaimResponseMessage(sessionId, messageData) { Header = data.ToTestView(0, 20) };
                     default:
-                        return new UnknownResponseMessage(sessionId, data);
+                        return new UnknownResponseMessage(sessionId, data) { Header = data.ToTestView(0, 20) };
                 }
             }
         }

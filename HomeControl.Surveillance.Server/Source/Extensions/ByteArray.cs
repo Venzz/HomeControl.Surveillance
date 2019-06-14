@@ -38,11 +38,13 @@ namespace HomeControl.Surveillance
             return representaion;
         }
 
-        public static String ToTestView(this Byte[] source)
+        public static String ToTestView(this Byte[] source) => ToTestView(source, 0, source.Length);
+
+        public static String ToTestView(this Byte[] source, Int32 index, Int32 length)
         {
             var representaion = "";
             var i = 0;
-            for (i = 0; i < source.Length; i++)
+            for (i = index; i < length; i++)
                 representaion += $"{source[i]:X2} ";
             return representaion;
         }
