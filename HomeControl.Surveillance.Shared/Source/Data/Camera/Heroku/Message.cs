@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Venz;
 
 namespace HomeControl.Surveillance.Data.Camera.Heroku
 {
@@ -81,6 +82,22 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         messageDataWriter.Write(partialMessageResponse.Final);
                         messageDataWriter.Write(partialMessageResponse.Data.Length);
                         messageDataWriter.Write(partialMessageResponse.Data);
+                        break;
+                    case FileListRequest fileListRequest:
+                        break;
+                    case FileListResponse fileListResponse:
+                        messageDataWriter.Write(fileListResponse.Files.Count);
+                        foreach (var fileId in fileListResponse.Files)
+                            messageDataWriter.WriteUtf8String(fileId);
+                        break;
+                    case FileDataRequest fileDataRequest:
+                        messageDataWriter.WriteUtf8String(fileDataRequest.FileId);
+                        messageDataWriter.Write(fileDataRequest.Offset);
+                        messageDataWriter.Write(fileDataRequest.Length);
+                        break;
+                    case FileDataResponse fileDataResponse:
+                        messageDataWriter.Write(fileDataResponse.Data.Length);
+                        messageDataWriter.Write(fileDataResponse.Data);
                         break;
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
@@ -186,6 +203,19 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                         var final = messageDataReader.ReadBoolean();
                         dataLength = messageDataReader.ReadInt32();
                         return new PartialMessageResponse(final, messageDataReader.ReadBytes(dataLength));
+                    case MessageId.FileListRequest:
+                        return new FileListRequest();
+                    case MessageId.FileListResponse:
+                        var filesCount = messageDataReader.ReadUInt32();
+                        var files = new List<String>();
+                        for (var i = 0; i < filesCount; i++)
+                            files.Add(messageDataReader.ReadUtf8String());
+                        return new FileListResponse(files);
+                    case MessageId.FileDataRequest:
+                        return new FileDataRequest(messageDataReader.ReadUtf8String(), messageDataReader.ReadUInt32(), messageDataReader.ReadUInt32());
+                    case MessageId.FileDataResponse:
+                        dataLength = messageDataReader.ReadInt32();
+                        return new FileDataResponse(messageDataReader.ReadBytes(dataLength));
                     default:
                         throw new NotSupportedException($"Message of type {message.Type} is not supported.");
                 }

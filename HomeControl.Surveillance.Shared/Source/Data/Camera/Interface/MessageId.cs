@@ -9,6 +9,10 @@
         StoredRecordMediaDescriptorsResponse,
         StoredRecordMediaDataRequest,
         StoredRecordMediaDataResponse,
-        PartialMessageResponse
+        PartialMessageResponse,
+        FileListRequest,
+        FileListResponse,
+        FileDataRequest,
+        FileDataResponse
     }
 }

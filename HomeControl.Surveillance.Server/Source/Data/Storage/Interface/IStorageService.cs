@@ -14,5 +14,7 @@ namespace HomeControl.Surveillance.Server.Data
         IReadOnlyCollection<String> GetStoredRecords();
         IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id);
         Byte[] GetStoredRecordMediaData(String id, UInt32 offset);
+        IReadOnlyCollection<String> GetFileList();
+        Byte[] GetFileData(String id, UInt32 offset, UInt32 length);
     }
 }

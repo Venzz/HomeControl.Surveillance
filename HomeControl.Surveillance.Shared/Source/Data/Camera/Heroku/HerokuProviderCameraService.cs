@@ -204,6 +204,20 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             return SendAsync(responseMessage);
         }
 
+        public Task SendFileListAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<String> fileList)
+        {
+            var response = new FileListResponse(fileList);
+            var responseMessage = new Message(consumerId, id, response);
+            return SendAsync(responseMessage);
+        }
+
+        public Task SendFileDataAsync(UInt32 consumerId, UInt32 id, Byte[] data)
+        {
+            var response = new FileDataResponse(data);
+            var responseMessage = new Message(consumerId, id, response);
+            return SendAsync(responseMessage);
+        }
+
         public Task SetPushChannelSettingsAsync(String clientId, String clientSecret)
         {
             var serviceMessage = new PushChannelSettings(clientId, clientSecret);

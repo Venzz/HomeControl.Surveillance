@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Venz.Telemetry
+namespace Venz
 {
     internal static class ExceptionExtensions
     {

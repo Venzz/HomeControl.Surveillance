@@ -14,5 +14,7 @@ namespace HomeControl.Surveillance.Server.Data.Empty
         public IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id) => new List<StoredRecordFile.MediaDataDescriptor>();
         public Byte[] GetStoredRecordMediaData(String id, UInt32 offset) => new Byte[0];
         public void Store(IMediaData mediaData) { }
+        public IReadOnlyCollection<String> GetFileList() => new List<String>();
+        public Byte[] GetFileData(String id, UInt32 offset, UInt32 length) => new Byte[0];
     }
 }

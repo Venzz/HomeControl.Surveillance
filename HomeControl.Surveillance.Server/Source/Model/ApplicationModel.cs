@@ -82,6 +82,15 @@ namespace HomeControl.Surveillance.Server.Model
                     var mediaData = Storage.GetStoredRecordMediaData(storedRecordMediaDataRequest.StoredRecordId, storedRecordMediaDataRequest.Offset);
                     await sender.SendMediaDataAsync(args.ConsumerId, args.Id, mediaData).ConfigureAwait(false);
                     break;
+                case MessageId.FileListRequest:
+                    var fileList = Storage.GetFileList();
+                    await sender.SendFileListAsync(args.ConsumerId, args.Id, fileList).ConfigureAwait(false);
+                    break;
+                case MessageId.FileDataRequest:
+                    var fileDataRequest = (FileDataRequest)args.Message;
+                    var data = Storage.GetFileData(fileDataRequest.FileId, fileDataRequest.Offset, fileDataRequest.Length);
+                    await sender.SendFileDataAsync(args.ConsumerId, args.Id, data).ConfigureAwait(false);
+                    break;
             }
         });
 

@@ -56,5 +56,15 @@ namespace HomeControl.Surveillance.Server.Model
         {
             return Service.GetStoredRecordMediaData(id, offset);
         }
+
+        public IReadOnlyCollection<String> GetFileList()
+        {
+            return Service.GetFileList();
+        }
+
+        public Byte[] GetFileData(String id, UInt32 offset, UInt32 length)
+        {
+            return Service.GetFileData(id, offset, length);
+        }
     }
 }

@@ -19,6 +19,8 @@ namespace HomeControl.Surveillance.Data.Camera
         Task SendLiveMediaDataAsync(MediaDataType type, Byte[] data, DateTime timestamp, TimeSpan duration);
         Task SendMediaDataDescriptorsAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> descriptors);
         Task SendMediaDataAsync(UInt32 consumerId, UInt32 id, Byte[] data);
+        Task SendFileListAsync(UInt32 consumerId, UInt32 id, IReadOnlyCollection<String> fileList);
+        Task SendFileDataAsync(UInt32 consumerId, UInt32 id, Byte[] data);
 
         Task SetPushChannelSettingsAsync(String clientId, String clientSecret);
         Task SetPushMessageAsync(String content);

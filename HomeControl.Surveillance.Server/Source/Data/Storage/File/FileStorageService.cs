@@ -102,5 +102,25 @@ namespace HomeControl.Surveillance.Server.Data.File
                 return binaryFileReader.ReadBytes(size);
             }
         }
+
+        public IReadOnlyCollection<String> GetFileList()
+        {
+            var fileList = new List<String>();
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+            foreach (var file in directory.GetFiles())
+                fileList.Add(file.Name);
+            return fileList;
+        }
+
+        public Byte[] GetFileData(String id, UInt32 offset, UInt32 length)
+        {
+            var file = new FileInfo(id);
+            using (var fileStream = file.Open(FileMode.Open, FileAccess.Read))
+            using (var binaryFileReader = new BinaryReader(fileStream))
+            {
+                fileStream.Position = offset;
+                return binaryFileReader.ReadBytes((Int32)length);
+            }
+        }
     }
 }
