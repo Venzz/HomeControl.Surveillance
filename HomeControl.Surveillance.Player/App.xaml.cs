@@ -29,14 +29,12 @@ namespace HomeControl.Surveillance.Player
             {
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
                 frame.Navigate(typeof(CameraPage), (args == App.Model.OutdoorCameraController.Id) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController);
-                return Model.InitializeAsync();
             }
             else if (frame.Content == null)
             {
                 ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
-                frame.Navigate(typeof(HubPage));
-                return Model.InitializeAsync();
+                frame.Navigate(typeof(FileStoragePage));
             }
             return Task.CompletedTask;
         }
@@ -48,6 +46,11 @@ namespace HomeControl.Surveillance.Player
 
             ((PlayerPage)frame.Content).Activate(args.Files[0]);
             return Task.CompletedTask;
+        }
+
+        protected override Task OnStartedAsync()
+        {
+            return Model.InitializeAsync();
         }
     }
 }
