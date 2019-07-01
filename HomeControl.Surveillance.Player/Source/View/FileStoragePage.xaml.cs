@@ -1,9 +1,8 @@
 ﻿using HomeControl.Surveillance.Player.ViewModel;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Venz.UI.Xaml;
 using Windows.Storage.Pickers;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace HomeControl.Surveillance.Player.View
@@ -20,15 +19,16 @@ namespace HomeControl.Surveillance.Player.View
 
         protected override async void OnNavigatedTo(NavigationEventArgs args)
         {
+            base.OnNavigatedTo(args);
             await Context.InitializeAsync();
         }
 
-        private void OnFilesSelectionChanged(Object sender, SelectionChangedEventArgs args)
+        private void OnFilesSelectionChanged(Object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs args)
         {
             Context.SetSelection(args.AddedItems);
         }
 
-        private async void OnSaveClicked(Object sender, Windows.UI.Xaml.RoutedEventArgs args)
+        private async void OnSaveTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
         {
             var folderPicker = new FolderPicker();
             folderPicker.SuggestedStartLocation = PickerLocationId.Downloads;
@@ -40,7 +40,7 @@ namespace HomeControl.Surveillance.Player.View
             Context.Save(folder, FilesView.SelectedItems.Cast<String>().ToList());
         }
 
-        private void OnCancelClicked(Object sender, Windows.UI.Xaml.RoutedEventArgs args)
+        private void OnCancelTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
         {
             Context.CancelSaving();
         }

@@ -1,11 +1,11 @@
 ﻿using HomeControl.Surveillance.Player.ViewModel;
 using System;
 using System.Collections.Generic;
+using Venz.UI.Xaml;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace HomeControl.Surveillance.Player.View
@@ -23,6 +23,7 @@ namespace HomeControl.Surveillance.Player.View
 
         protected override void OnNavigatedTo(NavigationEventArgs args)
         {
+            base.OnNavigatedTo(args);
             OutdoorCameraPreview.SetMediaStreamSource(Context.OutdoorCameraStream.MediaStream);
             IndoorCameraPreview.SetMediaStreamSource(Context.IndoorCameraStream.MediaStream);
         }
@@ -43,7 +44,7 @@ namespace HomeControl.Surveillance.Player.View
                     (sender == OutdoorCamera) ? App.Model.OutdoorCameraController : App.Model.IndoorCameraController,
                     coreApplicationView.Dispatcher
                 };
-                var frame = new Frame();
+                var frame = new Windows.UI.Xaml.Controls.Frame();
                 frame.Navigate(typeof(CameraPage), parameters);
                 Window.Current.Content = frame;
                 Window.Current.Activate();
@@ -59,6 +60,11 @@ namespace HomeControl.Surveillance.Player.View
             OutdoorCamera.Height = availableSize * 9 / 16;
             IndoorCamera.Width = availableSize;
             IndoorCamera.Height = availableSize * 9 / 16;
+        }
+
+        private void OnLibraryTapped(Object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs args)
+        {
+            Frame.Navigate(typeof(FileStoragePage));
         }
     }
 }

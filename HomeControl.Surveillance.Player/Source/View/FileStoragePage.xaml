@@ -1,4 +1,4 @@
-﻿<Page
+﻿<Venz:Page
     x:Class="HomeControl.Surveillance.Player.View.FileStoragePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -47,14 +47,14 @@
                     Icon="Save"
                     IsEnabled="{Binding IsSelected}"
                     Visibility="{Binding SavingProcess.InProgress, Converter={StaticResource TrueToCollapsed}}"
-                    Click="OnSaveClicked">
+                    Tapped="OnSaveTapped">
                 </AppBarButton>
                 <AppBarButton
                     Icon="Cancel"
                     Visibility="{Binding SavingProcess.InProgress, Converter={StaticResource TrueToVisible}}"
-                    Click="OnCancelClicked">
+                    Tapped="OnCancelTapped">
                 </AppBarButton>
             </CommandBar>
         </Grid>
     </Grid>
-</Page>
+</Venz:Page>

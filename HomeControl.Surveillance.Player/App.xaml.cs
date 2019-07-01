@@ -34,7 +34,7 @@ namespace HomeControl.Surveillance.Player
             {
                 ApplicationView.PreferredLaunchViewSize = new Size(800, 800);
                 ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
-                frame.Navigate(typeof(FileStoragePage));
+                frame.Navigate(typeof(HubPage));
             }
             return Task.CompletedTask;
         }

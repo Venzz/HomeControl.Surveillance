@@ -134,6 +134,8 @@
     <Compile Include="Venz\UI\Xaml\Application\Application.Dispatcher.cs" />
     <Compile Include="Venz\UI\Xaml\Application\Application.Extensions.cs" />
     <Compile Include="Venz\UI\Xaml\Application\Application.Settings.cs" />
+    <Compile Include="Venz\UI\Xaml\Page\Page.BackKey.cs" />
+    <Compile Include="Venz\UI\Xaml\Page\Page.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
