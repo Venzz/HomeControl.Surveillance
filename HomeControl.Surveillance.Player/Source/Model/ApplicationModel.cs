@@ -12,6 +12,7 @@ namespace HomeControl.Surveillance.Player.Model
 
         public CameraController OutdoorCameraController { get; }
         public CameraController IndoorCameraController { get; }
+        public ProviderController ProviderController { get; }
 
         public ApplicationModel()
         {
@@ -22,6 +23,7 @@ namespace HomeControl.Surveillance.Player.Model
 
             IndoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(42), title: "Indoor");
             OutdoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13), title: "Outdoor");
+            ProviderController = new ProviderController(ConsumerCameraService);
         }
 
         public async Task InitializeAsync()

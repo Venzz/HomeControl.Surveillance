@@ -1,4 +1,5 @@
 ﻿using System;
+using Venz;
 
 namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 {

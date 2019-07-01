@@ -3,11 +3,12 @@ using HomeControl.Surveillance.Server.Data.Tcp;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Venz;
 using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Data.OrientProtocol
 {
-    public class OrientProtocolCameraConnection : ICameraConnection
+    public class OrientProtocolCameraConnection: ICameraConnection
     {
         private UInt32 ConnectionId;
         private String IpAddress;

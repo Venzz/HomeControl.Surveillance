@@ -102,14 +102,19 @@
     </Compile>
     <Compile Include="Source\Data\System.Net.WebSockets\WinRTWebSocket.cs" />
     <Compile Include="Source\Data\WebSocket.cs" />
+    <Compile Include="Source\Model\Camera\ProviderController.cs" />
     <Compile Include="Source\Model\Camera\MediaData.cs" />
     <Compile Include="Source\Model\Camera\StoredRecord.cs" />
     <Compile Include="Source\Settings.cs" />
+    <Compile Include="Source\ViewModel\FileStorageContext.cs" />
     <Compile Include="Source\ViewModel\CameraContext.cs" />
     <Compile Include="Source\ViewModel\StoredRecordStream.cs" />
     <Compile Include="Source\ViewModel\HubContext.cs" />
     <Compile Include="Source\ViewModel\CameraStream.cs" />
     <Compile Include="Source\ViewModel\PlayerContext.cs" />
+    <Compile Include="Source\View\FileStoragePage.xaml.cs">
+      <DependentUpon>FileStoragePage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Source\View\CameraPage.xaml.cs">
       <DependentUpon>CameraPage.xaml</DependentUpon>
     </Compile>
@@ -190,6 +195,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Source\View\FileStoragePage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Source\View\CameraPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

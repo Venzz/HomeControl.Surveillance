@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HomeControl.Surveillance
+namespace Venz
 {
     public static class ByteArrayExtensions
     {

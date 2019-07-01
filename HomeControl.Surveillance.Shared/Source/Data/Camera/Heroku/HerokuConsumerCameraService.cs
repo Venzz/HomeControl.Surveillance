@@ -30,6 +30,15 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             StartReceiving();
         }
 
+        public void EnsureConnected()
+        {
+            lock (ConnectionSync)
+            {
+                if (WebSocket == null)
+                    Monitor.Wait(ConnectionSync);
+            }
+        }
+
         public async Task PerformAsync(Command command)
         {
             try
@@ -73,6 +82,26 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             if (responseMessage.Type != MessageId.StoredRecordMediaDataResponse)
                 throw new InvalidOperationException();
             var response = (StoredRecordMediaDataResponse)responseMessage;
+            return response.Data;
+        }
+
+        public async Task<IReadOnlyCollection<String>> GetFileListAsync()
+        {
+            var message = new Message(Id, Message.GetId(), new FileListRequest());
+            var responseMessage = await RequestAsync(message);
+            if (responseMessage.Type != MessageId.FileListResponse)
+                throw new InvalidOperationException();
+            var response = (FileListResponse)responseMessage;
+            return response.Files;
+        }
+
+        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length)
+        {
+            var message = new Message(Id, Message.GetId(), new FileDataRequest(id, offset, length));
+            var responseMessage = await RequestAsync(message);
+            if (responseMessage.Type != MessageId.FileDataResponse)
+                throw new InvalidOperationException();
+            var response = (FileDataResponse)responseMessage;
             return response.Data;
         }
 

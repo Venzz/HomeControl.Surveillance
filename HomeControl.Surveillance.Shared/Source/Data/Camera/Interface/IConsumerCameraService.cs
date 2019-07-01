@@ -12,10 +12,14 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived;
         event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
+        void EnsureConnected();
+
         Task PerformAsync(Command command);
         Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync();
         Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id);
         Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset);
+        Task<IReadOnlyCollection<String>> GetFileListAsync();
+        Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length);
 
         Task SetPushChannelUriAsync(String previousChannelUri, String channelUri);
     }
