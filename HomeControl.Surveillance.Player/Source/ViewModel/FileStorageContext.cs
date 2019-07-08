@@ -21,7 +21,8 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
         public Task InitializeAsync() => Task.Run(async () =>
         {
-            Files = await App.Model.ProviderController.GetFileListAsync().ConfigureAwait(false);
+            var files = await App.Model.ProviderController.GetFileListAsync().ConfigureAwait(false);
+            Files = files.OrderByDescending(a => a);
             OnPropertyChanged(nameof(Files));
         });
 
