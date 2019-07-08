@@ -23,6 +23,12 @@ namespace HomeControl.Surveillance.Player.View
             await Context.InitializeAsync();
         }
 
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs args)
+        {
+            base.OnNavigatingFrom(args);
+            Context.CancelSaving();
+        }
+
         private void OnFilesSelectionChanged(Object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs args)
         {
             Context.SetSelection(args.AddedItems);

@@ -11,6 +11,7 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
     {
         private UInt32 Id = 0;
         private Object ConnectionSync = new Object();
+        private Object MessagesSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
         private DataQueue DataQueue = new DataQueue();
@@ -95,10 +96,10 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             return response.Files;
         }
 
-        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length)
+        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length, CancellationToken cancellationToken)
         {
             var message = new Message(Id, Message.GetId(), new FileDataRequest(id, offset, length));
-            var responseMessage = await RequestAsync(message);
+            var responseMessage = await RequestAsync(message, cancellationToken);
             if (responseMessage.Type != MessageId.FileDataResponse)
                 throw new InvalidOperationException();
             var response = (FileDataResponse)responseMessage;
@@ -180,27 +181,30 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
                             }
                             else
                             {
-                                if (!Messages.ContainsKey(message.Id))
-                                    continue;
-
-                                var messageResponse = Message.Create(message);
-                                if (!(messageResponse is PartialMessageResponse partialMessageResponse))
+                                lock (MessagesSync)
                                 {
-                                    Messages[message.Id].SetResult(messageResponse);
-                                    Messages.Remove(message.Id);
-                                }
-                                else
-                                {
-                                    if (!PartialMessages.ContainsKey(message.Id))
-                                        PartialMessages.Add(message.Id, new DataQueue());
-                                    PartialMessages[message.Id].Enqueue(partialMessageResponse.Data);
+                                    if (!Messages.ContainsKey(message.Id))
+                                        continue;
 
-                                    if (partialMessageResponse.Final)
+                                    var messageResponse = Message.Create(message);
+                                    if (!(messageResponse is PartialMessageResponse partialMessageResponse))
                                     {
-                                        message = new Message(PartialMessages[message.Id].Dequeue(PartialMessages[message.Id].Length));
-                                        Messages[message.Id].SetResult(Message.Create(message));
+                                        Messages[message.Id].SetResult(messageResponse);
                                         Messages.Remove(message.Id);
-                                        PartialMessages.Remove(message.Id);
+                                    }
+                                    else
+                                    {
+                                        if (!PartialMessages.ContainsKey(message.Id))
+                                            PartialMessages.Add(message.Id, new DataQueue());
+                                        PartialMessages[message.Id].Enqueue(partialMessageResponse.Data);
+
+                                        if (partialMessageResponse.Final)
+                                        {
+                                            message = new Message(PartialMessages[message.Id].Dequeue(PartialMessages[message.Id].Length));
+                                            Messages[message.Id].TrySetResult(Message.Create(message));
+                                            Messages.Remove(message.Id);
+                                            PartialMessages.Remove(message.Id);
+                                        }
                                     }
                                 }
                             }
@@ -224,16 +228,30 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             }
         });
 
-        private async Task<IMessage> RequestAsync(Message message)
+        private async Task<IMessage> RequestAsync(Message message, CancellationToken cancellationToken = new CancellationToken())
         {
             var webSocket = WebSocket;
             if (webSocket == null)
                 throw new InvalidOperationException();
 
             var messageResponseAwaiter = new TaskCompletionSource<IMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Messages.Add(message.Id, messageResponseAwaiter);
-            await webSocket.SendAsync(message.Data).ConfigureAwait(false);
-            return await messageResponseAwaiter.Task.ConfigureAwait(false);
+            Action cancelAction = () =>
+            {
+                lock (MessagesSync)
+                {
+                    messageResponseAwaiter.TrySetCanceled();
+                    if (Messages.ContainsKey(message.Id))
+                        Messages.Remove(message.Id);
+                    if (PartialMessages.ContainsKey(message.Id))
+                        PartialMessages.Remove(message.Id);
+                }
+            };
+            using (cancellationToken.Register(cancelAction))
+            {
+                Messages.Add(message.Id, messageResponseAwaiter);
+                await webSocket.SendAsync(message.Data).ConfigureAwait(false);
+                return await messageResponseAwaiter.Task.ConfigureAwait(false);
+            }
         }
 
         private async Task PerformAsync(Message message)

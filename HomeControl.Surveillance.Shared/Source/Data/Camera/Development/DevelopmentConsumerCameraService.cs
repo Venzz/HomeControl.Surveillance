@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Data.Storage;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -62,7 +63,7 @@ namespace HomeControl.Surveillance.Data.Camera.Development
             "2019-06-27_07.sr"
         });
 
-        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length)
+        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length, CancellationToken cancellationToken)
         {
             await Task.Delay(1000).ConfigureAwait(false);
             return (offset >= 50 * 1000 * 1000) ? new Byte[0] : new Byte[length];

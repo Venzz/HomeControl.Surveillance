@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading;
 using System.Threading.Tasks;
 using Venz.Data;
 using Windows.Storage;
@@ -38,7 +39,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
         public class FileSavingProcess: ObservableObject
         {
-            private Boolean IsCancelled;
+            private CancellationTokenSource Cancellation;
 
             public FileSavingProgress Status { get; private set; }
             public Boolean InProgress { get; private set; }
@@ -49,59 +50,71 @@ namespace HomeControl.Surveillance.Player.ViewModel
 
             public async Task SaveAsync(StorageFolder folder, IReadOnlyCollection<String> items)
             {
-                IsCancelled = false;
-                InProgress = true;
-                Status = new FileSavingProgress(items.First(), 0, 0);
-                OnPropertyChanged(nameof(InProgress), nameof(Status));
-
-                var currentItemIndex = 0;
-                foreach (var item in items)
+                try
                 {
-                    var currentFileOffset = 0U;
-                    var fileName = item.ToString();
-                    var file = await folder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName).AsTask().ConfigureAwait(false);
-                    using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite).AsTask().ConfigureAwait(false))
+                    InProgress = true;
+                    Cancellation = new CancellationTokenSource();
+                    Status = new FileSavingProgress(items.First(), 0, 0);
+                    OnPropertyChanged(nameof(InProgress), nameof(Status));
+
+                    var currentItemIndex = 0;
+                    foreach (var item in items)
                     {
-                        Status = new FileSavingProgress(fileName, currentFileOffset, (Double)currentItemIndex / items.Count);
-                        OnPropertyChanged(nameof(Status));
-
-                        while (true)
+                        var currentFileOffset = 0U;
+                        var fileName = item.ToString();
+                        var file = await folder.CreateFileAsync(fileName, CreationCollisionOption.GenerateUniqueName).AsTask().ConfigureAwait(false);
+                        using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite).AsTask().ConfigureAwait(false))
                         {
-                            if (IsCancelled)
-                            {
-                                InProgress = false;
-                                OnPropertyChanged(nameof(InProgress));
-                                return;
-                            }
-
-                            var fileData = await App.Model.ProviderController.GetFileDataAsync(fileName, currentFileOffset, 10 * 1000 * 1000).ConfigureAwait(false);
-                            if (IsCancelled)
-                            {
-                                InProgress = false;
-                                OnPropertyChanged(nameof(InProgress));
-                                return;
-                            }
-                            if (fileData.Length == 0)
-                            {
-                                currentItemIndex++;
-                                break;
-                            }
-
-                            await fileStream.WriteAsync(fileData.AsBuffer()).AsTask().ConfigureAwait(false);
-                            currentFileOffset += (UInt32)fileData.Length;
                             Status = new FileSavingProgress(fileName, currentFileOffset, (Double)currentItemIndex / items.Count);
                             OnPropertyChanged(nameof(Status));
+
+                            while (true)
+                            {
+                                if (Cancellation.IsCancellationRequested)
+                                {
+                                    InProgress = false;
+                                    OnPropertyChanged(nameof(InProgress));
+                                    return;
+                                }
+
+                                var fileData = await App.Model.ProviderController.GetFileDataAsync(fileName, currentFileOffset, 1 * 1000 * 1000, Cancellation.Token).ConfigureAwait(false);
+                                if (Cancellation.IsCancellationRequested)
+                                {
+                                    InProgress = false;
+                                    OnPropertyChanged(nameof(InProgress));
+                                    return;
+                                }
+                                if (fileData.Length == 0)
+                                {
+                                    currentItemIndex++;
+                                    break;
+                                }
+
+                                await fileStream.WriteAsync(fileData.AsBuffer()).AsTask().ConfigureAwait(false);
+                                currentFileOffset += (UInt32)fileData.Length;
+                                Status = new FileSavingProgress(fileName, currentFileOffset, (Double)currentItemIndex / items.Count);
+                                OnPropertyChanged(nameof(Status));
+                            }
                         }
                     }
-                }
 
-                InProgress = false;
-                OnPropertyChanged(nameof(InProgress));
+                    InProgress = false;
+                    OnPropertyChanged(nameof(InProgress));
+                }
+                catch (TaskCanceledException)
+                {
+                    InProgress = false;
+                    OnPropertyChanged(nameof(InProgress));
+                }
+                finally
+                {
+                    Cancellation.Dispose();
+                }
             }
 
             public void Cancel()
             {
-                IsCancelled = true;
+                Cancellation?.Cancel();
             }
         }
 

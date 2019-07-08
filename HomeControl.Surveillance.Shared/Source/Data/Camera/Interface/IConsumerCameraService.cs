@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Data.Storage;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 
@@ -19,7 +20,7 @@ namespace HomeControl.Surveillance.Data.Camera
         Task<IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor>> GetMediaDataDescriptorsAsync(String id);
         Task<Byte[]> GetMediaDataAsync(String id, UInt32 offset);
         Task<IReadOnlyCollection<String>> GetFileListAsync();
-        Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length);
+        Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length, CancellationToken cancellationToken);
 
         Task SetPushChannelUriAsync(String previousChannelUri, String channelUri);
     }

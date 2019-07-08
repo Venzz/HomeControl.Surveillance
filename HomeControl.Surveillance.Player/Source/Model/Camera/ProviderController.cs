@@ -1,6 +1,7 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HomeControl.Surveillance.Player.Model
@@ -23,10 +24,10 @@ namespace HomeControl.Surveillance.Player.Model
             return fileList;
         }
 
-        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length)
+        public async Task<Byte[]> GetFileDataAsync(String id, UInt32 offset, UInt32 length, CancellationToken cancellationToken)
         {
             ConsumerService.EnsureConnected();
-            var fileData = await ConsumerService.GetFileDataAsync(id, offset, length).ConfigureAwait(false);
+            var fileData = await ConsumerService.GetFileDataAsync(id, offset, length, cancellationToken).ConfigureAwait(false);
             return fileData;
         }
     }
