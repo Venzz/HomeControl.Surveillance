@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HomeControl.Surveillance.Data.Camera.Heroku
+namespace HomeControl.Surveillance.Data.Camera
 {
     public class StoredRecordMediaDescriptorsResponse: IMessage
     {

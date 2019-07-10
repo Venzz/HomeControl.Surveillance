@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Venz;
 
-namespace HomeControl.Surveillance.Data.Camera.Heroku
+namespace HomeControl.Surveillance.Data.Camera
 {
     public class Message
     {
@@ -20,6 +20,14 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
         public Message(Byte[] data)
         {
             ConsumerId = BitConverter.ToUInt32(data, 4);
+            Id = BitConverter.ToUInt32(data, 12);
+            Type = (MessageId)data[16];
+            Data = data;
+        }
+
+        public Message(UInt32 consumerId, Byte[] data)
+        {
+            ConsumerId = consumerId;
             Id = BitConverter.ToUInt32(data, 12);
             Type = (MessageId)data[16];
             Data = data;
