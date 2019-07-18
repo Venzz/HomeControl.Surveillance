@@ -21,6 +21,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\EmptyTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\FileTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\LocalNetwork\ITcpServer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\LocalNetwork\LocalNetworkConsumerCameraService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\LocalNetwork\LocalNetworkClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\LocalNetwork\LocalNetworkProviderCameraService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\Messaging\Message.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\Messaging\Messages\FileDataRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Data\Camera\Interface\Messaging\Messages\FileDataResponse.cs" />
