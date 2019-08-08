@@ -110,6 +110,7 @@ namespace HomeControl.Surveillance.Player.ViewModel
                 finally
                 {
                     Cancellation.Dispose();
+                    Cancellation = null;
                 }
             }
 
