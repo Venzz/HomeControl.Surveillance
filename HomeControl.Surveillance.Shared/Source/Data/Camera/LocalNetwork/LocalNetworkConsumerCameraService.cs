@@ -59,8 +59,7 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
                         while ((DateTime.Now - startedDate < maxRequestDuration) && !connectTask.IsCompleted)
                             await Task.Delay(100).ConfigureAwait(false);
 
-                        if (connectTask.IsCompleted && !connectTask.IsFaulted)
-                            connectionCheckerClient.Dispose();
+                        connectionCheckerClient.Dispose();
                         return connectTask.IsCompleted && !connectTask.IsFaulted;
                     });
                 }
@@ -131,6 +130,10 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
         private async void StartConnectionMaintaining() => await Task.Run(async () =>
         {
+            var isAvailable = await IsAvailableAsync().ConfigureAwait(false);
+            if (!isAvailable)
+                return;
+
             while (true)
             {
                 lock (ConnectionSync)
@@ -161,6 +164,10 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
         private async void StartReceiving() => await Task.Run(async () =>
         {
+            var isAvailable = await IsAvailableAsync().ConfigureAwait(false);
+            if (!isAvailable)
+                return;
+
             var buffer = new Byte[1 * 1024 * 1024];
             while (true)
             {
