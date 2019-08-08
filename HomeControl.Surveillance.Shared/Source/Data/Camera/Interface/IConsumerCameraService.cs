@@ -13,7 +13,8 @@ namespace HomeControl.Surveillance.Data.Camera
         event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived;
         event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived;
 
-        void EnsureConnected();
+        Task EnsureConnectedAsync();
+        Task<Boolean> IsAvailableAsync();
 
         Task PerformAsync(Command command);
         Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync();

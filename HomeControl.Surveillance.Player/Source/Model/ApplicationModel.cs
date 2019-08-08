@@ -1,5 +1,5 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Data.Camera.Heroku;
+using HomeControl.Surveillance.Data.Camera.Adaptive;
 using System;
 using System.Threading.Tasks;
 
@@ -16,7 +16,7 @@ namespace HomeControl.Surveillance.Player.Model
 
         public ApplicationModel()
         {
-            ConsumerCameraService = new HerokuConsumerCameraService("client");
+            ConsumerCameraService = new AdaptiveConsumerCameraService(PrivateData.LocalNetworkCameraServiceAddress, 666);
             ConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
             ConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
             PushNotification = new PushNotification(ConsumerCameraService);

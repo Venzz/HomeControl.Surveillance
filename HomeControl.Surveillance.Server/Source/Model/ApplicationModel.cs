@@ -1,5 +1,6 @@
 ﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Data.Camera.Heroku;
+using HomeControl.Surveillance.Data.Camera.Adaptive;
+using HomeControl.Surveillance.Data.Camera.LocalNetwork;
 using HomeControl.Surveillance.Server.Data;
 using HomeControl.Surveillance.Server.Data.DemoClip;
 using HomeControl.Surveillance.Server.Data.Empty;
@@ -25,7 +26,7 @@ namespace HomeControl.Surveillance.Server.Model
 
         public ApplicationModel()
         {
-            ProviderCameraService = new HerokuProviderCameraService("service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
+            ProviderCameraService = new AdaptiveProviderCameraService(new TcpServer(PrivateData.LocalNetworkCameraServiceAddress, 666), (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
             ProviderCameraService.MessageReceived += OnMessageReceived;
             ProviderCameraService.LogReceived += OnLogReceived;
             ProviderCameraService.ExceptionReceived += OnExceptionReceived;
@@ -49,7 +50,7 @@ namespace HomeControl.Surveillance.Server.Model
             #if DEBUG
             OutdoorCameraConnection = new DemoClipCameraConnection();
             #else
-            OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
+            OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.233", 34567);
             #endif
             OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media);
             OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);

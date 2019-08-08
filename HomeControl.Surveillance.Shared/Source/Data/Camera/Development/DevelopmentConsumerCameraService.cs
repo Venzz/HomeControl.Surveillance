@@ -15,7 +15,9 @@ namespace HomeControl.Surveillance.Data.Camera.Development
 
         public DevelopmentConsumerCameraService() { }
 
-        public void EnsureConnected() { }
+        public Task EnsureConnectedAsync() => Task.FromResult<Object>(null);
+
+        public Task<Boolean> IsAvailableAsync() => Task.FromResult(true);
 
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
 

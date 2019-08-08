@@ -31,6 +31,20 @@ namespace HomeControl.Surveillance.Data.Camera.Heroku
             StartReceiving();
         }
 
+        public Task EnsureConnectedAsync() => Task.Run(() =>
+        {
+            lock (ConnectionSync)
+            {
+                if (WebSocket == null)
+                    Monitor.Wait(ConnectionSync);
+            }
+        });
+
+        public Task<Boolean> IsAvailableAsync()
+        {
+            return Task.FromResult(true);
+        }
+
         public void EnsureConnected()
         {
             lock (ConnectionSync)

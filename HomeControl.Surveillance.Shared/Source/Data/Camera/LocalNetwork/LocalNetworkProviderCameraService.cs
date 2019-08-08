@@ -142,8 +142,8 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
                 {
                     if (message.ConsumerId == 0)
                     {
-                        foreach (var client in Clients)
-                            Server.Send(message.ConsumerId, message.Data);
+                        foreach (var client in Clients.Values)
+                            Server.Send(client.Id, message.Data);
                     }
                     else
                     {
@@ -160,12 +160,15 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
             }
         }
 
-        private void OnClientConnected(Object sender, UInt32 args)
+        private void OnClientConnected(Object sender, (System.Net.Sockets.Socket Socket, UInt32 SocketId) args)
         {
             lock (ClientSync)
             {
-                if (!Clients.ContainsKey(args))
-                    Clients.Add(args, new LocalNetworkClient(args));
+                if (!Clients.ContainsKey(args.SocketId))
+                {
+                    Clients.Add(args.SocketId, new LocalNetworkClient(args.SocketId));
+                    LogReceived(this, ("Connected", $"Id: {args.SocketId} = {args.Socket.RemoteEndPoint.ToString()}"));
+                }
             }
         }
 
@@ -174,7 +177,10 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
             lock (ClientSync)
             {
                 if (Clients.ContainsKey(args))
+                {
                     Clients.Remove(args);
+                    LogReceived(this, ("Disconnected", $"Id: {args}"));
+                }
             }
         }
     }

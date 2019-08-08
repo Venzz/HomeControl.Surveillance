@@ -20,6 +20,7 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
         private TcpClient TcpClient;
         private IPEndPoint Endpoint;
+        private Task<Boolean> IsAvailable;
 
         public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)> MediaDataReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
@@ -27,20 +28,44 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
 
 
-        public LocalNetworkConsumerCameraService(String endpoint)
+        public LocalNetworkConsumerCameraService(String endpoint, Int16 port)
         {
-            Endpoint = new IPEndPoint(IPAddress.Parse(endpoint), 666);
+            Endpoint = new IPEndPoint(IPAddress.Parse(endpoint), port);
             StartConnectionMaintaining();
             StartReceiving();
         }
 
-        public void EnsureConnected()
+        public Task EnsureConnectedAsync() => Task.Run(() =>
         {
             lock (ConnectionSync)
             {
                 if (TcpClient == null)
                     Monitor.Wait(ConnectionSync);
             }
+        });
+
+        public Task<Boolean> IsAvailableAsync()
+        {
+            lock (this)
+            {
+                if (IsAvailable == null)
+                {
+                    IsAvailable = Task.Run(async () =>
+                    {
+                        var connectionCheckerClient = new TcpClient();
+                        var startedDate = DateTime.Now;
+                        var maxRequestDuration = TimeSpan.FromMilliseconds(2000);
+                        var connectTask = connectionCheckerClient.ConnectAsync(Endpoint.Address, Endpoint.Port);
+                        while ((DateTime.Now - startedDate < maxRequestDuration) && !connectTask.IsCompleted)
+                            await Task.Delay(100).ConfigureAwait(false);
+
+                        if (connectTask.IsCompleted && !connectTask.IsFaulted)
+                            connectionCheckerClient.Dispose();
+                        return connectTask.IsCompleted && !connectTask.IsFaulted;
+                    });
+                }
+            }
+            return IsAvailable;
         }
 
         public Task PerformAsync(Command command)
@@ -116,7 +141,6 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
                 try
                 {
-
                     var tcpClient = new TcpClient();
                     await tcpClient.ConnectAsync(Endpoint.Address, Endpoint.Port).ConfigureAwait(false);
                     LogReceived(this, ($"{nameof(LocalNetworkConsumerCameraService)}", "Connected."));

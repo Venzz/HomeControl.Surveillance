@@ -10,19 +10,22 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
     {
         private const Int32 BufferSize = 1 * 1024 * 1024;
 
+        private Object Sync;
+        private UInt32 LastUsedSocketId;
         private TcpListener Listener;
         private Dictionary<UInt32, Socket> AcceptedSockets = new Dictionary<UInt32, Socket>();
 
-        public event TypedEventHandler<Object, UInt32> ClientConnected = delegate { };
-        public event TypedEventHandler<Object, (UInt32 SocketId, Byte[])> DataReceived = delegate { };
-        public event TypedEventHandler<Object, (String Message, String Parameter)> LogReceived = delegate { };
-        public event TypedEventHandler<Object, UInt32> ClientDisconnected = delegate { };
+        public event TypedEventHandler<ITcpServer, (Socket Socket, UInt32 SocketId)> ClientConnected = delegate { };
+        public event TypedEventHandler<ITcpServer, (UInt32 SocketId, Byte[])> DataReceived = delegate { };
+        public event TypedEventHandler<ITcpServer, (String Message, String Parameter)> LogReceived = delegate { };
+        public event TypedEventHandler<ITcpServer, UInt32> ClientDisconnected = delegate { };
 
 
 
-        public TcpServer(Int16 port)
+        public TcpServer(String ipAddress, Int16 port)
         {
-            Listener = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
+            Sync = new Object();
+            Listener = new TcpListener(IPAddress.Parse(ipAddress), port);
         }
 
         public void Start()
@@ -33,16 +36,13 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
 
         public void Send(UInt32 socketId, Byte[] data)
         {
-            if (socketId == 0)
+            lock (Sync)
             {
-                foreach (var acceptedSocket in AcceptedSockets.Values)
-                    acceptedSocket.Send(data);
-
-            }
-            else if (AcceptedSockets.ContainsKey(socketId))
-            {
-                var socket = AcceptedSockets[socketId];
-                socket.Send(data);
+                if (AcceptedSockets.ContainsKey(socketId))
+                {
+                    var socket = AcceptedSockets[socketId];
+                    socket.BeginSend(data, 0, data.Length, SocketFlags.None, OnSocketDataSent, (socket, socketId));
+                }
             }
         }
 
@@ -50,13 +50,12 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
         {
             var socketId = GetSocketId();
             var acceptedSocket = Listener.EndAcceptSocket(asyncResult);
-            AcceptedSockets.Add(socketId, acceptedSocket);
-            ClientConnected(this, socketId);
-            LogReceived(this, ($"{nameof(TcpServer)}.{nameof(OnSocketAccepted)}", acceptedSocket.LocalEndPoint.ToString()));
+            lock (Sync)
+                AcceptedSockets.Add(socketId, acceptedSocket);
+            ClientConnected(this, (acceptedSocket, socketId));
 
             var data = new Byte[BufferSize];
             acceptedSocket.BeginReceive(data, 0, data.Length, SocketFlags.None, OnSocketDataReceived, (data, acceptedSocket, socketId));
-
             Listener.BeginAcceptSocket(OnSocketAccepted, null);
         }
 
@@ -76,15 +75,37 @@ namespace HomeControl.Surveillance.Data.Camera.LocalNetwork
             }
             catch (SocketException exception)
             {
-                AcceptedSockets.Remove(state.SocketId);
+                lock (Sync)
+                    AcceptedSockets.Remove(state.SocketId);
+                ClientDisconnected(this, state.SocketId);
                 LogReceived(this, ($"{nameof(TcpServer)}.{nameof(OnSocketDataReceived)}", exception.Message));
+            }
+        }
+
+        private void OnSocketDataSent(IAsyncResult asyncResult)
+        {
+            (Socket Socket, UInt32 SocketId) state = ((ValueTuple<Socket, UInt32>)asyncResult.AsyncState);
+            try
+            {
+                state.Socket.EndSend(asyncResult);
+            }
+            catch (SocketException exception)
+            {
+                lock (Sync)
+                    AcceptedSockets.Remove(state.SocketId);
+                ClientDisconnected(this, state.SocketId);
+                LogReceived(this, ($"{nameof(TcpServer)}.{nameof(OnSocketDataSent)}", exception.Message));
             }
         }
 
         private UInt32 GetSocketId()
         {
             var baseDateTime = new DateTime(2019, 1, 1);
-            return (UInt32)((DateTime.Now - baseDateTime).Ticks >> 22);
+            var socketId = (UInt32)((DateTime.Now - baseDateTime).Ticks >> 22);
+            if (LastUsedSocketId == socketId)
+                socketId++;
+            LastUsedSocketId = socketId;
+            return LastUsedSocketId;
         }
     }
 }
