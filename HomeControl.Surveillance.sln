@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeControl.Surveillance.Pl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeControl.Surveillance.Server", "HomeControl.Surveillance.Server\HomeControl.Surveillance.Server.csproj", "{838C31FA-762D-4A65-A227-C3EC6F39DF3D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeControl.Surveillance.ServerStarter", "HomeControl.Surveillance.ServerStarter\HomeControl.Surveillance.ServerStarter.csproj", "{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems*{09d8cb6c-15b1-4863-a3f9-46314345905d}*SharedItemsImports = 13
@@ -63,6 +65,22 @@ Global
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Release|x64.Build.0 = Release|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Release|x86.ActiveCfg = Release|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Release|x86.Build.0 = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|ARM.Build.0 = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|x64.Build.0 = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Debug|x86.Build.0 = Debug|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|ARM.ActiveCfg = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|ARM.Build.0 = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|x64.ActiveCfg = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|x64.Build.0 = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|x86.ActiveCfg = Release|Any CPU
+		{D8BAB01A-42C3-4B25-9D5C-6BE5C5EFC187}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
