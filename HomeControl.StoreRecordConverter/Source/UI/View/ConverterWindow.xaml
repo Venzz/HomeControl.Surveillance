@@ -7,4 +7,7 @@
     Width="600"
     WindowStartupLocation="CenterScreen">
 
+    <Grid Background="Transparent" AllowDrop="True" Drop="OnDrop">
+        
+    </Grid>
 </Window>
