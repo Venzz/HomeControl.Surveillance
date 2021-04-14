@@ -22,7 +22,7 @@ namespace HomeControl.StoreRecordConverter.View
 
             var files = (String[])args.Data.GetData(DataFormats.FileDrop);
             Context.Add(files.ToList());
-            foreach (var file in Context.Files)
+            foreach (var file in Context.Files.Where(a => a.Progress != 1))
                 await Context.ConvertAsync(file);
         }
     }
