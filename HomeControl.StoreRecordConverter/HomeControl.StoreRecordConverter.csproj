@@ -71,6 +71,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Source\UI\Controller\ConverterController.cs" />
+    <Compile Include="Source\UI\Converters.cs" />
     <Compile Include="Source\UI\View\ConverterWindow.xaml.cs">
       <DependentUpon>ConverterWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

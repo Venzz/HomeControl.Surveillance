@@ -2,25 +2,69 @@
     x:Class="HomeControl.StoreRecordConverter.View.ConverterWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:UI="clr-namespace:HomeControl.StoreRecordConverter.UI"
     Title="Store Record Converter"
     Height="600"
     Width="600"
     WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <UI:ProgressToCompletedIconVisibility x:Key="ProgressToCompletedIconVisibility"/>
+        <UI:ProgressToNotStartedIconVisibility x:Key="ProgressToNotStartedIconVisibility"/>
+        <UI:ProgressToTextVisibility x:Key="ProgressToTextVisibility"/>
+        <UI:ProgressToText x:Key="ProgressToText"/>
+    </Window.Resources>
+
     <Grid Background="Transparent" AllowDrop="True" Drop="OnDrop">
         <ListView ItemsSource="{Binding Files, Mode=OneTime}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Setters>
+                        <Setter Property="Padding" Value="10, 4"/>
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style.Setters>
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="FileName" FontSize="24"/>
-                        <TextBlock Grid.Row="1" Text="Path"/>
-                        <ProgressBar Grid.Row="2" Value="{Binding Progress, Mode=OneWay}" Maximum="1" Height="6"/>
-                    </Grid>
+                        <TextBlock
+                            Grid.Row="0"
+                            FontSize="24"
+                            Text="{Binding FileName, Mode=OneTime}">
+                        </TextBlock>
+                        <TextBlock
+                            Grid.Row="1"
+                            Text="{Binding FilePath, Mode=OneTime}">
+                        </TextBlock>
+                        <Grid Grid.RowSpan="2" Grid.Column="1" Width="40" Height="40">
+                            <Viewbox Visibility="{Binding Progress, Mode=OneWay, Converter={StaticResource ProgressToCompletedIconVisibility}, FallbackValue=Hidden}">
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Foreground="Green"
+                                    Text="&#xE8FB;">
+                                </TextBlock>
+                            </Viewbox>
+                            <Viewbox Visibility="{Binding Progress, Mode=OneWay, Converter={StaticResource ProgressToNotStartedIconVisibility}, FallbackValue=Hidden}">
+                                <TextBlock
+                                    FontFamily="Segoe MDL2 Assets"
+                                    Text="&#xE823;">
+                                </TextBlock>
+                            </Viewbox>
+                            <Viewbox Visibility="{Binding Progress, Mode=OneWay, Converter={StaticResource ProgressToTextVisibility}}">
+                                <TextBlock Text="{Binding Progress, Mode=OneWay, Converter={StaticResource ProgressToText}}"/>
+                            </Viewbox>
+                        </Grid>
+                    </Grid> 
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

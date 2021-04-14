@@ -55,7 +55,7 @@ namespace HomeControl.StoreRecordConverter.Controller
                         processedCount++;
 
                         if (processedCount % progressCheckpointCount == 0)
-                            await Task.Factory.StartNew(() => storeRecordFile.AddProgress(0.9 / 10), new CancellationToken(false), TaskCreationOptions.None, UiTaskScheduler);
+                            await Task.Factory.StartNew(() => storeRecordFile.AddProgress(0.9m / 10), new CancellationToken(false), TaskCreationOptions.None, UiTaskScheduler);
                     }
                 }
 
@@ -67,7 +67,7 @@ namespace HomeControl.StoreRecordConverter.Controller
                 process.WaitForExit();
                 process.Close();
                 tempFile.Delete();
-                await Task.Factory.StartNew(() => storeRecordFile.AddProgress(0.1), new CancellationToken(), TaskCreationOptions.None, UiTaskScheduler);
+                await Task.Factory.StartNew(() => storeRecordFile.AddProgress(0.1m), new CancellationToken(), TaskCreationOptions.None, UiTaskScheduler);
             }
         });
 
@@ -78,7 +78,7 @@ namespace HomeControl.StoreRecordConverter.Controller
             public String FilePath { get; }
             public String FileName { get; }
             public String FileLocation { get; }
-            public Double Progress { get; set; }
+            public Decimal Progress { get; set; }
 
             public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
@@ -91,7 +91,7 @@ namespace HomeControl.StoreRecordConverter.Controller
                 FileLocation = Path.GetDirectoryName(filePath);
             }
 
-            public void AddProgress(Double value)
+            public void AddProgress(Decimal value)
             {
                 Progress += value;
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(Progress)));
