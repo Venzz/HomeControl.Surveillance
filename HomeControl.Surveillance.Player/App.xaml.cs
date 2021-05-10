@@ -1,5 +1,5 @@
 ﻿using HomeControl.Surveillance.Player.Model;
-using HomeControl.Surveillance.Player.View;
+using HomeControl.Surveillance.Player.UI.View;
 using System;
 using System.Threading.Tasks;
 using Venz.Telemetry;
@@ -7,7 +7,6 @@ using Venz.UI.Xaml;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml.Controls;
 
 namespace HomeControl.Surveillance.Player
 {
@@ -23,7 +22,7 @@ namespace HomeControl.Surveillance.Player
             Diagnostics.Debug.Add(new DebugTelemetryService());
         }
 
-        protected override Task OnManuallyActivatedAsync(Frame frame, Boolean newInstance, String args)
+        protected override Task OnManuallyActivatedAsync(Frame frame, Boolean newInstance, PrelaunchStage prelaunchStage, String args)
         {
             if (!String.IsNullOrWhiteSpace(args) && (frame.Content == null))
             {
@@ -41,7 +40,7 @@ namespace HomeControl.Surveillance.Player
             return Task.CompletedTask;
         }
 
-        protected override Task OnFileActivatedAsync(Frame frame, Boolean newInstance, FileActivatedEventArgs args)
+        protected override Task OnFileActivatedAsync(Frame frame, Boolean newInstance, PrelaunchStage prelaunchStage, FileActivatedEventArgs args)
         {
             if (!(frame.Content is PlayerPage))
                 frame.Navigate(typeof(PlayerPage), null);

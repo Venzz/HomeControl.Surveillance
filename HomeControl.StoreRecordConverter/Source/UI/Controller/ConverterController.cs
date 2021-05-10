@@ -1,4 +1,4 @@
-﻿using HomeControl.Surveillance.Data.Storage;
+﻿using HomeControl.Surveillance;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -38,7 +38,7 @@ namespace HomeControl.StoreRecordConverter.Controller
             using (var fileStream = new FileStream(storeRecordFile.FilePath, FileMode.Open, FileAccess.Read))
             using (var fileReader = new BinaryReader(fileStream))
             {
-                var mediaDescriptors = StoredRecordFile.ReadMediaDescriptors(fileStream);
+                var mediaDescriptors = new StoredRecordFile(fileStream).ReadMediaDescriptors();
                 if (mediaDescriptors.Count == 0)
                     return;
 

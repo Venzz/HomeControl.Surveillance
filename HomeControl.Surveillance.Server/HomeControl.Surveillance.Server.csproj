@@ -23,7 +23,7 @@
     <None Update="Resources\swscale-4.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Source\Data\CameraConnection\DemoClip\DemoClip.sr">
+    <None Update="Source\Services\CameraConnection\DemoClip\DemoClip.sr">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

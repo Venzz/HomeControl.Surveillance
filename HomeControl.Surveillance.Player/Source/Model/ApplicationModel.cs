@@ -1,5 +1,4 @@
-﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Data.Camera.Heroku;
+﻿using HomeControl.Surveillance.Services;
 using System;
 using System.Threading.Tasks;
 
@@ -10,8 +9,8 @@ namespace HomeControl.Surveillance.Player.Model
         private IConsumerCameraService ConsumerCameraService;
         private PushNotification PushNotification;
 
-        public CameraController OutdoorCameraController { get; }
-        public CameraController IndoorCameraController { get; }
+        public Camera OutdoorCameraController { get; }
+        public Camera IndoorCameraController { get; }
 
         public ApplicationModel()
         {
@@ -20,8 +19,8 @@ namespace HomeControl.Surveillance.Player.Model
             ConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
             PushNotification = new PushNotification(ConsumerCameraService);
 
-            IndoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(42), title: "Indoor");
-            OutdoorCameraController = new CameraController(ConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13), title: "Outdoor");
+            IndoorCameraController = new Camera(ConsumerCameraService, supportsCommands: false, sampleDuration: TimeSpan.FromMilliseconds(42), title: "Indoor");
+            OutdoorCameraController = new Camera(ConsumerCameraService, supportsCommands: true, sampleDuration: TimeSpan.FromMilliseconds(13), title: "Outdoor");
         }
 
         public async Task InitializeAsync()

@@ -1,4 +1,4 @@
-﻿using HomeControl.Surveillance.Data.Camera;
+﻿using HomeControl.Surveillance.Services;
 using System;
 using System.Threading.Tasks;
 using Windows.Networking.PushNotifications;

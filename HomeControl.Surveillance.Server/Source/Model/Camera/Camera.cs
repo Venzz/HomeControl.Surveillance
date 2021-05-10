@@ -1,5 +1,5 @@
-﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Server.Data;
+﻿using HomeControl.Surveillance.Server.Services;
+using HomeControl.Surveillance.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;

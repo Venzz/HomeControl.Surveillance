@@ -60,11 +60,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="..\HomeControl.Surveillance.Shared\Source\Data\Storage\StoredRecordFile.cs">
-      <Link>Source\Utility\StoredRecordFile.cs</Link>
-    </Compile>
     <Compile Include="..\HomeControl.Surveillance.Shared\Source\Primitives\MediaDataType.cs">
       <Link>Source\Primitives\MediaDataType.cs</Link>
+    </Compile>
+    <Compile Include="..\HomeControl.Surveillance.Shared\Source\Utilities\StoredRecordFile.cs">
+      <Link>Source\Utilities\StoredRecordFile.cs</Link>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

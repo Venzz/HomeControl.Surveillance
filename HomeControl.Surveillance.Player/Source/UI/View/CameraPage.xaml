@@ -1,0 +1,75 @@
+﻿<Page
+    x:Class="HomeControl.Surveillance.Player.UI.View.CameraPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Converters="using:HomeControl.Surveillance.Player.UI.Converters">
+
+    <Page.Resources>
+        <Converters:BooleanToVisibility x:Key="TrueToVisible" TrueValue="Visible" FalseValue="Collapsed"/>
+    </Page.Resources>
+    
+    <Grid Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <MediaElement x:Name="VideoPlayer" Grid.RowSpan="2" AutoPlay="True"/>
+        <SplitView x:Name="Overlay" DisplayMode="Overlay" PaneBackground="#80000000" OpenPaneLength="150">
+            <SplitView.Pane>
+                <Grid RequestedTheme="Dark">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Margin="12" Visibility="{Binding CameraController.SupportsCommands, Converter={StaticResource TrueToVisible}, FallbackValue=Collapsed}">
+                        <Button Margin="12" Content="Zoom +" Width="100" Click="OnStartZoomingInClicked"/>
+                        <Button Margin="12" Content="Zoom -" Width="100" Click="OnStartZoomingOutClicked"/>
+                        <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>
+                    </StackPanel>
+                    <ListView
+                        x:Name="StoredRecordsView"
+                        Grid.Row="1"
+                        ItemsSource="{Binding StoredRecords}"
+                        SelectionChanged="OnSelectionChanged">
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection/>
+                        </ListView.ItemContainerTransitions>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="{Binding Title}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Style.Setters>
+                                    <Setter Property="Padding" Value="12"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Height" Value="0"/>
+                                </Style.Setters>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </Grid>
+            </SplitView.Pane>
+        </SplitView>
+        <CommandBar Grid.Row="1" RequestedTheme="Dark" VerticalAlignment="Bottom" Foreground="White" Background="#80000000">
+            <CommandBar.Content>
+                <AppBarButton VerticalAlignment="Bottom" Tapped="OnMenuButtonTapped">
+                    <AppBarButton.Icon>
+                        <FontIcon Glyph="&#xE700;" FontSize="20"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar.Content>
+            <AppBarButton Foreground="White" Icon="{Binding TileIcon}" Tapped="OnPinTapped"/>
+            <AppBarButton Foreground="White" Icon="Sync" Tapped="OnSyncTapped"/>
+            <AppBarButton Tapped="OnCompactViewTapped">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="ms-appx:/Resources/Fonts/SegMVR2.ttf#Segoe MVR MDL2 Assets" Glyph="&#xF15E;"/>
+                </AppBarButton.Icon>
+            </AppBarButton>
+            <AppBarButton Foreground="White" Icon="FullScreen"/>
+        </CommandBar>
+    </Grid>
+</Page>

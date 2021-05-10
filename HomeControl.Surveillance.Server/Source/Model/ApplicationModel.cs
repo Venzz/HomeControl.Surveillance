@@ -1,10 +1,6 @@
-﻿using HomeControl.Surveillance.Data.Camera;
-using HomeControl.Surveillance.Data.Camera.Heroku;
-using HomeControl.Surveillance.Server.Data;
-using HomeControl.Surveillance.Server.Data.DemoClip;
-using HomeControl.Surveillance.Server.Data.Empty;
-using HomeControl.Surveillance.Server.Data.File;
-using HomeControl.Surveillance.Server.Data.OrientProtocol;
+﻿using HomeControl.Surveillance.Server.Services;
+using HomeControl.Surveillance.Services;
+using HomeControl.Surveillance.Services.Heroku;
 using System;
 using System.Threading.Tasks;
 
