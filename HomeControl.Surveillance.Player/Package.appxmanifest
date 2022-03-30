@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="2367Venz.HomeControl.Surveillance.Player" Publisher="CN=AC627798-581D-4841-B3BA-DD2C725E9A5E" Version="1.1.5.0" />
+  <Identity Name="1111Venz.HomeControl.Surveillance.Player" Publisher="CN=AC627798-581D-4841-B3BA-DD2C725E9A5E" Version="1.1.5.0" />
   <mp:PhoneIdentity PhoneProductId="2e896179-acb0-4125-9234-7e0ded2263da" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Camera Player</DisplayName>
+    <DisplayName>Camera Player (Dev)</DisplayName>
     <PublisherDisplayName>Venz</PublisherDisplayName>
     <Logo>Resources\Package\Store.png</Logo>
   </Properties>
@@ -15,9 +15,9 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="HomeControl.Surveillance.Player.App">
-      <uap:VisualElements DisplayName="Camera Player" Square150x150Logo="Resources\Package\Square_150x150.png" Square44x44Logo="Resources\Package\Square_44x44.png" Description="HomeControl.Surveillance.Player" BackgroundColor="transparent">
+      <uap:VisualElements DisplayName="Camera Player (Dev)" Square150x150Logo="Resources\Package\Square_150x150.png" Square44x44Logo="Resources\Package\Square_44x44.png" Description="HomeControl.Surveillance.Player" BackgroundColor="transparent">
         <uap:LockScreen Notification="badgeAndTileText" BadgeLogo="Resources\Package\Badge.png" />
-        <uap:DefaultTile Wide310x150Logo="Resources\Package\Wide_310x150.png" Square71x71Logo="Resources\Package\Square_71x71.png" ShortName="Camera Player" Square310x310Logo="Resources\Package\Square_310x310.png">
+        <uap:DefaultTile Wide310x150Logo="Resources\Package\Wide_310x150.png" Square71x71Logo="Resources\Package\Square_71x71.png" ShortName="Camera Player (Dev)" Square310x310Logo="Resources\Package\Square_310x310.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo" />
             <uap:ShowOn Tile="wide310x150Logo" />
