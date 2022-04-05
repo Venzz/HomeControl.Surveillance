@@ -76,7 +76,7 @@ namespace HomeControl.Surveillance.Services
         {
             try
             {
-                if (socket == null)
+                if (socket == null || IsIdlingActive)
                     return;
 
                 if (message.Data.Length >= MaximumMessageSize)

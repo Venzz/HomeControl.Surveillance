@@ -39,10 +39,6 @@ namespace HomeControl.Surveillance.Server.Model
             {
                 LastSentDataLength = (UInt32)mediaData.Data.Length;
                 TotalSentDataLength += (UInt32)mediaData.Data.Length;
-
-                if ((DateTime.Now.Hour >= 22) || (DateTime.Now.Hour < 6))
-                    return;
-
                 lock (Sync)
                 {
                     if (Data.Count == PendingDataSize)
