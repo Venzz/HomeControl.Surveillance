@@ -21,7 +21,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Margin="12" Visibility="{Binding CameraController.SupportsCommands, Converter={StaticResource TrueToVisible}, FallbackValue=Collapsed}">
+                    <StackPanel Margin="12" Visibility="{Binding Camera.SupportsCommands, Converter={StaticResource TrueToVisible}, FallbackValue=Collapsed}">
                         <Button Margin="12" Content="Zoom +" Width="100" Click="OnStartZoomingInClicked"/>
                         <Button Margin="12" Content="Zoom -" Width="100" Click="OnStartZoomingOutClicked"/>
                         <Button Margin="12" Content="Stop" Width="100" Click="OnStopZoomingClicked"/>

@@ -32,7 +32,7 @@ namespace HomeControl.Surveillance.Server.Services
 
         private async void StartDataGeneration() => await Task.Run(async () =>
         {
-            using (var fileStream = new FileStream($"Source\\Data\\CameraConnection\\DemoClip\\DemoClip.sr", FileMode.Open))
+            using (var fileStream = new FileStream($"Source\\Services\\CameraConnection\\DemoClip\\DemoClip.sr", FileMode.Open))
             using (var fileStreamReader = new BinaryReader(fileStream))
             {
                 var storedRecord = new StoredRecordFile(fileStream);

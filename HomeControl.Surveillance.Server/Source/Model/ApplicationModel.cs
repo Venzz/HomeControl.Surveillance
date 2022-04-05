@@ -45,7 +45,7 @@ namespace HomeControl.Surveillance.Server.Model
             #if DEBUG
             OutdoorCameraConnection = new DemoClipCameraConnection();
             #else
-            OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.10", 34567);
+            OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.233", 34567);
             #endif
             OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media);
             OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);
