@@ -16,5 +16,10 @@ namespace HomeControl.Surveillance.Player.Model
             Timestamp = timestamp;
             Duration = duration;
         }
+
+        public override String ToString()
+        {
+            return $"{Timestamp:mm:ss.fff} - {Duration}, {Type}, {Data.Length}b";
+        }
     }
 }

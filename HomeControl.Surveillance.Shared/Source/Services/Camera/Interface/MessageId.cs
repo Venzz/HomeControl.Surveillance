@@ -5,6 +5,7 @@
         StoredRecordsMetadataRequest,
         StoredRecordsMetadataResponse,
         LiveMediaData,
+        LiveMediaDataWithBuffer,
         StoredRecordMediaDescriptorsRequest,
         StoredRecordMediaDescriptorsResponse,
         StoredRecordMediaDataRequest,

@@ -15,7 +15,7 @@ namespace HomeControl.Surveillance.Player.UI.Controller
         private VideoEncodingProperties EncodingProperties;
         private TimeSpan SampleTimestamp;
         private Object Sync = new Object();
-        private IList<MediaData> VideoSamples = new List<MediaData>();
+        private List<MediaData> VideoSamples = new List<MediaData>();
 
         public MediaStreamSource MediaStream { get; private set; }
 
@@ -31,6 +31,7 @@ namespace HomeControl.Surveillance.Player.UI.Controller
             EncodingProperties.Width = 1920;
             EncodingProperties.Height = 1080;
             #endif
+            VideoSamples.AddRange(Camera.GetMediaDataBuffer());
             MediaStream = new MediaStreamSource(new VideoStreamDescriptor(EncodingProperties));
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
             MediaStream.Closed += OnMediaStreamClosed;

@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Message.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\LiveMediaDataResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\LiveMediaDataWithBufferResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\StoredRecordMediaDescriptorsRequest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\StoredRecordMediaDescriptorsResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\StoredRecordMediaDataRequest.cs" />

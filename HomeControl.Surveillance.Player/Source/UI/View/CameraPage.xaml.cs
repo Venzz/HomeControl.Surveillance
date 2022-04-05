@@ -76,7 +76,6 @@ namespace HomeControl.Surveillance.Player.UI.View
             {
                 VideoPlayer.AreTransportControlsEnabled = false;
                 VideoPlayer.SetMediaStreamSource(Context.CameraStream.MediaStream);
-                Context.CameraStream.Synchronize();
             }
             else
             {

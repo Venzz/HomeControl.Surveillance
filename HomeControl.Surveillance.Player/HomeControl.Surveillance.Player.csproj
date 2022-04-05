@@ -107,9 +107,9 @@
     <Compile Include="Source\Model\Camera\StoredRecord.cs" />
     <Compile Include="Source\Settings.cs" />
     <Compile Include="Source\UI\Controller\CameraController.cs" />
-    <Compile Include="Source\UI\Controller\StoredRecordStream.cs" />
+    <Compile Include="Source\UI\Utilities\StoredRecordStream.cs" />
     <Compile Include="Source\UI\Controller\HubController.cs" />
-    <Compile Include="Source\UI\Controller\CameraStream.cs" />
+    <Compile Include="Source\UI\Utilities\CameraStream.cs" />
     <Compile Include="Source\UI\Controller\PlayerController.cs" />
     <Compile Include="Source\UI\View\CameraPage.xaml.cs">
       <DependentUpon>CameraPage.xaml</DependentUpon>

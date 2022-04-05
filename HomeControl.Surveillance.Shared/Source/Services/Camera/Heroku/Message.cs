@@ -160,6 +160,19 @@ namespace HomeControl.Surveillance.Services.Heroku
                         var timestamp = new DateTime(messageDataReader.ReadInt64(), DateTimeKind.Utc);
                         var duration = TimeSpan.FromMilliseconds(messageDataReader.ReadUInt32());
                         return new LiveMediaDataResponse(mediaDataType, data, timestamp, duration);
+                    case MessageId.LiveMediaDataWithBuffer:
+                        var messageLength = messageDataReader.ReadInt32();
+                        var messageData = messageDataReader.ReadBytes(messageLength);
+                        var liveMedia = (LiveMediaDataResponse)Message.Create(new Message(messageData));
+                        var itemsCount = messageDataReader.ReadInt32();
+                        var liveMediaDataItems = new List<LiveMediaDataResponse>();
+                        for (var i = 0; i < itemsCount; i++)
+                        {
+                            messageLength = messageDataReader.ReadInt32();
+                            messageData = messageDataReader.ReadBytes(messageLength);
+                            liveMediaDataItems.Add((LiveMediaDataResponse)Message.Create(new Message(messageData)));
+                        }
+                        return new LiveMediaDataWithBufferResponse(liveMedia, liveMediaDataItems);
                     case MessageId.StoredRecordMediaDescriptorsRequest:
                         return new StoredRecordMediaDescriptorsRequest(messageDataReader.ReadString());
                     case MessageId.StoredRecordMediaDescriptorsResponse:

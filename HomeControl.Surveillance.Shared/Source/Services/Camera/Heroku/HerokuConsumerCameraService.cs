@@ -18,6 +18,7 @@ namespace HomeControl.Surveillance.Services
         private IDictionary<UInt32, DataQueue> PartialMessages = new Dictionary<UInt32, DataQueue>();
 
         public event TypedEventHandler<IConsumerCameraService, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)> MediaDataReceived = delegate { };
+        public event TypedEventHandler<IConsumerCameraService, IReadOnlyCollection<(MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)>> MediaDataBufferReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, String Parameter)> LogReceived = delegate { };
         public event TypedEventHandler<IConsumerCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
 
@@ -146,6 +147,13 @@ namespace HomeControl.Surveillance.Services
                                 {
                                     case LiveMediaDataResponse liveMediaData:
                                         MediaDataReceived(this, (liveMediaData.MediaType, liveMediaData.Data, liveMediaData.Timestamp, liveMediaData.Duration));
+                                        break;
+                                    case LiveMediaDataWithBufferResponse liveMediaDataWithBuffer:
+                                        var mediaDataBuffer = new List<(MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration)>();
+                                        foreach (var bufferItem in liveMediaDataWithBuffer.MediaDataBuffer)
+                                            mediaDataBuffer.Add((bufferItem.MediaType, bufferItem.Data, bufferItem.Timestamp, bufferItem.Duration));
+                                        MediaDataBufferReceived(this, mediaDataBuffer);
+                                        MediaDataReceived(this, (liveMediaDataWithBuffer.MediaData.MediaType, liveMediaDataWithBuffer.MediaData.Data, liveMediaDataWithBuffer.MediaData.Timestamp, liveMediaDataWithBuffer.MediaData.Duration));
                                         break;
                                 }
                             }
