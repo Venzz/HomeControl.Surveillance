@@ -42,7 +42,9 @@ namespace HomeControl.Surveillance.Server.Model
 
         public async Task InitializeAsync()
         {
-            #if DEBUG
+            #if DEBUG && RASPBERRY
+            OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.233", 34567);
+            #elif DEBUG
             OutdoorCameraConnection = new DemoClipCameraConnection();
             #else
             OutdoorCameraConnection = new OrientProtocolCameraConnection("192.168.1.233", 34567);

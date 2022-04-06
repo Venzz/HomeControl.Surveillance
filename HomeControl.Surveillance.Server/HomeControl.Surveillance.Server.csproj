@@ -1,8 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Configurations>Debug (Windows);Release (Windows);Debug (Raspberry);Release (Raspberry)</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release (Raspberry)|AnyCPU'">
+    <DefineConstants>TRACE;RASPBERRY</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Raspberry)|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE;RASPBERRY</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug (Windows)|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems" Label="Shared" />
