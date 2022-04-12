@@ -9,8 +9,9 @@ namespace HomeControl.Surveillance.Server.Services
         Boolean IsZoomingSupported { get; }
 
         event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived;
-        event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived;
-        event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived;
+        event TypedEventHandler<ICameraConnection, (String Source, String Message)> Log;
+        event TypedEventHandler<ICameraConnection, (String Source, String Message, String DetailedMessage)> DetailedLog;
+        event TypedEventHandler<ICameraConnection, (String Source, String Details, Exception Exception)> Exception;
 
         Task StartZoomingInAsync();
         Task StartZoomingOutAsync();

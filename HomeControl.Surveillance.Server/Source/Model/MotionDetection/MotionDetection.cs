@@ -23,7 +23,7 @@ namespace HomeControl.Surveillance.Server.Model
         private ContourAnalyzer ContourAnalyzer;
 
         public event TypedEventHandler<MotionDetection, Object> Detected = delegate { };
-        public event TypedEventHandler<MotionDetection, (String CustomText, String Parameter)> LogReceived = delegate { };
+        public event TypedEventHandler<MotionDetection, (String Source, String Message)> Log = delegate { };
 
 
 
@@ -141,17 +141,17 @@ namespace HomeControl.Surveillance.Server.Model
         private void MotionStarted(ContourAnalyzer sender, IEnumerable<Windows.Foundation.Point> countourCenters)
         {
             Detected(this, null);
-            LogReceived(this, ("Motion Started.", String.Join(", ", countourCenters.Select(a => $"{a.X:0}x{a.Y:0}"))));
+            Log(this, ("Motion Started.", String.Join(", ", countourCenters.Select(a => $"{a.X:0}x{a.Y:0}"))));
         }
 
         private void MotionFinished(ContourAnalyzer sender, Object args)
         {
-            LogReceived(this, ("Motion Finished.", null));
+            Log(this, ("Motion Finished.", null));
         }
 
         private void OnFailure(String message)
         {
-            LogReceived(this, (message, null));
+            Log(this, (message, null));
         }
     }
 }

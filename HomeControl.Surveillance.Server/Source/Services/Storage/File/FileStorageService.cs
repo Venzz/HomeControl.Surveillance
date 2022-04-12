@@ -15,8 +15,8 @@ namespace HomeControl.Surveillance.Server.Services
         private DriveInfo Drive;
         private DirectoryInfo CurrentDirectory;
 
-        public event TypedEventHandler<IStorageService, (String CustomText, String Parameter)> LogReceived = delegate { };
-        public event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<IStorageService, (String, String)> Log = delegate { };
+        public event TypedEventHandler<IStorageService, (String, String, Exception)> Exception = delegate { };
 
 
 
@@ -50,7 +50,7 @@ namespace HomeControl.Surveillance.Server.Services
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", exception));
+                Exception(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", null, exception));
             }
         }
 
@@ -66,7 +66,7 @@ namespace HomeControl.Surveillance.Server.Services
 
                     while (Drive.AvailableFreeSpace / 1024 / 1024 / 1024 < 2 && files.Count > 0)
                     {
-                        LogReceived(this, (nameof(FileStorageService), $"Deleted {files[0].Name}."));
+                        Log(this, (nameof(FileStorageService), $"Deleted {files[0].Name}."));
                         files[0].Delete();
                         files.RemoveAt(0);
                     }
@@ -87,13 +87,13 @@ namespace HomeControl.Surveillance.Server.Services
                         mediaStream.Seek(0, SeekOrigin.Begin);
                         mediaStream.CopyTo(fileStream);
                         mediaStream.Dispose();
-                        LogReceived(this, (nameof(FileStorageService), $"Stored {mediaStreamLength.ToDataLength()} to {fileName}."));
+                        Log(this, (nameof(FileStorageService), $"Stored {mediaStreamLength.ToDataLength()} to {fileName}."));
                     }
                 }
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(FileStorageService)}.{nameof(StoreCache)}", exception));
+                Exception(this, ($"{nameof(FileStorageService)}.{nameof(StoreCache)}", null, exception));
             }
         }
 

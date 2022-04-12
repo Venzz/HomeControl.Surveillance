@@ -23,19 +23,19 @@ namespace HomeControl.Surveillance.Server.Model
         {
             ProviderCameraService = new HerokuProviderCameraService("service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
             ProviderCameraService.MessageReceived += OnMessageReceived;
-            ProviderCameraService.LogReceived += OnLogReceived;
-            ProviderCameraService.ExceptionReceived += OnExceptionReceived;
+            ProviderCameraService.Log += OnLogReceived;
+            ProviderCameraService.Exception += OnExceptionReceived;
 
             OutdoorCamera = new Camera(ProviderCameraService);
-            OutdoorCamera.ExceptionReceived += OnExceptionReceived;
+            OutdoorCamera.Exception += OnExceptionReceived;
 
             #if DEBUG
             Storage = new Storage(new EmptyStorageService());
             #else
             Storage = new Storage(new FileStorageService());
             #endif
-            Storage.LogReceived += OnLogReceived;
-            Storage.ExceptionReceived += OnExceptionReceived;
+            Storage.Log += OnLogReceived;
+            Storage.Exception += OnExceptionReceived;
 
             NotificationService = new WindowsNotificationService(ProviderCameraService);
         }
@@ -53,10 +53,11 @@ namespace HomeControl.Surveillance.Server.Model
             OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);
             OutdoorCameraConnection.MediaReceived += (sender, media) => MotionDetection.Process(media);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
-            OutdoorCameraConnection.LogReceived += OnLogReceived;
-            OutdoorCameraConnection.ExceptionReceived += OnExceptionReceived;
+            OutdoorCameraConnection.Log += OnLogReceived;
+            OutdoorCameraConnection.DetailedLog += OnDetailedLogReceived;
+            OutdoorCameraConnection.Exception += OnExceptionReceived;
             MotionDetection.Detected += OnMotionDetected;
-            MotionDetection.LogReceived += OnLogReceived;
+            MotionDetection.Log += OnLogReceived;
             MotionDetection.Start();
 
             await NotificationService.InitializeAsync().ConfigureAwait(false);
@@ -103,14 +104,22 @@ namespace HomeControl.Surveillance.Server.Model
         {
         }
 
-        private void OnLogReceived(Object sender, (String Message, String Parameter) args)
+        private void OnLogReceived(Object sender, (String Source, String Message) args)
         {
-            App.Diagnostics.Debug.Log(args.Message, args.Parameter);
+            App.Diagnostics.Console.Log(args.Source, args.Message);
+            App.Diagnostics.File.Log(args.Source, args.Message);
         }
 
-        private void OnExceptionReceived(Object sender, (String Message, Exception Exception) args)
+        private void OnDetailedLogReceived(ICameraConnection sender, (String Source, String Message, String DetailedMessage) args)
         {
-            App.Diagnostics.Debug.Log(args.Message, args.Exception);
+            App.Diagnostics.Console.Log(args.Source, args.Message);
+            App.Diagnostics.File.Log(args.Source, $"{args.Message}\n{args.DetailedMessage}");
+        }
+
+        private void OnExceptionReceived(Object sender, (String Source, String Details, Exception Exception) args)
+        {
+            App.Diagnostics.Console.Log(args.Source, "Exception.");
+            App.Diagnostics.File.Log(args.Source, $"{args.Details}\n{args.Exception}");
         }
     }
 }

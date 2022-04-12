@@ -19,9 +19,9 @@ namespace HomeControl.Surveillance.Services
         private Boolean IsIdlingActive => IdlePeriod.HasValue && (DateTime.Now - IdlingStartedDate < IdlePeriod.Value.Duration);
 
         public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
-        public event TypedEventHandler<IProviderCameraService, (UInt32 ConsumerId, UInt32 Id, IMessage Message)> MessageReceived = delegate { };
-        public event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived = delegate { };
-        public event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<IProviderCameraService, (UInt32, UInt32, IMessage)> MessageReceived = delegate { };
+        public event TypedEventHandler<IProviderCameraService, (String, String)> Log = delegate { };
+        public event TypedEventHandler<IProviderCameraService, (String, String, Exception)> Exception = delegate { };
 
 
 
@@ -54,7 +54,7 @@ namespace HomeControl.Surveillance.Services
                     {
                         var webSocket = new WebSocket();
                         await webSocket.ConnectAsync($"{PrivateData.HerokuServiceUrl}/{ServiceName}/").ConfigureAwait(false);
-                        LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", "Connected."));
+                        Log(this, ($"{nameof(HerokuProviderCameraService)}", "Connected."));
 
                         lock (ConnectionSync)
                         {
@@ -64,7 +64,7 @@ namespace HomeControl.Surveillance.Services
                     }
                     catch (Exception exception)
                     {
-                        ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartConnectionMaintaining)}", exception));
+                        Exception(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartConnectionMaintaining)}", null, exception));
                     }
                 }
             }
@@ -97,7 +97,7 @@ namespace HomeControl.Surveillance.Services
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendAsync)}", exception));
+                Exception(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(SendAsync)}", null, exception));
                 await CloseSocketAsync(socket).ConfigureAwait(false);
 
                 lock (ConnectionSync)
@@ -232,7 +232,7 @@ namespace HomeControl.Surveillance.Services
                 }
                 catch (Exception exception)
                 {
-                    ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartReceiving)}", exception));
+                    Exception(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartReceiving)}", null, exception));
                     await CloseSocketAsync(socket).ConfigureAwait(false);
 
                     lock (ConnectionSync)

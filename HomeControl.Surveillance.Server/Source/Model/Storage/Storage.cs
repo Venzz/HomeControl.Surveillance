@@ -10,16 +10,16 @@ namespace HomeControl.Surveillance.Server.Model
     {
         private IStorageService Service;
 
-        public event TypedEventHandler<Storage, (String CustomText, String Parameter)> LogReceived = delegate { };
-        public event TypedEventHandler<Storage, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<Storage, (String Source, String Message)> Log = delegate { };
+        public event TypedEventHandler<Storage, (String Source, String Details, Exception Exception)> Exception = delegate { };
 
 
 
         public Storage(IStorageService storageService)
         {
             Service = storageService;
-            Service.LogReceived += (sender, args) => LogReceived(this, (nameof(Storage), args.Parameter));
-            Service.ExceptionReceived += (sender, args) => ExceptionReceived(this, args);
+            Service.Log += (sender, args) => Log(this, args);
+            Service.Exception += (sender, args) => Exception(this, args);
         }
 
         public void Store(IMediaData data)
@@ -30,7 +30,7 @@ namespace HomeControl.Surveillance.Server.Model
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(Storage)}.{nameof(Store)}", exception));
+                Exception(this, ($"{nameof(Storage)}.{nameof(Store)}", null, exception));
             }
         }
 

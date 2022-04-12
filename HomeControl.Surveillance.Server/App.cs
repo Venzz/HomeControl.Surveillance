@@ -7,15 +7,14 @@ namespace HomeControl.Surveillance.Server
 {
     public class App
     {
-        public static Diagnostics Diagnostics { get; } = new Diagnostics("App");
+        public static Diagnostics Diagnostics { get; } = new Diagnostics("Server");
         public static ApplicationModel Model { get; } = new ApplicationModel();
 
         public App()
         {
-            Diagnostics.Debug.Add(new DebugTelemetryService());
-            Diagnostics.Debug.Add(new ConsoleTelemetryService());
+            Diagnostics.Console.Add(new ConsoleTelemetryService());
             #if !DEBUG
-            Diagnostics.Debug.Add(new FileTelemetryService());
+            Diagnostics.File.Add(new FileTelemetryService());
             #endif
         }
 

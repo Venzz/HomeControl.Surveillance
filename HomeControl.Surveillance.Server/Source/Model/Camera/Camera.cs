@@ -21,7 +21,7 @@ namespace HomeControl.Surveillance.Server.Model
         public UInt32 LastSentDataLength { get; private set; }
         public UInt32 TotalSentDataLength { get; private set; }
 
-        public event TypedEventHandler<Camera, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<Camera, (String Source, String Details, Exception Exception)> Exception = delegate { };
         public event TypedEventHandler<Camera, Command> CommandReceived = delegate { };
 
 
@@ -50,7 +50,7 @@ namespace HomeControl.Surveillance.Server.Model
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(Camera)}.{nameof(Send)}", exception));
+                Exception(this, ($"{nameof(Camera)}.{nameof(Send)}", null, exception));
             }
         }
 

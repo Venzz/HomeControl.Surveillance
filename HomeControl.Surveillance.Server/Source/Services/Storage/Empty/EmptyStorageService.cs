@@ -6,8 +6,8 @@ namespace HomeControl.Surveillance.Server.Services
 {
     public class EmptyStorageService: IStorageService
     {
-        public event TypedEventHandler<IStorageService, (String CustomText, String Parameter)> LogReceived = delegate { };
-        public event TypedEventHandler<IStorageService, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
+        public event TypedEventHandler<IStorageService, (String, String)> Log = delegate { };
+        public event TypedEventHandler<IStorageService, (String, String, Exception)> Exception = delegate { };
 
         public IReadOnlyCollection<String> GetStoredRecords() => new List<String>();
         public IReadOnlyCollection<StoredRecordFile.MediaDataDescriptor> GetStoredRecordMediaDescriptors(String id) => new List<StoredRecordFile.MediaDataDescriptor>();

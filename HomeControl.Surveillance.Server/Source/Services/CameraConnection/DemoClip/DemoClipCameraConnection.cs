@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,8 +13,9 @@ namespace HomeControl.Surveillance.Server.Services
         public Boolean IsZoomingSupported => false;
 
         public event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived = delegate { };
-        public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
-        public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String)> Log = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String, String)> DetailedLog = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String, Exception)> Exception = delegate { };
 
 
 

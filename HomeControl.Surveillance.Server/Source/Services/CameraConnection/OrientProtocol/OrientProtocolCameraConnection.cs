@@ -19,8 +19,9 @@ namespace HomeControl.Surveillance.Server.Services
         public Boolean IsZoomingSupported => true;
 
         public event TypedEventHandler<ICameraConnection, IMediaData> MediaReceived = delegate { };
-        public event TypedEventHandler<ICameraConnection, (String CustomText, Exception Exception)> ExceptionReceived = delegate { };
-        public event TypedEventHandler<ICameraConnection, (String CustomText, String Parameter)> LogReceived = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String)> Log = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String, String)> DetailedLog = delegate { };
+        public event TypedEventHandler<ICameraConnection, (String, String, Exception)> Exception = delegate { };
 
 
 
@@ -40,12 +41,12 @@ namespace HomeControl.Surveillance.Server.Services
 
             try
             {
-                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingIn."));
+                Log(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingIn."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+                Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", null, exception));
             }
         }
 
@@ -57,12 +58,12 @@ namespace HomeControl.Surveillance.Server.Services
 
             try
             {
-                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingOut."));
+                Log(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StartZoomingOut."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, 65535, Message.ZoomType.ZoomWide).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+                Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingOutAsync)}", null, exception));
             }
         }
 
@@ -74,12 +75,12 @@ namespace HomeControl.Surveillance.Server.Services
 
             try
             {
-                LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StopZooming."));
+                Log(this, ($"{nameof(OrientProtocolCameraConnection)}", "Command StopZooming."));
                 await connection.Value.SendAsync(new OpPtzControlZoomRequestMessage(connection.SessionId, -1, Message.ZoomType.ZoomTile).Serialize()).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                App.Diagnostics.Debug.Log($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingInAsync)}", exception);
+                Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartZoomingOutAsync)}", null, exception));
             }
         }
 
@@ -98,7 +99,7 @@ namespace HomeControl.Surveillance.Server.Services
                     var connection = new TcpConnection(++ConnectionId, IpAddress, Port);
                     connection.DataReceived += OnDataReceived;
                     await connection.SendAsync(new AuthorizationRequestMessage().Serialize()).ConfigureAwait(false);
-                    LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", "Connected."));
+                    Log(this, ($"{nameof(OrientProtocolCameraConnection)}", "Connected."));
 
                     lock (ConnectionSync)
                     {
@@ -110,7 +111,7 @@ namespace HomeControl.Surveillance.Server.Services
                 }
                 catch (Exception exception)
                 {
-                    ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionRestorating)}", exception));
+                    Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionRestorating)}", null, exception));
                 }
             }
         });
@@ -130,7 +131,7 @@ namespace HomeControl.Surveillance.Server.Services
                     await Task.Delay(2000).ConfigureAwait(false);
                     if (Reconnection.IsAllowed())
                     {
-                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}", $"No data captured, reconnecting... SessionId = {Session.Id:x}"));
+                        Log(this, ($"{nameof(OrientProtocolCameraConnection)}", $"No data captured, reconnecting... SessionId = {Session.Id:x}"));
                         lock (ConnectionSync)
                         {
                             Connection.DataReceived -= OnDataReceived;
@@ -143,7 +144,7 @@ namespace HomeControl.Surveillance.Server.Services
                 }
                 catch (Exception exception)
                 {
-                    ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionMaintaining)}", exception));
+                    Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(StartConnectionMaintaining)}", null, exception));
                     lock (ConnectionSync)
                     {
                         Connection.DataReceived -= OnDataReceived;
@@ -183,13 +184,13 @@ namespace HomeControl.Surveillance.Server.Services
                     {
                         case AuthorizationResponseMessage authorizationResponse:
                             Reconnection.ResetPermissionGrantedDate();
-                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(AuthorizationResponseMessage)}, SessionId = {authorizationResponse.SessionId:x}"));
+                            Log(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(AuthorizationResponseMessage)}, SessionId = {authorizationResponse.SessionId:x}"));
                             variables.Session.Id = authorizationResponse.SessionId;
                             await variables.Connection.SendAsync(new OpMonitorClaimRequestMessage(authorizationResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case OpMonitorClaimResponseMessage claimResponse:
                             Reconnection.ResetPermissionGrantedDate();
-                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(OpMonitorClaimResponseMessage)}, SessionId = {claimResponse.SessionId:x}"));
+                            Log(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"{nameof(OpMonitorClaimResponseMessage)}, SessionId = {claimResponse.SessionId:x}"));
                             await variables.Connection.SendAsync(new OpMonitorStartRequestMessage(claimResponse.SessionId).Serialize()).ConfigureAwait(false);
                             break;
                         case MediaDataResponseMessage mediaDataResponse:
@@ -197,14 +198,14 @@ namespace HomeControl.Surveillance.Server.Services
                             OnMediaReceived(variables.Session, mediaDataResponse);
                             break;
                         case UnknownResponseMessage unknownResponse:
-                            LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
+                            Log(this, ($"{nameof(OrientProtocolCameraConnection)}: Connection = {sender.Id}", $"UnknownResponse\n{unknownResponse.Data}"));
                             break;
                     }
                 }
             }
             catch (Exception exception)
             {
-                ExceptionReceived(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: Connection = {sender.Id}\n{data.ToHexView()}", exception));
+                Exception(this, ($"{nameof(OrientProtocolCameraConnection)}.{nameof(OnDataReceived)}: Connection = {sender.Id}", data.ToHexView(), exception));
                 lock (ConnectionSync)
                 {
                     if (Connection == variables.Connection)
@@ -280,7 +281,7 @@ namespace HomeControl.Surveillance.Server.Services
                         break;
                     default:
                         var queuedData = session.MediaDataQueue.Peek(session.MediaDataQueue.Length);
-                        LogReceived(this, ($"{nameof(OrientProtocolCameraConnection)}: MediaDataCode = {operationCode}, Header = {mediaDataResponse.Header}", $"Unknown\n{queuedData.ToHexView()}"));
+                        DetailedLog(this, ($"{nameof(OrientProtocolCameraConnection)}", $"MediaDataCode = {operationCode}", $"Header = {mediaDataResponse.Header}\n{queuedData.ToHexView()}"));
                         session.MediaDataQueue.Clear();
                         break;
                 }

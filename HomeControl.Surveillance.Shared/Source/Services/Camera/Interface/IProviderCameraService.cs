@@ -9,8 +9,8 @@ namespace HomeControl.Surveillance.Services
     {
         event TypedEventHandler<IProviderCameraService, Command> CommandReceived;
         event TypedEventHandler<IProviderCameraService, (UInt32 ConsumerId, UInt32 Id, IMessage Message)> MessageReceived;
-        event TypedEventHandler<IProviderCameraService, (String Message, String Parameter)> LogReceived;
-        event TypedEventHandler<IProviderCameraService, (String Message, Exception Exception)> ExceptionReceived;
+        event TypedEventHandler<IProviderCameraService, (String Source, String Message)> Log;
+        event TypedEventHandler<IProviderCameraService, (String Source, String Details, Exception Exception)> Exception;
 
         void EnsureConnected();
 
