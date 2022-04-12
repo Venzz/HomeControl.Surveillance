@@ -14,9 +14,7 @@ namespace HomeControl.Surveillance.Services
         private Object ConnectionSync = new Object();
         private IWebSocket WebSocket;
         private String ServiceName;
-        private (TimeSpan From, TimeSpan Duration)? IdlePeriod;
-        private DateTime IdlingStartedDate;
-        private Boolean IsIdlingActive => IdlePeriod.HasValue && (DateTime.Now - IdlingStartedDate < IdlePeriod.Value.Duration);
+        private HerokuInstanceLifetimeManager InstanceLifetimeManager;
 
         public event TypedEventHandler<IProviderCameraService, Command> CommandReceived = delegate { };
         public event TypedEventHandler<IProviderCameraService, (UInt32, UInt32, IMessage)> MessageReceived = delegate { };
@@ -25,12 +23,13 @@ namespace HomeControl.Surveillance.Services
 
 
 
-        public HerokuProviderCameraService(String serviceName, (TimeSpan From, TimeSpan Duration)? idlePeriod)
+        public HerokuProviderCameraService(String serviceName, (TimeSpan From, TimeSpan Duration) idlePeriod)
         {
             ServiceName = serviceName;
-            IdlePeriod = idlePeriod;
+            InstanceLifetimeManager = new HerokuInstanceLifetimeManager(idlePeriod);
+            InstanceLifetimeManager.Log += (sender, args) => Log(this, args);
+            InstanceLifetimeManager.Exception += (sender, args) => Exception(this, args);
             StartConnectionMaintaining();
-            StartReconnectionMaintaining();
             StartReceiving();
         }
 
@@ -44,7 +43,7 @@ namespace HomeControl.Surveillance.Services
                         Monitor.Wait(ConnectionSync);
                 }
 
-                if (IsIdlingActive)
+                if (InstanceLifetimeManager.IsIdlingActive)
                 {
                     await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 }
@@ -76,7 +75,7 @@ namespace HomeControl.Surveillance.Services
         {
             try
             {
-                if (socket == null || IsIdlingActive)
+                if (socket == null || InstanceLifetimeManager.IsIdlingActive)
                     return;
 
                 if (message.Data.Length >= MaximumMessageSize)
@@ -110,46 +109,6 @@ namespace HomeControl.Surveillance.Services
                 }
             }
         }
-
-        private async void StartReconnectionMaintaining() => await Task.Run(async () =>
-        {
-            while (true)
-            {
-                var socket = (IWebSocket)null;
-                lock (ConnectionSync)
-                {
-                    if (WebSocket == null)
-                        Monitor.Wait(ConnectionSync);
-                    socket = WebSocket;
-                }
-
-                try
-                {
-                    await Task.Delay(TimeSpan.FromMinutes(5));
-                    await CloseSocketAsync(socket).ConfigureAwait(false);
-
-                    lock (ConnectionSync)
-                    {
-                        var now = DateTime.Now;
-                        if (IdlePeriod.HasValue && (now.TimeOfDay > IdlePeriod.Value.From) && !IsIdlingActive)
-                        {
-                            IdlingStartedDate = new DateTime(now.Year, now.Month, now.Day, IdlePeriod.Value.From.Hours, IdlePeriod.Value.From.Minutes, IdlePeriod.Value.From.Seconds, 0, now.Kind);
-                            LogReceived(this, ($"{nameof(HerokuProviderCameraService)}", "Idling started."));
-                        }
-
-                        if ((WebSocket == socket) && (WebSocket != null) && !IsIdlingActive)
-                        {
-                            WebSocket = null;
-                            Monitor.PulseAll(ConnectionSync);
-                        }
-                    }
-                }
-                catch (Exception exception)
-                {
-                    ExceptionReceived(this, ($"{nameof(HerokuProviderCameraService)}.{nameof(StartReconnectionMaintaining)}", exception));
-                }
-            }
-        });
 
         public void EnsureConnected()
         {

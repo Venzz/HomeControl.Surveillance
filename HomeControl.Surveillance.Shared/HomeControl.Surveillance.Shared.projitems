@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\EmptyTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\FileTelemetryService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\TelemetryServices\InMemoryTelemetryService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\HerokuInstanceLifetimeManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Message.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\LiveMediaDataResponse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Source\Services\Camera\Heroku\Messages\LiveMediaDataWithBufferResponse.cs" />
