@@ -85,6 +85,11 @@ namespace HomeControl.Surveillance.Player.Model
             }
         }
 
+
+        DateTime zz = DateTime.Now;
+        Int32 inter = 0;
+        Int32 prediction = 0;
+
         private void OnMediaDataReceived(IConsumerCameraService sender, (MediaDataType MediaType, Byte[] Data, DateTime Timestamp, TimeSpan Duration) args)
         {
             var mediaData = new MediaData(args.MediaType, args.Data, args.Timestamp, args.Duration);
@@ -95,6 +100,28 @@ namespace HomeControl.Surveillance.Player.Model
                     if (mediaData.Type == MediaDataType.InterFrame)
                         MediaDataBuffer.Clear();
                     MediaDataBuffer.Add(mediaData);
+
+                    if (DateTime.Now - zz > TimeSpan.FromSeconds(1))
+                    {
+                        System.Diagnostics.Debug.WriteLine("INTER: " + inter, "PREDITCION: " + prediction);
+
+                        zz = DateTime.Now;
+                        inter = 0;
+                        prediction = 0;
+
+                        if (mediaData.Type == MediaDataType.InterFrame)
+                            inter++;
+                        else if (mediaData.Type == MediaDataType.PredictionFrame)
+                            prediction++;
+                    } else
+                    {
+                        if (mediaData.Type == MediaDataType.InterFrame)
+                            inter++;
+                        else if (mediaData.Type == MediaDataType.PredictionFrame)
+                            prediction++;
+                    }
+
+
                 }
                 DataReceived(this, mediaData);
             }

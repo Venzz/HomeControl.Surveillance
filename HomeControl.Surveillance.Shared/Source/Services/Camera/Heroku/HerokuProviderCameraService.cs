@@ -52,7 +52,7 @@ namespace HomeControl.Surveillance.Services
                     try
                     {
                         var webSocket = new WebSocket();
-                        await webSocket.ConnectAsync($"{PrivateData.HerokuServiceUrl}/{ServiceName}/").ConfigureAwait(false);
+                        await webSocket.ConnectAsync($"{PrivateData.HerokuServiceSocketUrl}/{ServiceName}/").ConfigureAwait(false);
                         Log(this, ($"{nameof(HerokuProviderCameraService)}", "Connected."));
 
                         lock (ConnectionSync)

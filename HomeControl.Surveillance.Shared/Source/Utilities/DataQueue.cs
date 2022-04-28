@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace HomeControl.Surveillance
@@ -18,9 +19,25 @@ namespace HomeControl.Surveillance
 
         public void Enqueue(Byte[] data, Int32 offset, Int32 count) => Stream.Write(data, offset, count);
 
+        public Byte[] Dequeue(Int32 amount, Boolean complementWithZeros)
+        {
+            if (complementWithZeros && Stream.Length < amount)
+            {
+                var remainingLength = amount - Stream.Length;
+                var dequeuedData = Dequeue(amount);
+                var data = new Byte[amount];
+                Array.Copy(dequeuedData, data, dequeuedData.Length);
+                return data;
+            }
+            else
+            {
+                return Dequeue(amount);
+            }
+        }
+
         public Byte[] Dequeue(Int32 amount)
         {
-            if (amount > Stream.Length)
+            if (Stream.Length < amount)
                 amount = (Int32)Stream.Length;
 
             var data = new Byte[amount];

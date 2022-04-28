@@ -96,8 +96,8 @@ Global
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug (Raspberry)|x64.Build.0 = Debug (Raspberry)|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug (Raspberry)|x86.ActiveCfg = Debug (Raspberry)|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug (Raspberry)|x86.Build.0 = Debug (Raspberry)|Any CPU
-		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|Any CPU.ActiveCfg = Release (Windows)|Any CPU
-		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|Any CPU.Build.0 = Release (Windows)|Any CPU
+		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|Any CPU.ActiveCfg = Debug (Windows)|Any CPU
+		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|Any CPU.Build.0 = Debug (Windows)|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|ARM.ActiveCfg = Debug (Windows)|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|ARM.Build.0 = Debug (Windows)|Any CPU
 		{838C31FA-762D-4A65-A227-C3EC6F39DF3D}.Debug|x64.ActiveCfg = Debug (Windows)|Any CPU

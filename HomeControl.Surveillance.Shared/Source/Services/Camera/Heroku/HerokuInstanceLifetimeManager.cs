@@ -10,6 +10,7 @@ namespace HomeControl.Surveillance.Services
         private HttpClient HttpClient;
         private (TimeSpan From, TimeSpan Duration) IdlePeriod;
         private DateTime IdlingStartedDate;
+        private DateTime InstancePingedDate;
 
         public Boolean IsIdlingActive => DateTime.Now - IdlingStartedDate < IdlePeriod.Duration;
 
@@ -31,26 +32,30 @@ namespace HomeControl.Surveillance.Services
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(14)).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                     var now = DateTime.Now;
                     if ((now.TimeOfDay > IdlePeriod.From) && !IsIdlingActive)
                     {
                         IdlingStartedDate = new DateTime(now.Year, now.Month, now.Day, IdlePeriod.From.Hours, IdlePeriod.From.Minutes, IdlePeriod.From.Seconds, 0, now.Kind);
-                        Log(this, ($"{nameof(HerokuProviderCameraService)}", "Idling started."));
+                        Log(this, ($"{nameof(HerokuInstanceLifetimeManager)}", "Idling started."));
                     }
-                    else
+                    else if (!IsIdlingActive)
                     {
                         if (IdlingStartedDate != default(DateTime))
                         {
                             IdlingStartedDate = default(DateTime);
-                            Log(this, ($"{nameof(HerokuProviderCameraService)}", "Idling finished."));
+                            Log(this, ($"{nameof(HerokuInstanceLifetimeManager)}", "Idling finished."));
                         }
-                        await HttpClient.GetAsync("https://home-security-proxy-dev.herokuapp.com/").ConfigureAwait(false);
+                        if (now - InstancePingedDate >= TimeSpan.FromMinutes(15))
+                        {
+                            InstancePingedDate = now;
+                            await HttpClient.GetAsync(PrivateData.HerokuServiceUrl).ConfigureAwait(false);
+                        }
                     }
                 }
                 catch (Exception exception)
                 {
-                    Exception(this, ($"{nameof(HerokuProviderCameraService)}", null, exception));
+                    Exception(this, ($"{nameof(HerokuInstanceLifetimeManager)}", null, exception));
                 }
             }
         });

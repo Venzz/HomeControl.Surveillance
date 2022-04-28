@@ -21,6 +21,10 @@
   <Import Project="..\HomeControl.Surveillance.Shared\HomeControl.Surveillance.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <Compile Remove="Source\Services\Storage\File\FileStorageService - Copy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Resources\avcodec-57.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

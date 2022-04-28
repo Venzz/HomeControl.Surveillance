@@ -12,6 +12,7 @@ namespace HomeControl.Surveillance
         private CancellationToken CancellationToken = new CancellationTokenSource().Token;
         private Object Sync = new Object();
         private Queue<Byte[]> DataQueue = new Queue<Byte[]>();
+        private Boolean IsClosed;
 
 
 
@@ -33,8 +34,17 @@ namespace HomeControl.Surveillance
 
             while (true)
             {
-                var dequeueData = DataQueue.Peek();
-                await InternalWebSocket.SendAsync(new ArraySegment<Byte>(dequeueData), WebSocketMessageType.Binary, true, CancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var dequeueData = DataQueue.Peek();
+                    await InternalWebSocket.SendAsync(new ArraySegment<Byte>(dequeueData), WebSocketMessageType.Binary, true, CancellationToken).ConfigureAwait(false);
+                }
+                catch (WebSocketException webSocketException)
+                {
+                    if (IsClosed && webSocketException.Message.Contains("'CloseSent'"))
+                        return;
+                    throw webSocketException;
+                }
 
                 lock (Sync)
                 {
@@ -45,10 +55,30 @@ namespace HomeControl.Surveillance
             }
         }
 
-        public Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<Byte> buffer) => InternalWebSocket.ReceiveAsync(buffer, CancellationToken);
+        public async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<Byte> buffer)
+        {
+            try
+            {
+                return await InternalWebSocket.ReceiveAsync(buffer, CancellationToken).ConfigureAwait(false);
+            }
+            catch (WebSocketException webSocketException)
+            {
+                if (IsClosed && webSocketException.Message.Contains("'CloseReceived'"))
+                    return new WebSocketReceiveResult(0, WebSocketMessageType.Binary, true);
+                throw webSocketException;
+            }
+        }
 
-        public Task CloseAsync() => InternalWebSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "kek", CancellationToken);
+        public Task CloseAsync()
+        {
+            IsClosed = true;
+            return InternalWebSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "kek", CancellationToken);
+        }
 
-        public void Abort() => InternalWebSocket.Abort();
+        public void Abort()
+        {
+            IsClosed = true;
+            InternalWebSocket.Abort();
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HomeControl.Surveillance.Server.Services.OrientProtocol;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -221,61 +222,211 @@ namespace HomeControl.Surveillance.Server.Services
 
         private void OnMediaReceived(SessionProperties session, MediaDataResponseMessage mediaDataResponse)
         {
-            session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+            var incomingStartsWithPackage = StartsWithFrame(mediaDataResponse.Data);
+            if (session.MediaDataQueue.Length > 0 && incomingStartsWithPackage)
+            {
+                // get package size, fill with zeros, create.
+                // corrupted data
+
+                foreach (var mediaFrame in ExtractMediaFrames(session.MediaDataQueue, complementWithZeros: true))
+                    MediaReceived(this, mediaFrame);
+
+                session.MediaDataQueue.Clear();
+                session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+
+
+                Log(this, ($"{nameof(OrientProtocolCameraConnection)}", $"Corrupted Data."));
+            }
+            else if (session.MediaDataQueue.Length > 0 && !incomingStartsWithPackage)
+            {
+                var startsWithPackage = StartsWithFrame(session.MediaDataQueue.Peek(4));
+                if (startsWithPackage)
+                {
+                    session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+                }
+                else
+                {
+                    // get package size, fill with zeros, create.
+                    // corrupted data
+                    foreach (var mediaFrame in ExtractMediaFrames(session.MediaDataQueue, complementWithZeros: true))
+                        MediaReceived(this, mediaFrame);
+
+                    session.MediaDataQueue.Clear();
+                    Log(this, ($"{nameof(OrientProtocolCameraConnection)}", $"Corrupted Data."));
+                }
+            }
+            else if (session.MediaDataQueue.Length == 0 && incomingStartsWithPackage)
+            {
+                session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+            }
+            else if (session.MediaDataQueue.Length == 0 && !incomingStartsWithPackage)
+            {
+                for (var i = 4; i < mediaDataResponse.Data.Length - 8; i++)
+                {
+                    if (mediaDataResponse.Data[i] == 0x00 && mediaDataResponse.Data[i + 1] == 0x00 && mediaDataResponse.Data[i + 2] == 0x01)
+                    {
+                        if (mediaDataResponse.Data[i + 3] == 0xFA || mediaDataResponse.Data[i + 3] == 0xFC || mediaDataResponse.Data[i + 3] == 0xFD)
+                        {
+                            session.MediaDataQueue.Enqueue(mediaDataResponse.Data, i, mediaDataResponse.Data.Length - i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            foreach (var mediaFrame in ExtractMediaFrames(session.MediaDataQueue, complementWithZeros: false))
+                MediaReceived(this, mediaFrame);
+        }
+
+        private void EnqueueData(SessionProperties session, MediaDataResponseMessage mediaDataResponse)
+        {
+            if ((session.LastSequenceNumber != 0) && (mediaDataResponse.SequenceNumber - session.LastSequenceNumber != 1))
+            {
+                if (session.MediaDataQueue.Length > 0)
+                    Log(this, ($"{nameof(OrientProtocolCameraConnection)}", $"Package Lost: {session.LastSequenceNumber + 1}"));
+
+                session.SequenceNumberLost = true;
+                session.MediaDataQueue.Clear();
+            }
+            if (session.SequenceNumberLost)
+            {
+                var packageFound = false;
+                for (var i = 0; i < mediaDataResponse.Data.Length - 16; i++)
+                {
+                    if (mediaDataResponse.Data[i] == 0x00 && mediaDataResponse.Data[i + 1] == 0x00 && mediaDataResponse.Data[i + 2] == 0x01)
+                    {
+                        var audioFrameFound = mediaDataResponse.Data[i + 3] == 0xFA && mediaDataResponse.Data[i + 6] == 0xA0 && mediaDataResponse.Data[i + 7] == 0x00; // 00 00 01 FA 0E 02 A0 00 D5 D5 D5 D5 55 D5 55 D5 55 D5 D5 55 55 55 55 D5 55 D5 D5 55 55 D5
+                        var interFrameFound = mediaDataResponse.Data[i + 3] == 0xFC && mediaDataResponse.Data[i + 14] <= 0x0A && mediaDataResponse.Data[i + 15] == 0x00; // 00 00 01 FC 02 0D F0 87 9F 25 26 59 DD 04 01 00 00 00 00 01 67 42 00 2A 95 A8 1E 00 89 F9
+                        var predictionFrameFound = mediaDataResponse.Data[i + 3] == 0xFD && mediaDataResponse.Data[i + 6] <= 0x02 && mediaDataResponse.Data[i + 7] == 0x00; // 00 00 01 FD BF 3E 00 00 00 00 00 01 61 E0 20 47 CD 09 FA B2 FA F1 32 0A DF E1 11 6C 9F ED
+                        if (audioFrameFound || interFrameFound || predictionFrameFound)
+                        {
+                            session.MediaDataQueue.Enqueue(mediaDataResponse.Data, i, mediaDataResponse.Data.Length - i);
+                            session.SequenceNumberLost = false;
+                            packageFound = true;
+                            break;
+                        }
+                    }
+                }
+                //if (!packageFound)
+                //{
+                //    session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+                //}
+            }
+            else
+            {
+                session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+            }
+
+            session.LastSequenceNumber = mediaDataResponse.SequenceNumber;
+        }
+
+        private IReadOnlyCollection<IMediaData> ExtractMediaFrames(DataQueue mediaDataQueue, Boolean complementWithZeros = false)
+        {
+            var mediaData = new List<IMediaData>();
+            while (mediaDataQueue.Length >= 16)
+            {
+                var peekedData = mediaDataQueue.Peek(16);
+                var operationCode = peekedData[2] * 256 + peekedData[3];
+                var dataSize = 0;
+                var packageSize = 0;
+                switch (operationCode)
+                {
+                    case (UInt16)Message.Operation.AudioFrame:
+                        dataSize = BitConverter.ToInt16(peekedData, 6);
+                        packageSize = dataSize + 8;
+                        break;
+                    case (UInt16)Message.Operation.PredictionFrame:
+                        dataSize = BitConverter.ToInt32(peekedData, 4);
+                        packageSize = dataSize + 8;
+                        break;
+                    case (UInt16)Message.Operation.InterFrame:
+                        dataSize = BitConverter.ToInt32(peekedData, 12);
+                        packageSize = dataSize + 16;
+                        break;
+                }
+
+                if ((packageSize == 0 || mediaDataQueue.Length < packageSize) && !complementWithZeros)
+                    break;
+
+                var now = DateTime.UtcNow;
+                switch (operationCode)
+                {
+                    case (UInt16)Message.Operation.AudioFrame:
+                        var duration = TimeSpan.FromMilliseconds(1000.0 / 50);
+                        mediaDataQueue.Dequeue(8);
+                        mediaData.Add(new AudioMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
+                        break;
+                    case (UInt16)Message.Operation.PredictionFrame:
+                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
+                        mediaDataQueue.Dequeue(8);
+                        mediaData.Add(new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
+                        break;
+                    case (UInt16)Message.Operation.InterFrame:
+                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
+                        mediaDataQueue.Dequeue(16);
+                        mediaData.Add(new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
+                        break;
+                }
+            }
+            return mediaData;
+        }
+
+        private Boolean StartsWithFrame(Byte[] data)
+        {
+            if (data.Length >= 4)
+            {
+                if (data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x01)
+                {
+                    if (data[3] == 0xFA || data[3] == 0xFC || data[3] == 0xFD)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        /*private void OnMediaReceived(SessionProperties session, MediaDataResponseMessage mediaDataResponse)
+        {
+            EnqueueData(session, mediaDataResponse);
             while (session.MediaDataQueue.Length >= 16)
             {
                 var peekedData = session.MediaDataQueue.Peek(16);
                 var operationCode = peekedData[2] * 256 + peekedData[3];
                 var dataSize = 0;
+                var packageSize = 0;
                 switch (operationCode)
                 {
                     case (UInt16)Message.Operation.AudioFrame:
                         dataSize = BitConverter.ToInt16(peekedData, 6);
+                        packageSize = dataSize + 8;
                         break;
                     case (UInt16)Message.Operation.PredictionFrame:
                         dataSize = BitConverter.ToInt32(peekedData, 4);
+                        packageSize = dataSize + 8;
                         break;
                     case (UInt16)Message.Operation.InterFrame:
                         dataSize = BitConverter.ToInt32(peekedData, 12);
+                        packageSize = dataSize + 16;
                         break;
                 }
 
-                if (session.MediaDataQueue.Length < dataSize + 16)
+                if (session.MediaDataQueue.Length < packageSize)
                     return;
 
                 var now = DateTime.UtcNow;
                 switch (operationCode)
                 {
                     case (UInt16)Message.Operation.AudioFrame:
-                        if (!session.LastAudioTimestamp.HasValue)
-                            session.LastAudioTimestamp = now;
-                        var duration = now - session.LastAudioTimestamp.Value;
-                        if (duration.TotalMilliseconds == 0)
-                            duration = TimeSpan.FromMilliseconds(1.0 / 50);
-
-                        session.LastAudioTimestamp = now;
+                        var duration = TimeSpan.FromMilliseconds(1000.0 / 50);
                         session.MediaDataQueue.Dequeue(8);
                         MediaReceived(this, new AudioMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
                     case (UInt16)Message.Operation.PredictionFrame:
-                        if (!session.LastVideoTimestamp.HasValue)
-                            session.LastVideoTimestamp = now;
-                        duration = now - session.LastVideoTimestamp.Value;
-                        if (duration.TotalMilliseconds == 0)
-                            duration = TimeSpan.FromMilliseconds(1.0 / 12.5);
-
-                        session.LastVideoTimestamp = now;
+                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
                         session.MediaDataQueue.Dequeue(8);
                         MediaReceived(this, new PredictionFrameMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
                     case (UInt16)Message.Operation.InterFrame:
-                        if (!session.LastVideoTimestamp.HasValue)
-                            session.LastVideoTimestamp = now;
-                        duration = now - session.LastVideoTimestamp.Value;
-                        if (duration.TotalMilliseconds == 0)
-                            duration = TimeSpan.FromMilliseconds(1.0 / 12.5);
-
-                        session.LastVideoTimestamp = now;
+                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
                         session.MediaDataQueue.Dequeue(16);
                         MediaReceived(this, new InterFrameMediaData(session.MediaDataQueue.Dequeue(dataSize), now, duration));
                         break;
@@ -287,6 +438,48 @@ namespace HomeControl.Surveillance.Server.Services
                 }
             }
         }
+
+        private void EnqueueData(SessionProperties session, MediaDataResponseMessage mediaDataResponse)
+        {
+            if ((session.LastSequenceNumber != 0) && (mediaDataResponse.SequenceNumber - session.LastSequenceNumber != 1))
+            {
+                if (session.MediaDataQueue.Length > 0)
+                    Log(this, ($"{nameof(OrientProtocolCameraConnection)}", $"Package Lost: {session.LastSequenceNumber + 1}"));
+
+                session.SequenceNumberLost = true;
+                session.MediaDataQueue.Clear();
+            }
+            if (session.SequenceNumberLost)
+            {
+                var packageFound = false;
+                for (var i = 0; i < mediaDataResponse.Data.Length - 16; i++)
+                {
+                    if (mediaDataResponse.Data[i] == 0x00 && mediaDataResponse.Data[i + 1] == 0x00 && mediaDataResponse.Data[i + 2] == 0x01)
+                    {
+                        var audioFrameFound = mediaDataResponse.Data[i + 3] == 0xFA && mediaDataResponse.Data[i + 6] == 0xA0 && mediaDataResponse.Data[i + 7] == 0x00; // 00 00 01 FA 0E 02 A0 00 D5 D5 D5 D5 55 D5 55 D5 55 D5 D5 55 55 55 55 D5 55 D5 D5 55 55 D5
+                        var interFrameFound = mediaDataResponse.Data[i + 3] == 0xFC && mediaDataResponse.Data[i + 14] <= 0x0A && mediaDataResponse.Data[i + 15] == 0x00; // 00 00 01 FC 02 0D F0 87 9F 25 26 59 DD 04 01 00 00 00 00 01 67 42 00 2A 95 A8 1E 00 89 F9
+                        var predictionFrameFound = mediaDataResponse.Data[i + 3] == 0xFD && mediaDataResponse.Data[i + 6] <= 0x02 && mediaDataResponse.Data[i + 7] == 0x00; // 00 00 01 FD BF 3E 00 00 00 00 00 01 61 E0 20 47 CD 09 FA B2 FA F1 32 0A DF E1 11 6C 9F ED
+                        if (audioFrameFound || interFrameFound || predictionFrameFound)
+                        {
+                            session.MediaDataQueue.Enqueue(mediaDataResponse.Data, i, mediaDataResponse.Data.Length - i);
+                            session.SequenceNumberLost = false;
+                            packageFound = true;
+                            break;
+                        }
+                    }
+                }
+                //if (!packageFound)
+                //{
+                //    session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+                //}
+            }
+            else
+            {
+                session.MediaDataQueue.Enqueue(mediaDataResponse.Data);
+            }
+
+            session.LastSequenceNumber = mediaDataResponse.SequenceNumber;
+        }*/
 
         private (TcpConnection Value, UInt32 SessionId) TryGetConnection()
         {
@@ -305,16 +498,15 @@ namespace HomeControl.Surveillance.Server.Services
             public UInt32 Id { get; set; }
             public DataQueue DataQueue { get; }
             public DataQueue MediaDataQueue { get; }
-            public DateTime? LastAudioTimestamp { get; set; }
-            public DateTime? LastVideoTimestamp { get; set; }
+            public UInt32 LastSequenceNumber { get; set; }
+            public Boolean SequenceNumberLost { get; set; }
 
             public SessionProperties()
             {
                 Id = 0;
                 DataQueue = new DataQueue();
                 MediaDataQueue = new DataQueue();
-                LastAudioTimestamp = null;
-                LastVideoTimestamp = null;
+                LastSequenceNumber = 0;
             }
         }
     }

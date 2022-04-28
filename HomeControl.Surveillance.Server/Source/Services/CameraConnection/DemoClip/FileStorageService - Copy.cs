@@ -7,10 +7,10 @@ using Windows.Foundation;
 
 namespace HomeControl.Surveillance.Server.Services
 {
-    public class FileStorageService: IStorageService
+    public class FileStorageService1
     {
-        private TimeSpan DataCacheDuration = TimeSpan.FromMinutes(10);
-        private List<(DateTime DateAdded, IMediaData Data)> DataCache = new List<(DateTime, IMediaData)>();
+        private TimeSpan DataCacheDuration = TimeSpan.FromSeconds(10);
+        private List<(DateTime DateAdded, Byte[] Data)> DataCache = new List<(DateTime, Byte[])>();
         private Task DataStoringSequence = Task.CompletedTask;
         private DriveInfo Drive;
         private DirectoryInfo CurrentDirectory;
@@ -20,7 +20,7 @@ namespace HomeControl.Surveillance.Server.Services
 
 
 
-        public FileStorageService()
+        public FileStorageService1()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
             CurrentDirectory = new DirectoryInfo(currentDirectory);
@@ -30,9 +30,12 @@ namespace HomeControl.Surveillance.Server.Services
 
             if (Drive == null)
                 throw new InvalidOperationException("Drive not found.");
+
+            foreach (var file in CurrentDirectory.GetFiles("*.*", SearchOption.TopDirectoryOnly).OrderBy(a => a.CreationTime).Where(a => a.Extension == ".test" || a.Extension == ".log"))
+                file.Delete();
         }
 
-        public void Store(IMediaData mediaData)
+        public void Store(Byte[] mediaData)
         {
             try
             {
@@ -44,57 +47,36 @@ namespace HomeControl.Surveillance.Server.Services
                     {
                         var dataCache = DataCache;
                         DataStoringSequence = DataStoringSequence.ContinueWith(task => StoreCache(dataCache));
-                        DataCache = new List<(DateTime, IMediaData)>();
+                        DataCache = new List<(DateTime, Byte[])>();
                     }
                 }
             }
             catch (Exception exception)
             {
-                Exception(this, ($"{nameof(FileStorageService)}.{nameof(Store)}", null, exception));
+                Exception(null, ($"{nameof(FileStorageService)}.{nameof(Store)}", null, exception));
             }
         }
 
-        private void StoreCache(List<(DateTime DateAdded, IMediaData Data)> dataCache)
+        private void StoreCache(List<(DateTime DateAdded, Byte[] Data)> dataCache)
         {
+            Console.WriteLine("StoreCache");
             try
             {
-                if (Drive.AvailableFreeSpace / 1024 / 1024 / 1024 < 1)
+                foreach (var dataCacheSlice in dataCache)
                 {
-                    var files = new List<FileInfo>();
-                    foreach (var file in CurrentDirectory.GetFiles("*.*", SearchOption.TopDirectoryOnly).OrderBy(a => a.CreationTime).Where(a => a.Extension == ".sr" || a.Extension == ".log"))
-                        files.Add(file);
-
-                    while (Drive.AvailableFreeSpace / 1024 / 1024 / 1024 < 2 && files.Count > 0)
-                    {
-                        Log(this, (nameof(FileStorageService), $"Deleted {files[0].Name}."));
-                        files[0].Delete();
-                        files.RemoveAt(0);
-                    }
-                }
-
-                var dataCacheByHour = dataCache.GroupBy(a => a.DateAdded.Hour);
-                foreach (var dataCacheSlice in dataCacheByHour)
-                {
-                    var mediaStream = new MemoryStream();
-                    var mediaDataItems = dataCacheSlice.Select(a => (new StoredRecordFile.MediaDataDescriptor() { Type = a.Data.MediaDataType, Timestamp = a.Data.Timestamp, Duration = a.Data.Duration }, a.Data.Data)).ToList();
-                    var storedRecord = new StoredRecordFile(mediaStream);
-                    storedRecord.WriteSlice(mediaDataItems);
-                    var mediaStreamLength = mediaStream.Length;
-
-                    var fileName = $"{dataCacheSlice.First().DateAdded.ToString("yyyy-MM-dd_HH")}.sr";
+                    var fileName = $"{dataCacheSlice.DateAdded.ToString("yyyy-MM-dd_HH")}.test";
                     using (var fileStream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                    using (var binaryWriter = new BinaryWriter(fileStream))
                     {
                         fileStream.Seek(0, SeekOrigin.End);
-                        mediaStream.Seek(0, SeekOrigin.Begin);
-                        mediaStream.CopyTo(fileStream);
-                        mediaStream.Dispose();
-                        Log(this, (nameof(FileStorageService), $"Stored {mediaStreamLength.ToDataLength()} to {fileName}."));
+                        binaryWriter.Write(dataCacheSlice.Data);
+                        binaryWriter.Write(0xBBBBBBBBBBBBBBBB);
                     }
                 }
             }
             catch (Exception exception)
             {
-                Exception(this, ($"{nameof(FileStorageService)}.{nameof(StoreCache)}", null, exception));
+                Exception(null, ($"{nameof(FileStorageService)}.{nameof(StoreCache)}", null, exception));
             }
         }
 

@@ -51,14 +51,14 @@ namespace HomeControl.Surveillance.Server.Model
             #endif
             OutdoorCameraConnection.MediaReceived += (sender, media) => OutdoorCamera.Send(media);
             OutdoorCameraConnection.MediaReceived += (sender, media) => Storage.Store(media);
-            OutdoorCameraConnection.MediaReceived += (sender, media) => MotionDetection.Process(media);
+            //OutdoorCameraConnection.MediaReceived += (sender, media) => MotionDetection.Process(media);
             OutdoorCamera.CommandReceived += OnOutdoorCameraCommandReceived;
             OutdoorCameraConnection.Log += OnLogReceived;
             OutdoorCameraConnection.DetailedLog += OnDetailedLogReceived;
             OutdoorCameraConnection.Exception += OnExceptionReceived;
             MotionDetection.Detected += OnMotionDetected;
             MotionDetection.Log += OnLogReceived;
-            MotionDetection.Start();
+            //MotionDetection.Start();
 
             await NotificationService.InitializeAsync().ConfigureAwait(false);
         }

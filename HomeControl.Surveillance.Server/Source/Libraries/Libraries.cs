@@ -11,7 +11,7 @@ namespace HomeControl.Surveillance
         public const String Core = "OpenCvLibrary.so";
         public const String ImgProc = "OpenCvLibrary.so";
         #else
-        public const String AvCodec = "Resources\\avcodec-571.dll";
+        public const String AvCodec = "Resources\\avcodec-57.dll";
         public const String AvUtil = "Resources\\avutil-55.dll";
         public const String SwScale = "Resources\\swscale-4.dll";
         public const String Core = "Resources/OpenCvLibrary.dll";

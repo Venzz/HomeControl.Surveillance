@@ -30,6 +30,9 @@ namespace HomeControl.Surveillance.Player.UI.Controller
             CameraStream = new CameraStream(camera);
             IsTilePinned = SecondaryTile.Exists(Camera.Id);
             OnPropertyChanged(nameof(CameraController), nameof(IsTilePinned));
+            //кодим сервер и смотрим логи, идея. полный вывод ошибок делать в файл, короткий, информативный в консоль.
+            //Так же в консоль вывод данных, чтобы я знал, что данные от камеры приходят, что к камере подсоединился и т.д.
+            //настроить тестовое окружение на другом акке и дебаг-апп только на него должен смотреть дебаг сервер заливать через клиент и запускать также удаленно
         }
 
         public Task InitializeAsync() => Task.Run(async () =>

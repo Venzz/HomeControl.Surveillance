@@ -5,8 +5,6 @@ namespace Venz.Telemetry
 {
     public sealed class FileTelemetryService: ITelemetryService
     {
-        private FileStream File;
-
         public FileTelemetryService() { }
 
         public void Start() => Write($"{GetTimestamp()} >> Application Launched");
@@ -27,16 +25,12 @@ namespace Venz.Telemetry
             {
                 var now = DateTime.Now;
                 var fileName = $"{now.ToString("yyyy-MM-dd")}.log";
-                if (Path.GetFileName(File?.Name) != fileName)
+                using (var fileStream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+                using (var writer = new StreamWriter(fileStream))
                 {
-                    File?.Flush();
-                    File?.Dispose();
-                    File = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+                    fileStream.Seek(0, SeekOrigin.End);
+                    writer.WriteLine(value);
                 }
-
-                var writer = new StreamWriter(File);
-                writer.WriteLine(value);
-                writer.Flush();
             }
             catch (Exception)
             {

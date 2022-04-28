@@ -1,0 +1,102 @@
+﻿vidual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Thu Apr 14 22:13:22 2022 from 192.168.1.22
+
+SSH is enabled and the default password for the 'pi' user has not been changed.
+This is a security risk - please login as the 'pi' user and type 'passwd' to set                                                                                                                     a new password.
+
+venz@raspberrypi:~ $ cd /home/pi/venz
+venz@raspberrypi:/home/pi/venz $ dotnet server.dll
+22-04-15 20:26:10 >> Server || HerokuProviderCameraService || Connected.
+22-04-15 20:26:11 >> Server || OrientProtocolCameraConnection || Connected.
+22-04-15 20:26:12 >> Server || OrientProtocolCameraConnection: Connection = 1 || AuthorizationResponseMessage, SessionId = 10
+22-04-15 20:26:13 >> Server || OrientProtocolCameraConnection: Connection = 1 || OpMonitorClaimResponseMessage, SessionId = 10
+22-04-15 20:26:39 >> Server || OrientProtocolCameraConnection || MediaDataCode = 52223
+22-04-15 20:26:41 >> Server || OrientProtocolCameraConnection || MediaDataCode = 52683
+22-04-15 20:26:42 >> Server || OrientProtocolCameraConnection || MediaDataCode = 7875
+22-04-15 20:26:43 >> Server || OrientProtocolCameraConnection || MediaDataCode = 33840
+22-04-15 20:26:44 >> Server || OrientProtocolCameraConnection || MediaDataCode = 56111
+22-04-15 20:26:45 >> Server || OrientProtocolCameraConnection || MediaDataCode = 65482
+22-04-15 20:26:46 >> Server || OrientProtocolCameraConnection || MediaDataCode = 52127
+22-04-15 20:26:48 >> Server || OrientProtocolCameraConnection || MediaDataCode = 10320
+22-04-15 20:26:49 >> Server || OrientProtocolCameraConnection || MediaDataCode = 10204
+22-04-15 20:26:49 >> Server || OrientProtocolCameraConnection || MediaDataCode = 4299
+22-04-15 20:26:50 >> Server || OrientProtocolCameraConnection || MediaDataCode = 19128
+22-04-15 20:26:51 >> Server || OrientProtocolCameraConnection || MediaDataCode = 35591
+22-04-15 20:26:52 >> Server || OrientProtocolCameraConnection || MediaDataCode = 623
+22-04-15 20:26:54 >> Server || OrientProtocolCameraConnection || MediaDataCode = 36057
+22-04-15 20:26:55 >> Server || OrientProtocolCameraConnection || MediaDataCode = 16655
+22-04-15 20:26:56 >> Server || OrientProtocolCameraConnection || MediaDataCode = 33147
+22-04-15 20:26:56 >> Server || OrientProtocolCameraConnection || MediaDataCode = 59729
+22-04-15 20:26:57 >> Server || OrientProtocolCameraConnection || MediaDataCode = 21973
+22-04-15 20:26:58 >> Server || OrientProtocolCameraConnection || MediaDataCode = 24715
+22-04-15 20:26:59 >> Server || OrientProtocolCameraConnection || MediaDataCode = 65531
+22-04-15 20:27:00 >> Server || OrientProtocolCameraConnection || MediaDataCode = 39274
+22-04-15 20:27:00 >> Server || OrientProtocolCameraConnection || MediaDataCode = 31896
+22-04-15 20:27:01 >> Server || OrientProtocolCameraConnection || MediaDataCode = 63674
+22-04-15 20:27:03 >> Server || OrientProtocolCameraConnection || MediaDataCode = 1339
+22-04-15 20:27:04 >> Server || OrientProtocolCameraConnection || MediaDataCode = 65209
+22-04-15 20:27:05 >> Server || OrientProtocolCameraConnection || MediaDataCode = 7559
+22-04-15 20:27:06 >> Server || OrientProtocolCameraConnection || MediaDataCode = 28806
+22-04-15 20:27:08 >> Server || OrientProtocolCameraConnection || MediaDataCode = 32740
+22-04-15 20:27:09 >> Server || OrientProtocolCameraConnection || MediaDataCode = 64390
+22-04-15 20:27:09 >> Server || OrientProtocolCameraConnection || MediaDataCode = 22090
+22-04-15 20:27:10 >> Server || OrientProtocolCameraConnection || MediaDataCode = 9088
+22-04-15 20:27:11 >> Server || OrientProtocolCameraConnection || MediaDataCode = 27002
+22-04-15 20:27:13 >> Server || OrientProtocolCameraConnection || MediaDataCode = 34
+22-04-15 20:27:14 >> Server || OrientProtocolCameraConnection || MediaDataCode = 2144
+22-04-15 20:27:16 >> Server || OrientProtocolCameraConnection || MediaDataCode = 47083
+22-04-15 20:27:17 >> Server || OrientProtocolCameraConnection || MediaDataCode = 49107
+22-04-15 20:27:18 >> Server || OrientProtocolCameraConnection || MediaDataCode = 65535
+22-04-15 20:27:19 >> Server || OrientProtocolCameraConnection || MediaDataCode = 40127
+22-04-15 20:27:21 >> Server || OrientProtocolCameraConnection || MediaDataCode = 53446
+22-04-15 20:27:22 >> Server || OrientProtocolCameraConnection || MediaDataCode = 35895
+22-04-15 20:27:23 >> Server || OrientProtocolCameraConnection || MediaDataCode = 17161
+22-04-15 20:27:23 >> Server || OrientProtocolCameraConnection || MediaDataCode = 17181
+22-04-15 20:27:25 >> Server || OrientProtocolCameraConnection || MediaDataCode = 2170
+22-04-15 20:27:26 >> Server || OrientProtocolCameraConnection || MediaDataCode = 58622
+22-04-15 20:27:27 >> Server || OrientProtocolCameraConnection || MediaDataCode = 45706
+22-04-15 20:27:28 >> Server || OrientProtocolCameraConnection || MediaDataCode = 53975
+22-04-15 20:27:29 >> Server || OrientProtocolCameraConnection || MediaDataCode = 5124
+22-04-15 20:27:30 >> Server || OrientProtocolCameraConnection || MediaDataCode = 13951
+22-04-15 20:27:31 >> Server || OrientProtocolCameraConnection || MediaDataCode = 34157
+22-04-15 20:27:33 >> Server || OrientProtocolCameraConnection || MediaDataCode = 13895
+22-04-15 20:27:34 >> Server || OrientProtocolCameraConnection || MediaDataCode = 32348
+22-04-15 20:27:35 >> Server || OrientProtocolCameraConnection || MediaDataCode = 64511
+22-04-15 20:27:37 >> Server || OrientProtocolCameraConnection || MediaDataCode = 1711
+22-04-15 20:27:38 >> Server || OrientProtocolCameraConnection || MediaDataCode = 21973
+22-04-15 20:27:39 >> Server || OrientProtocolCameraConnection || MediaDataCode = 56444
+22-04-15 20:27:41 >> Server || OrientProtocolCameraConnection || MediaDataCode = 52393
+22-04-15 20:27:43 >> Server || OrientProtocolCameraConnection || MediaDataCode = 34327
+22-04-15 20:27:44 >> Server || OrientProtocolCameraConnection || MediaDataCode = 34258
+22-04-15 20:27:45 >> Server || OrientProtocolCameraConnection || MediaDataCode = 22015
+22-04-15 20:27:46 >> Server || OrientProtocolCameraConnection || MediaDataCode = 4290
+22-04-15 20:27:47 >> Server || OrientProtocolCameraConnection || MediaDataCode = 36191
+22-04-15 20:27:49 >> Server || OrientProtocolCameraConnection || MediaDataCode = 22748
+22-04-15 20:27:50 >> Server || OrientProtocolCameraConnection || MediaDataCode = 19482
+22-04-15 20:27:51 >> Server || OrientProtocolCameraConnection || MediaDataCode = 3503
+22-04-15 20:27:52 >> Server || OrientProtocolCameraConnection || MediaDataCode = 8324
+22-04-15 20:27:54 >> Server || OrientProtocolCameraConnection || MediaDataCode = 56189
+22-04-15 20:27:55 >> Server || OrientProtocolCameraConnection || MediaDataCode = 27099
+22-04-15 20:27:56 >> Server || OrientProtocolCameraConnection || MediaDataCode = 64090
+22-04-15 20:27:57 >> Server || OrientProtocolCameraConnection || MediaDataCode = 47732
+22-04-15 20:27:59 >> Server || OrientProtocolCameraConnection || MediaDataCode = 51170
+22-04-15 20:28:00 >> Server || OrientProtocolCameraConnection || MediaDataCode = 30193
+22-04-15 20:28:01 >> Server || OrientProtocolCameraConnection || MediaDataCode = 21845
+22-04-15 20:28:02 >> Server || OrientProtocolCameraConnection || MediaDataCode = 33032
+22-04-15 20:28:03 >> Server || OrientProtocolCameraConnection || MediaDataCode = 37139
+22-04-15 20:28:04 >> Server || OrientProtocolCameraConnection || MediaDataCode = 38371
+22-04-15 20:28:06 >> Server || OrientProtocolCameraConnection || MediaDataCode = 40828
+22-04-15 20:28:07 >> Server || OrientProtocolCameraConnection || MediaDataCode = 47015
+22-04-15 20:28:08 >> Server || OrientProtocolCameraConnection || MediaDataCode = 43951
+22-04-15 20:28:08 >> Server || OrientProtocolCameraConnection || MediaDataCode = 18937
+22-04-15 20:28:09 >> Server || OrientProtocolCameraConnection || MediaDataCode = 13950
+22-04-15 20:28:10 >> Server || OrientProtocolCameraConnection || MediaDataCode = 2969
+22-04-15 20:28:12 >> Server || OrientProtocolCameraConnection || MediaDataCode = 40943
+22-04-15 20:28:13 >> Server || OrientProtocolCameraConnection || MediaDataCode = 29865
+22-04-15 20:28:14 >> Server || OrientProtocolCameraConnection || MediaDataCode = 33841
+22-04-15 20:28:15 >> Server || OrientProtocolCameraConnection || MediaDataCode = 36655
+22-04-15 20:28:17 >> Server || OrientProtocolCameraConnection || MediaDataCode = 36089
+22-04-15 20:28:17 >> Server || OrientProtocolCameraConnection || MediaDataCode = 1229
