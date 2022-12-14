@@ -48,5 +48,19 @@ namespace HomeControl.Surveillance.Player
             ((PlayerPage)frame.Content).Activate(args.Files[0]);
             return Task.CompletedTask;
         }
+
+        protected override Task OnSuspendingAsync(Frame frame, DateTimeOffset deadline)
+        {
+            if (frame.Content is PlayerPage)
+                ((PlayerPage)frame.Content).Dispose();
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnUnhandledExceptionAsync(Frame frame, Windows.UI.Xaml.UnhandledExceptionEventArgs args)
+        {
+            if (frame.Content is PlayerPage)
+                ((PlayerPage)frame.Content).Dispose();
+            return Task.CompletedTask;
+        }
     }
 }

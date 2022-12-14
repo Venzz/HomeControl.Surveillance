@@ -27,10 +27,19 @@ namespace HomeControl.Surveillance.Player.UI.Controller
 
         public async Task OpenAsync(StorageFile file)
         {
-            Stream = await file.OpenReadAsync().AsTask().ConfigureAwait(false);
+            if (Stream != null)
+            {
+                MediaPlayer.Source = null;
+                Stream.Dispose();
+                MediaDescriptors.Clear();
+            }
+
+            Stream = await file.OpenAsync(FileAccessMode.ReadWrite, StorageOpenOptions.AllowReadersAndWriters).AsTask().ConfigureAwait(false);
             var mediaDescriptors = new StoredRecordFile(Stream.AsStream()).ReadMediaDescriptors();
             MediaDescriptors = mediaDescriptors.Where(a => (a.Type == MediaDataType.InterFrame || a.Type == MediaDataType.PredictionFrame)).SkipWhile(a => a.Type == MediaDataType.PredictionFrame).ToList();
-
+            foreach (var item in MediaDescriptors)
+                item.Duration = TimeSpan.FromMilliseconds(1000.0 / 25);
+            //теперь вдруг надо только айфреймы считать, выясняем это и уделяем /2
             var duration = TimeSpan.FromSeconds(MediaDescriptors.Sum(a => a.Duration.TotalSeconds));
             MediaStream = new MediaStreamSource(new VideoStreamDescriptor(VideoEncodingProperties.CreateH264()));
             MediaStream.SampleRequested += OnMediaStreamSampleRequested;
@@ -51,6 +60,11 @@ namespace HomeControl.Surveillance.Player.UI.Controller
             {
                 CurrentSampleTimestamp += MediaDescriptors[index].Duration;
                 index++;
+            }
+            if (index >= MediaDescriptors.Count)
+            {
+                CurrentSampleIndex = (UInt32)MediaDescriptors.Count - 1;
+                return;
             }
             while ((index >= 0) && (MediaDescriptors[index].Type != MediaDataType.InterFrame))
             {
@@ -86,8 +100,8 @@ namespace HomeControl.Surveillance.Player.UI.Controller
             }
             
             args.Request.Sample = MediaStreamSample.CreateFromBuffer(sampleData, CurrentSampleTimestamp);
-            args.Request.Sample.Duration = mediaDescriptor.Duration;
-            CurrentSampleTimestamp += mediaDescriptor.Duration;
+            args.Request.Sample.Duration = TimeSpan.FromMilliseconds(mediaDescriptor.Duration.TotalMilliseconds);
+            CurrentSampleTimestamp += TimeSpan.FromMilliseconds(mediaDescriptor.Duration.TotalMilliseconds);
             deferral.Complete();
         }
 

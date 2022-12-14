@@ -1,4 +1,5 @@
 ﻿using HomeControl.Surveillance.Player.UI.Controller;
+using System;
 using Windows.Media.Core;
 using Windows.Storage;
 using Windows.UI.Xaml.Controls;
@@ -6,7 +7,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace HomeControl.Surveillance.Player.UI.View
 {
-    public sealed partial class PlayerPage: Page
+    public sealed partial class PlayerPage: Page, IDisposable
     {
         private PlayerController Context = new PlayerController();
 
@@ -26,6 +27,11 @@ namespace HomeControl.Surveillance.Player.UI.View
             Context.MediaPlayer.Source = MediaSource.CreateFromMediaStreamSource(Context.MediaStream);
             Context.MediaPlayer.AutoPlay = true;
             VideoPlayer.SetMediaPlayer(Context.MediaPlayer);
+        }
+
+        public void Dispose()
+        {
+            Context.Dispose();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs args)

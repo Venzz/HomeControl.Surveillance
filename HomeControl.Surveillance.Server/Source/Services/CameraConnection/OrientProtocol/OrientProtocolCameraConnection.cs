@@ -12,6 +12,7 @@ namespace HomeControl.Surveillance.Server.Services
         private UInt32 ConnectionId;
         private String IpAddress;
         private UInt16 Port;
+        private Byte FramesPerSecond;
         private Object ConnectionSync = new Object();
         private TcpConnection Connection;
         private SessionProperties Session;
@@ -26,10 +27,11 @@ namespace HomeControl.Surveillance.Server.Services
 
 
 
-        public OrientProtocolCameraConnection(String ipAddress, UInt16 port)
+        public OrientProtocolCameraConnection(String ipAddress, UInt16 port, Byte framesPerSecond)
         {
             IpAddress = ipAddress;
             Port = port;
+            FramesPerSecond = framesPerSecond;
             StartConnectionRestorating();
             StartConnectionMaintaining();
         }
@@ -357,12 +359,12 @@ namespace HomeControl.Surveillance.Server.Services
                         mediaData.Add(new AudioMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
                         break;
                     case (UInt16)Message.Operation.PredictionFrame:
-                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
+                        duration = TimeSpan.FromMilliseconds(1000.0 / FramesPerSecond);
                         mediaDataQueue.Dequeue(8);
                         mediaData.Add(new PredictionFrameMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
                         break;
                     case (UInt16)Message.Operation.InterFrame:
-                        duration = TimeSpan.FromMilliseconds(1000.0 / 12.5);
+                        duration = TimeSpan.FromMilliseconds(1000.0 / FramesPerSecond);
                         mediaDataQueue.Dequeue(16);
                         mediaData.Add(new InterFrameMediaData(mediaDataQueue.Dequeue(dataSize, complementWithZeros), now, duration));
                         break;

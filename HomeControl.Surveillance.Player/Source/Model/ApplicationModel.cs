@@ -25,6 +25,7 @@ namespace HomeControl.Surveillance.Player.Model
 
         public async Task InitializeAsync()
         {
+            ConsumerCameraService.Start();
             await PushNotification.UpdateUriAsync().ConfigureAwait(false);
         }
 

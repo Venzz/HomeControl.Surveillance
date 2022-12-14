@@ -14,6 +14,8 @@ namespace HomeControl.Surveillance.Services
 
         public EmptyConsumerCameraService() { }
 
+        public void Start() { }
+
         public Task PerformAsync(Command command) => Task.FromResult<Object>(null);
 
         public Task<IReadOnlyCollection<(String Id, DateTime Date)>> GetStoredRecordsMetadataAsync()

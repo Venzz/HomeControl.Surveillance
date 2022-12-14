@@ -27,6 +27,10 @@ namespace HomeControl.Surveillance.Services
         public HerokuConsumerCameraService(String serviceName)
         {
             ServiceName = serviceName;
+        }
+
+        public void Start()
+        {
             StartConnectionMaintaining();
             StartReceiving();
         }
