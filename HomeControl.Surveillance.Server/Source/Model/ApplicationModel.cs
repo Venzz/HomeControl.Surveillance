@@ -21,7 +21,7 @@ namespace HomeControl.Surveillance.Server.Model
 
         public ApplicationModel()
         {
-            ProviderCameraService = new HerokuProviderCameraService("service", (new TimeSpan(23, 0, 0), TimeSpan.FromHours(8)));
+            ProviderCameraService = new EmptyProviderCameraService();
             ProviderCameraService.MessageReceived += OnMessageReceived;
             ProviderCameraService.Log += OnLogReceived;
             ProviderCameraService.Exception += OnExceptionReceived;

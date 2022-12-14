@@ -14,7 +14,7 @@ namespace HomeControl.Surveillance.Player.Model
 
         public ApplicationModel()
         {
-            ConsumerCameraService = new HerokuConsumerCameraService("client");
+            ConsumerCameraService = new EmptyConsumerCameraService();
             ConsumerCameraService.LogReceived += OnCameraServiceLogReceived;
             ConsumerCameraService.ExceptionReceived += OnCameraServiceExceptionReceived;
             PushNotification = new PushNotification(ConsumerCameraService);
