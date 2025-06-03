@@ -35,7 +35,7 @@ namespace HomeControl.StoreRecordConverter.Controller
             var tempFile = new FileInfo("temp.h264");
             tempFile.Delete();
 
-            using (var fileStream = new FileStream(storeRecordFile.FilePath, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(storeRecordFile.FilePath, FileMode.Open, FileAccess.ReadWrite))
             using (var fileReader = new BinaryReader(fileStream))
             {
                 var mediaDescriptors = new StoredRecordFile(fileStream).ReadMediaDescriptors();
