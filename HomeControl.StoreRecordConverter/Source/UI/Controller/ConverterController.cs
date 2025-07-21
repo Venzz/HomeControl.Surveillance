@@ -63,8 +63,23 @@ namespace HomeControl.StoreRecordConverter.Controller
                 var process = new Process();
                 process.StartInfo.FileName = $"FFmpeg\\ffmpeg.exe";
                 process.StartInfo.Arguments = $"-y -i \"{tempFile.FullName}\" -c:v copy -f mp4 \"{mp4File}\"";
-                process.Start();
-                process.WaitForExit();
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+                if (process.Start())
+                {
+                    try
+                    {
+                        process.WaitForExit();
+                    }
+                    catch (InvalidOperationException exception) when (exception.Message == "No process is associated with this object.")
+                    {
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(1000);
+                }
                 process.Close();
                 tempFile.Delete();
                 await Task.Factory.StartNew(() => storeRecordFile.AddProgress(0.1m), new CancellationToken(), TaskCreationOptions.None, UiTaskScheduler);
